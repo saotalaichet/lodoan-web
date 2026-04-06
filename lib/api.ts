@@ -1,6 +1,9 @@
-const BASE44_URL = `https://api.base44.app/api/apps/${process.env.BASE44_APP_ID}`;
+const BASE44_APP_ID = process.env.NEXT_PUBLIC_BASE44_APP_ID || process.env.BASE44_APP_ID;
+const BASE44_API_KEY = process.env.NEXT_PUBLIC_BASE44_API_KEY || process.env.BASE44_API_KEY;
+
+const BASE44_URL = `https://api.base44.app/api/apps/${BASE44_APP_ID}`;
 const BASE44_HEADERS = {
-  'api-key': process.env.BASE44_API_KEY!,
+  'api-key': BASE44_API_KEY!,
   'Content-Type': 'application/json',
 };
 
