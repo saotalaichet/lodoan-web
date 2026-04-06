@@ -44,7 +44,8 @@ export default function RestaurantPage() {
       ]);
       setCategories(cats);
       setItems(menuItems);
-      if (cats.length > 0) setActiveCategory(cats[0].id);
+      const allCat = cats.find(c => c.name?.includes('Tất cả') || c.name?.includes('All'));
+setActiveCategory(allCat?.id || cats[0]?.id || null);
       setLoading(false);
     }
     load();
@@ -70,9 +71,10 @@ export default function RestaurantPage() {
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
 
-  const filteredItems = activeCategory
-    ? items.filter(i => i.category_id === activeCategory)
-    : items;
+  const selectedCat = categories.find(c => c.id === activeCategory);
+const filteredItems = !activeCategory || selectedCat?.name?.includes('All') || selectedCat?.name?.includes('Tất cả')
+  ? items
+  : items.filter(i => i.category_id === activeCategory);;
 
   const getQty = (itemId: string) =>
     cart.find(i => i.id === itemId)?.qty || 0;
