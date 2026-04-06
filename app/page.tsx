@@ -126,7 +126,7 @@ export default async function HomePage() {
       </header>
 
       {/* Hero */}
-      <section style={{ textAlign: 'center' }} className="py-16 px-4"></>
+      <section style={{ textAlign: 'center' }} className="py-16 px-4">
         <h1 className="text-4xl font-black text-gray-900 mb-4">
           Đặt món yêu thích<br />
           <span style={{ color: PRIMARY }}>giao tận nơi</span>
