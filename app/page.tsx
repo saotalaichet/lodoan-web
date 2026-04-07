@@ -111,6 +111,7 @@ function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
 
 export default async function HomePage() {
   const restaurants = await getRestaurants();
+  const activeRestaurants = restaurants.filter(r => r.slug);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -230,17 +231,17 @@ export default async function HomePage() {
       <main className="max-w-7xl mx-auto px-4 lg:px-8 pb-16 flex-1 w-full">
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-bold text-gray-900 text-xl">Tất Cả Nhà Hàng</h2>
-          <span className="text-sm text-gray-500">{restaurants.length} nhà hàng</span>
+          <span className="text-sm text-gray-500">{activeRestaurants.length} nhà hàng</span>
         </div>
 
-        {restaurants.length === 0 ? (
+        {activeRestaurants.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">🍜</p>
             <p className="text-gray-700 text-lg font-semibold">Chưa có nhà hàng nào.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {restaurants.map(restaurant => (
+            {activeRestaurants.map(restaurant => (
               <RestaurantCard key={restaurant.id} restaurant={restaurant} />
             ))}
           </div>
@@ -329,6 +330,7 @@ export default async function HomePage() {
               <span className="text-gray-300 text-xs">•</span>
               <a href="/security" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">An Toàn Thông Tin</a>
               <span className="text-gray-300 text-xs">•</span>
+              <a href="/claims" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Giải Quyết Khiếu Nại</a>
               <p className="text-xs text-gray-400">Được cung cấp bởi Ovenly™</p>
             </div>
           </div>
