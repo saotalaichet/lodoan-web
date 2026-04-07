@@ -10,10 +10,8 @@ import {
 import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 
-const BASE44_APP_ID = '69c130c9110a89987aae7fb0';
-const BASE44_API_KEY = '1552c0075c5e4229b7c5a76cbbb9a457';
-const BASE44_URL = `https://api.base44.app/api/apps/${BASE44_APP_ID}`;
-const BASE44_HEADERS = { 'api-key': BASE44_API_KEY, 'Content-Type': 'application/json' };
+const BASE44_URL = 'https://ovenly-backend-production-ce50.up.railway.app';
+const BASE44_HEADERS = { 'Content-Type': 'application/json' };
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
@@ -473,7 +471,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         return;
       }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
-      const orderRes = await fetch(`${BASE44_URL}/entities/Order`, {
+      const orderRes = await fetch(`${BASE44_URL}/api/orders`, {
         method: 'POST', headers: BASE44_HEADERS,
         body: JSON.stringify({
           restaurant_id: restaurant.id, restaurant_name: restaurant.name,
@@ -973,9 +971,8 @@ export default function RestaurantPage() {
     if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`${BASE44_URL}/functions/getOrderStatus`, {
-          method: 'POST', headers: BASE44_HEADERS,
-          body: JSON.stringify({ orderId: paymentReturnOrderId }),
+        const res = await fetch(`${BASE44_URL}/api/orders/${successOrder.id}/status`, {
+  method: 'GET', headers: BASE44_HEADERS,
         });
         const data = await res.json();
         const order = data?.data || data;
