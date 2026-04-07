@@ -113,15 +113,20 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
     : '';
   const avgRating = restaurant.average_rating;
   const totalRatings = restaurant.total_ratings;
-  const hasSlug = !!restaurant.slug;
+
+  // Safe slug guard — prevents navigation to /undefined or /null
+  const safeSlug = restaurant.slug && restaurant.slug !== 'undefined' && restaurant.slug !== 'null'
+    ? restaurant.slug
+    : null;
+  const hasSlug = !!safeSlug;
 
   const handleClick = () => {
-    if (hasSlug) window.location.href = `/order/${restaurant.slug}`;
+    if (safeSlug) window.location.href = `/order/${safeSlug}`;
   };
 
   const handleOrderNow = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (hasSlug && !isOrderingDisabled) window.location.href = `/order/${restaurant.slug}`;
+    if (safeSlug && !isOrderingDisabled) window.location.href = `/order/${safeSlug}`;
   };
 
   return (
@@ -269,7 +274,7 @@ export default function MarketplaceClient() {
     localStorage.setItem('ovenly_language', lang);
   }, [lang]);
 
-  // Fetch via server-side proxy (avoids CORS, handles any response format)
+  // Fetch via server-side proxy to avoid CORS
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -289,17 +294,15 @@ export default function MarketplaceClient() {
   }, []);
 
   useEffect(() => {
-    const BASE44_APP_ID = '69c130c9110a89987aae7fb0';
-    const BASE44_API_KEY = '1552c0075c5e4229b7c5a76cbbb9a457';
     const fetchItems = async () => {
       try {
         const res = await fetch(
-          `https://api.base44.app/api/apps/${BASE44_APP_ID}/entities/MenuItem?_limit=2000`,
-          { headers: { 'api-key': BASE44_API_KEY } }
+          `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities/MenuItem?_limit=2000`,
+          { headers: { 'api-key': '1552c0075c5e4229b7c5a76cbbb9a457' } }
         );
         if (res.ok) {
           const body = await res.json();
-          const data = Array.isArray(body) ? body : (body.items || body.data || []);
+          const data = Array.isArray(body) ? body : (body?.items ?? body?.data ?? []);
           if (Array.isArray(data)) setAllMenuItems(data);
         }
       } catch {}
@@ -331,7 +334,6 @@ export default function MarketplaceClient() {
   };
 
   const filteredRestaurants = useMemo(() => {
-    // Use truthy check (not strict ===) to handle "1", true, etc.
     let list = restaurants.filter(r => r.is_active && r.show_on_marketplace);
 
     if (search.trim()) {
