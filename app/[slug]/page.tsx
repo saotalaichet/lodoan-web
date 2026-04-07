@@ -1,162 +1,354 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  getRestaurantBySlug,
-  getMenuCategories,
-  getMenuItems,
-  Restaurant,
-  MenuCategory,
-  MenuItem,
+  ShoppingBag, Plus, Minus, Trash2, Flame, Star, Leaf, X,
+  ChevronLeft, MapPin, Phone, Mail, FileText, Bike, Clock,
+} from 'lucide-react';
+import {
+  getRestaurantBySlug, getMenuCategories, getMenuItems,
+  createOrder, createPayment, validateOrderAcceptance,
+  Restaurant, MenuCategory, MenuItem,
 } from '@/lib/api';
+import { customerAuth } from '@/lib/customerAuth';
 
 const PRIMARY = '#8B1A1A';
+const BASE44_URL = `https://api.base44.app/api/apps/${process.env.NEXT_PUBLIC_BASE44_APP_ID}`;
+const BASE44_HEADERS = { 'api-key': process.env.NEXT_PUBLIC_BASE44_API_KEY!, 'Content-Type': 'application/json' };
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
-interface CartItem extends MenuItem {
-  qty: number;
+// ── Restaurant status ─────────────────────────────────────────────────────────
+
+function getRestaurantStatus(restaurant: Restaurant | null): 'OPEN' | 'CLOSED' | 'PAUSED' {
+  if (!restaurant) return 'CLOSED';
+  if (restaurant.is_accepting_orders === false) return 'PAUSED';
+  const hours = restaurant.hours;
+  if (!hours) return 'OPEN';
+  const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const now = new Date();
+  const vn = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+  const dayHours = (hours as any)[DAYS[vn.getDay()]];
+  if (!dayHours?.trim()) return 'CLOSED';
+  const [openStr, closeStr] = dayHours.split('-').map((s: string) => s.trim());
+  if (!openStr || !closeStr) return 'CLOSED';
+  const [oH, oM] = openStr.split(':').map(Number);
+  const [cH, cM] = closeStr.split(':').map(Number);
+  let closeMins = cH * 60 + cM;
+  if ((cH === 0 && cM === 0) || (cH === 24 && cM === 0)) closeMins = 1440;
+  const cur = vn.getHours() * 60 + vn.getMinutes();
+  return cur >= oH * 60 + oM && cur < closeMins ? 'OPEN' : 'CLOSED';
 }
 
-export default function RestaurantPage() {
-  const params = useParams();
-  const slug = params.slug as string;
+function getStatusDisplay(status: string, lang: string) {
+  const m: Record<string, { vi: string; en: string }> = {
+    OPEN: { vi: '● Đang Mở', en: '● Open' },
+    CLOSED: { vi: '● Đã Đóng Cửa', en: '● Closed' },
+    PAUSED: { vi: '● Tạm Dừng', en: '● Paused' },
+  };
+  return m[status]?.[lang === 'vi' ? 'vi' : 'en'] || '';
+}
 
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  const [categories, setCategories] = useState<MenuCategory[]>([]);
-  const [items, setItems] = useState<MenuItem[]>([]);
+function getStatusStyle(status: string) {
+  if (status === 'OPEN') return 'bg-green-50 text-green-700 border-green-200';
+  if (status === 'PAUSED') return 'bg-orange-50 text-orange-700 border-orange-200';
+  return 'bg-gray-100 text-gray-500 border-gray-200';
+}
+
+// ── Cart ──────────────────────────────────────────────────────────────────────
+
+interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  basePrice?: number;
+  qty: number;
+  notes?: string;
+  addons?: { name: string; price: number }[];
+}
+
+function useCart() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [loading, setLoading] = useState(true);
-  const [showMobileCart, setShowMobileCart] = useState(false);
-  const [lang, setLang] = useState('vi');
+  const add = (item: CartItem) => setCart(prev => {
+    const ex = prev.find(i => i.id === item.id);
+    return ex ? prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i) : [...prev, { ...item, qty: 1 }];
+  });
+  const set = (id: string, qty: number) => setCart(prev => qty <= 0 ? prev.filter(i => i.id !== id) : prev.map(i => i.id === id ? { ...i, qty } : i));
+  const clear = () => setCart([]);
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  return { cart, add, set, clear, totalQty, subtotal };
+}
 
-  useEffect(() => {
-    async function load() {
-      const r = await getRestaurantBySlug(slug);
-      if (!r) { setLoading(false); return; }
-      setRestaurant(r);
-      const [cats, menuItems] = await Promise.all([
-        getMenuCategories(r.id),
-        getMenuItems(r.id),
-      ]);
-      setCategories(cats);
-      setItems(menuItems);
-      setLoading(false);
+// ── Item Modal ────────────────────────────────────────────────────────────────
+
+function ItemModal({ item, groups, lang, onClose, onAdd }: {
+  item: MenuItem; groups: any[]; lang: string;
+  onClose: () => void; onAdd: (item: CartItem) => void;
+}) {
+  const [qty, setQty] = useState(1);
+  const [selections, setSelections] = useState<Record<string, string[]>>({});
+  const [notes, setNotes] = useState('');
+  const [error, setError] = useState('');
+
+  const toggle = (gId: string, oId: string, max: number) => {
+    setError('');
+    const cur = selections[gId] || [];
+    if (max === 1) {
+      setSelections(s => ({ ...s, [gId]: cur.includes(oId) ? [] : [oId] }));
+    } else if (cur.includes(oId)) {
+      setSelections(s => ({ ...s, [gId]: cur.filter(x => x !== oId) }));
+    } else if (cur.length < max) {
+      setSelections(s => ({ ...s, [gId]: [...cur, oId] }));
+    } else {
+      setError(lang === 'vi' ? 'Đã đạt số lượng tối đa' : 'Maximum reached');
     }
-    load();
-  }, [slug]);
-
-  // Save cart to sessionStorage whenever it changes
-  useEffect(() => {
-    if (cart.length > 0) {
-      sessionStorage.setItem(`cart_${slug}`, JSON.stringify(cart));
-    }
-  }, [cart, slug]);
-
-  const addToCart = useCallback((item: MenuItem) => {
-    setCart(prev => {
-      const exists = prev.find(i => i.id === item.id);
-      if (exists) return prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { ...item, qty: 1 }];
-    });
-  }, []);
-
-  const setQty = useCallback((itemId: string, qty: number) => {
-    setCart(prev => qty <= 0
-      ? prev.filter(i => i.id !== itemId)
-      : prev.map(i => i.id === itemId ? { ...i, qty } : i)
-    );
-  }, []);
-
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const isOpen = restaurant?.is_open && restaurant?.is_accepting_orders;
-
-  const groupedItems = () => {
-    if (activeCategory !== 'all') {
-      return [{ category: categories.find(c => c.id === activeCategory), items: items.filter(i => i.category_id === activeCategory) }];
-    }
-    const sortedCats = [...categories].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
-    return sortedCats
-      .map(cat => ({ category: cat, items: items.filter(i => i.category_id === cat.id) }))
-      .filter(g => g.items.length > 0);
   };
 
-  const getCategoryLabel = (name: string) => {
-    if (!name) return '';
-    const slash = name.indexOf('/');
-    if (slash === -1) return name.trim();
-    return lang === 'en' ? name.substring(slash + 1).trim() : name.substring(0, slash).trim();
+  const extra = groups.reduce((t, g) =>
+    t + (selections[g.id] || []).reduce((s, oId) => {
+      const o = g.options?.find((x: any) => x.id === oId);
+      return s + (o?.price || 0);
+    }, 0), 0);
+  const total = (item.price + extra) * qty;
+
+  const handleAdd = () => {
+    for (const g of groups) {
+      if (g.required && !(selections[g.id] || []).length) {
+        setError(lang === 'vi' ? `Vui lòng chọn ${g.name}` : `Please select ${g.name}`);
+        return;
+      }
+    }
+    const addons = groups.flatMap(g =>
+      (selections[g.id] || []).map(oId => {
+        const o = g.options?.find((x: any) => x.id === oId);
+        return o && o.price > 0 ? { name: o.name, price: o.price } : null;
+      })
+    ).filter(Boolean) as { name: string; price: number }[];
+
+    onAdd({ id: item.id + Date.now(), name: item.name, price: item.price + extra, basePrice: item.price, addons, qty, notes });
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-t-red-800 border-red-200 rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500">Đang tải...</p>
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-end sm:items-center justify-center"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
+        {item.image_url ? (
+          <div className="relative h-44 overflow-hidden rounded-t-2xl">
+            <Image src={item.image_url} alt={item.name} fill className="object-cover" />
+            <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <div className="flex justify-end p-4">
+            <button onClick={onClose} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+        <div className="p-5">
+          <h2 className="font-heading font-bold text-xl text-gray-900 mb-1">{item.name}</h2>
+          {item.description && <p className="text-sm text-gray-400 mb-3">{item.description}</p>}
+          <p className="text-lg font-bold mb-4" style={{ color: PRIMARY }}>{fmt(item.price)}</p>
+
+          {groups.map((g: any) => (
+            <div key={g.id} className="mb-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="font-bold text-sm text-gray-900">{g.name}</p>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${g.required ? 'text-red-800 bg-red-50' : 'bg-gray-100 text-gray-500'}`}>
+                  {g.required ? (lang === 'vi' ? 'Bắt buộc' : 'Required') : (lang === 'vi' ? 'Tùy chọn' : 'Optional')}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {g.options?.map((o: any) => {
+                  const sel = (selections[g.id] || []).includes(o.id);
+                  return (
+                    <button key={o.id} type="button" onClick={() => toggle(g.id, o.id, g.max_select || 1)}
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${sel ? 'border-red-800 bg-red-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${sel ? 'bg-red-800 border-red-800' : 'border-gray-300'}`}>
+                          {sel && <div className="w-2 h-2 bg-white rounded-full" />}
+                        </div>
+                        <span className="text-sm font-medium">{o.name}</span>
+                      </div>
+                      {o.price > 0 && <span className="text-sm font-bold" style={{ color: PRIMARY }}>+{fmt(o.price)}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
+          <div className="mb-4">
+            <label className="block text-sm font-bold text-gray-900 mb-2">{lang === 'vi' ? 'Ghi chú' : 'Notes'}</label>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder={lang === 'vi' ? 'Ít đá, không hành...' : 'Less ice, no onion...'}
+              rows={2} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 resize-none" />
+          </div>
+
+          {error && <p className="text-red-500 text-sm mb-3">⚠️ {error}</p>}
+
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-semibold text-gray-700">{lang === 'vi' ? 'Số lượng' : 'Quantity'}</span>
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => setQty(q => Math.max(1, q - 1))}
+                className="w-9 h-9 rounded-full border-2 border-gray-200 flex items-center justify-center">
+                <Minus className="w-4 h-4" />
+              </button>
+              <span className="font-bold text-lg w-6 text-center">{qty}</span>
+              <button type="button" onClick={() => setQty(q => q + 1)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: PRIMARY }}>
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <button onClick={handleAdd}
+            className="w-full text-white font-bold py-4 rounded-xl text-sm hover:opacity-90"
+            style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+            {lang === 'vi' ? `Thêm vào giỏ — ${fmt(total)}` : `Add to cart — ${fmt(total)}`}
+          </button>
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  if (!restaurant) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-5xl mb-4">😕</p>
-          <p className="text-gray-700 font-bold text-lg">Không tìm thấy nhà hàng</p>
-          <Link href="/" className="text-sm mt-4 inline-block" style={{ color: PRIMARY }}>← Quay lại</Link>
+// ── Menu Item Card ─────────────────────────────────────────────────────────────
+
+function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock, lang }: {
+  item: MenuItem; qty: number; onAdd: (item: any) => void;
+  onSet: (id: string, qty: number) => void;
+  onOpen: (item: MenuItem, groups: any[]) => void;
+  isClosed: boolean; isOutOfStock: boolean; lang: string;
+}) {
+  const handleClick = () => {
+    if (isClosed) return;
+    let groups: any[] = [];
+    try { if (item.customization_options) groups = JSON.parse(item.customization_options); } catch {}
+    if (groups.length > 0) onOpen(item, groups);
+    else onAdd({ id: item.id, name: item.name, price: item.price, basePrice: item.price, qty: 1 });
+  };
+
+  return (
+    <div
+      className={`bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col relative ${isClosed ? 'cursor-default' : 'cursor-pointer hover:border-red-200 hover:shadow-sm'} transition-all group`}
+      onClick={handleClick}
+    >
+      {isOutOfStock && (
+        <div className="absolute top-2 right-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+          {lang === 'vi' ? 'Hết hàng' : 'Out of stock'}
+        </div>
+      )}
+      <div className="relative w-full aspect-[4/3] overflow-hidden" style={{ background: '#FFF0ED' }}>
+        {item.image_url ? (
+          <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl">🍜</div>
+        )}
+        {item.is_chef_choice && (
+          <span className="absolute top-2 left-2 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
+            <Star className="w-2.5 h-2.5 fill-white" /> Chef
+          </span>
+        )}
+      </div>
+
+      <div className="p-3 flex flex-col flex-1">
+        <div className="flex gap-1 flex-wrap mb-1">
+          {item.is_spicy && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-500 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full">
+              <Flame className="w-2.5 h-2.5" />{lang === 'en' ? 'Spicy' : 'Cay'}
+            </span>
+          )}
+          {item.is_vegetarian && (
+            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-green-600 bg-green-50 border border-green-100 px-1.5 py-0.5 rounded-full">
+              <Leaf className="w-2.5 h-2.5" />{lang === 'en' ? 'Veg' : 'Chay'}
+            </span>
+          )}
+        </div>
+        <p className="font-semibold text-gray-900 text-sm leading-snug flex-1">{item.name}</p>
+        {item.description && <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>}
+
+        <div className="flex items-center justify-between mt-3">
+          <span className="font-bold text-sm" style={{ color: PRIMARY }}>{fmt(item.price)}</span>
+          {!isClosed && (
+            qty > 0 ? (
+              <div className="flex items-center gap-2 rounded-full px-2 py-1"
+                style={{ backgroundColor: PRIMARY }}
+                onClick={e => e.stopPropagation()}>
+                <button onClick={() => onSet(item.id, qty - 1)} className="w-5 h-5 flex items-center justify-center text-white">
+                  <Minus className="w-3 h-3" strokeWidth={2.5} />
+                </button>
+                <span className="text-xs font-bold text-white min-w-[14px] text-center">{qty}</span>
+                <button onClick={() => onSet(item.id, qty + 1)} className="w-5 h-5 flex items-center justify-center text-white">
+                  <Plus className="w-3 h-3" strokeWidth={2.5} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={e => { e.stopPropagation(); handleClick(); }}
+                className="w-7 h-7 text-white rounded-full flex items-center justify-center hover:opacity-90 transition-colors"
+                style={{ backgroundColor: PRIMARY }}>
+                <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+              </button>
+            )
+          )}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
-  const CartSidebar = () => (
+// ── Cart Sidebar ──────────────────────────────────────────────────────────────
+
+function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, lang }: {
+  cart: CartItem[]; subtotal: number; totalQty: number;
+  onSet: (id: string, qty: number) => void;
+  onCheckout: () => void; isClosed: boolean; lang: string;
+}) {
+  return (
     <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl overflow-hidden">
       <div className="p-4 border-b border-gray-100">
-        <p className="text-xs text-gray-500 font-medium">
-          {lang === 'vi' ? 'Chọn loại đặt hàng' : 'Select order type'}
-        </p>
+        <p className="text-xs text-gray-500 font-medium">{lang === 'vi' ? 'Chọn loại đặt hàng' : 'Select order type'}</p>
       </div>
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: '#FFF0ED' }}>
-              <svg className="w-6 h-6" fill="none" stroke={PRIMARY} viewBox="0 0 24 24" strokeWidth={1.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
-              </svg>
+              <ShoppingBag className="w-6 h-6" style={{ color: `${PRIMARY}66` }} strokeWidth={1.5} />
             </div>
-            <p className="text-sm text-gray-400 font-medium">
-              {lang === 'vi' ? 'Thêm món vào giỏ hàng' : 'Add items to cart'}
-            </p>
-            <p className="text-xs text-gray-300 mt-1">
-              {lang === 'vi' ? 'Chọn món từ thực đơn bên trái' : 'Select items from the menu'}
-            </p>
+            <p className="text-sm text-gray-400 font-medium">{lang === 'vi' ? 'Thêm món vào giỏ hàng' : 'Add items to cart'}</p>
+            <p className="text-xs text-gray-300 mt-1">{lang === 'vi' ? 'Chọn món từ thực đơn bên trái' : 'Select items from the menu'}</p>
           </div>
         ) : (
           <div className="space-y-3">
             {cart.map(item => (
               <div key={item.id} className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <button onClick={() => setQty(item.id, item.qty - 1)} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 transition-colors">
-                    {item.qty === 1 ? (
-                      <svg className="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    ) : (
-                      <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4"/></svg>
-                    )}
+                  <button onClick={() => onSet(item.id, item.qty - 1)}
+                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 transition-colors">
+                    {item.qty === 1 ? <Trash2 className="w-3 h-3 text-red-400" /> : <Minus className="w-3 h-3 text-gray-500" />}
                   </button>
                   <span className="text-sm font-bold text-gray-900 w-4 text-center">{item.qty}</span>
-                  <button onClick={() => setQty(item.id, item.qty + 1)} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
-                    <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
+                  <button onClick={() => onSet(item.id, item.qty + 1)}
+                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                    <Plus className="w-3 h-3 text-gray-500" />
                   </button>
                 </div>
-                <p className="flex-1 text-xs font-semibold text-gray-800 leading-snug">{item.name}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-gray-800 leading-snug truncate">
+                    {item.name}{item.basePrice && item.basePrice !== item.price ? `: ${fmt(item.basePrice)}` : ''}
+                  </p>
+                  {item.addons?.map((a, i) => (
+                    <p key={i} className="text-xs text-gray-400">+{a.name}: {fmt(a.price)}</p>
+                  ))}
+                  {item.notes && <p className="text-xs text-gray-400 italic">{item.notes}</p>}
+                </div>
                 <p className="text-xs font-bold text-gray-900 flex-shrink-0">{fmt(item.price * item.qty)}</p>
               </div>
             ))}
@@ -164,62 +356,917 @@ export default function RestaurantPage() {
         )}
       </div>
 
-      {cart.length > 0 && isOpen && (
+      {cart.length > 0 && !isClosed && (
         <div className="p-4 border-t border-gray-100 space-y-2">
           <div className="flex justify-between text-xs text-gray-500">
             <span>{lang === 'vi' ? 'Tạm tính' : 'Subtotal'}</span>
-            <span>{fmt(cartTotal)}</span>
+            <span>{fmt(subtotal)}</span>
           </div>
           <div className="flex justify-between font-bold text-sm text-gray-900 border-t border-gray-100 pt-2">
             <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
-            <span style={{ color: PRIMARY }}>{fmt(cartTotal)}</span>
+            <span style={{ color: PRIMARY }}>{fmt(subtotal)}</span>
           </div>
-          <Link
-            href={`/${slug}/checkout`}
-            className="block w-full text-center font-bold py-3 rounded-xl text-sm text-white mt-1 hover:opacity-90 transition-opacity"
-            style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}
-          >
-            {lang === 'vi' ? 'Đặt hàng ngay' : 'Place Order Now'}
-          </Link>
+          {totalQty >= 16 ? (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
+              <p className="text-xs font-bold text-red-700">{lang === 'vi' ? '⚠️ Đơn quá lớn' : '⚠️ Order too large'}</p>
+              <p className="text-xs text-red-600">{lang === 'vi' ? 'Vui lòng liên hệ nhà hàng trực tiếp.' : 'Please contact the restaurant directly.'}</p>
+            </div>
+          ) : (
+            <button onClick={onCheckout}
+              className="w-full font-bold py-3 rounded-xl text-sm text-white mt-1 hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+              {lang === 'vi' ? 'Đặt hàng ngay' : 'Place Order Now'}
+            </button>
+          )}
         </div>
       )}
     </div>
   );
+}
+
+// ── Delivery Options Modal ────────────────────────────────────────────────────
+
+function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal, lang }: {
+  isOpen: boolean; onClose: () => void;
+  onConfirm: (details: { orderType: string; address?: string; fee?: number }) => void;
+  restaurant: Restaurant; subtotal: number; lang: string;
+}) {
+  const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('delivery');
+  const [address, setAddress] = useState('');
+
+  if (!isOpen) return null;
+  const minOrder = (restaurant as any).min_order_amount || 50000;
+  const deliveryFee = restaurant.delivery_fee || 0;
+  const belowMin = orderType === 'delivery' && subtotal < minOrder;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-20">
+      <div className="w-full bg-white rounded-3xl p-6 max-w-md shadow-xl max-h-[80vh] overflow-y-auto mx-4">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-heading font-bold text-gray-900 text-lg flex items-center gap-2">
+            🛵 {lang === 'vi' ? 'Chi tiết đặt hàng' : 'Order Details'}
+          </h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+            <X className="w-4 h-4 text-gray-500" />
+          </button>
+        </div>
+
+        <div className="space-y-5">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase">
+              {lang === 'vi' ? 'Loại đặt hàng' : 'Order Type'}
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {(['pickup', 'delivery'] as const).map(type => (
+                <button key={type} onClick={() => setOrderType(type)}
+                  className={`py-3 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-2 transition-all ${orderType === type ? 'text-white' : 'border-gray-200 text-gray-500 hover:border-red-200'}`}
+                  style={orderType === type ? { borderColor: PRIMARY, backgroundColor: PRIMARY } : {}}>
+                  {type === 'delivery' ? <Bike className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+                  {type === 'delivery' ? (lang === 'vi' ? 'Giao hàng' : 'Delivery') : (lang === 'vi' ? 'Mang về' : 'Pickup')}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {orderType === 'delivery' && (
+            <>
+              {belowMin && (
+                <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
+                  <p className="text-xs text-red-700 font-semibold">
+                    ⚠️ {lang === 'vi'
+                      ? `Đơn tối thiểu cho giao hàng là ${fmt(minOrder)}. Còn thiếu ${fmt(minOrder - subtotal)}.`
+                      : `Minimum order for delivery is ${fmt(minOrder)}. Add ${fmt(minOrder - subtotal)} more.`}
+                  </p>
+                </div>
+              )}
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase">
+                  {lang === 'vi' ? 'Địa chỉ giao hàng' : 'Delivery Address'}
+                </label>
+                <p className="text-xs mb-3" style={{ color: PRIMARY }}>
+                  {lang === 'vi' ? 'Chúng tôi chỉ giao hàng trong phạm vi 5km.' : 'We only deliver within 5km.'}
+                </p>
+                <textarea
+                  value={address} onChange={e => setAddress(e.target.value)}
+                  placeholder={lang === 'vi' ? 'Ví dụ: 123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh' : 'e.g. 123 Nguyen Hue, District 1, HCMC'}
+                  rows={3}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 resize-none transition-all"
+                />
+              </div>
+            </>
+          )}
+
+          <button
+            onClick={() => {
+              if (orderType === 'delivery' && !address.trim()) return;
+              if (belowMin) return;
+              onConfirm({ orderType, address: orderType === 'delivery' ? address : undefined, fee: deliveryFee });
+            }}
+            disabled={orderType === 'delivery' && (!address.trim() || belowMin)}
+            className="w-full text-white font-bold py-4 rounded-xl text-sm transition-colors disabled:opacity-50"
+            style={{ backgroundColor: PRIMARY }}>
+            {lang === 'vi' ? 'Tiếp tục đặt hàng' : 'Continue'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Checkout ──────────────────────────────────────────────────────────────────
+
+const PAYMENT_METHODS = [
+  { key: 'cash_or_transfer', vi: 'Tiền mặt / Chuyển khoản', en: 'Cash / Bank Transfer', icon: '💵', for: ['pickup'] },
+  { key: 'cod', vi: 'Tiền mặt khi giao (COD)', en: 'Cash on Delivery (COD)', icon: '🏠', for: ['delivery'] },
+  { key: 'momo', vi: 'Ví MoMo', en: 'MoMo Wallet', icon: '💜', for: ['pickup', 'delivery'] },
+  { key: 'zalopay', vi: 'ZaloPay', en: 'ZaloPay', icon: '🔵', for: ['pickup', 'delivery'] },
+  { key: 'vnpay', vi: 'VNPay', en: 'VNPay', icon: '🏦', for: ['pickup', 'delivery'] },
+];
+const ONLINE = ['momo', 'zalopay', 'vnpay'];
+
+function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, onBack, onSuccess, onSetQty, lang, onLangChange, customer }: {
+  cart: CartItem[]; restaurant: Restaurant; orderType: string;
+  deliveryAddress?: string; deliveryFee: number;
+  onBack: () => void; onSuccess: (orderId: string, orderType: string, paymentMethod: string) => void;
+  onSetQty: (id: string, qty: number) => void;
+  lang: string; onLangChange: (l: string) => void; customer: any;
+}) {
+  const [name, setName] = useState(customer?.full_name || '');
+  const [phone, setPhone] = useState(customer?.phone_number || '');
+  const [email, setEmail] = useState(customer?.email || '');
+  const [notes, setNotes] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState(orderType === 'pickup' ? 'cash_or_transfer' : 'cod');
+  const [tipPct, setTipPct] = useState(0);
+  const [placing, setPlacing] = useState(false);
+  const placingRef = useRef(false);
+  const [checkoutMode, setCheckoutMode] = useState<null | 'checkout'>(null);
+
+  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
+  const serviceFeePct = orderType === 'delivery'
+    ? (subtotal >= 1000001 ? 0.02 : subtotal >= 500001 ? 0.016 : 0.01) : 0.01;
+  const serviceFee = Math.round(subtotal * serviceFeePct);
+  const effectiveDelivery = totalQty >= 10 && orderType === 'delivery' ? 100000 : deliveryFee;
+  const tipAmount = Math.round(subtotal * tipPct / 100);
+  const total = subtotal + serviceFee + (orderType === 'delivery' ? effectiveDelivery : 0) + tipAmount;
+
+  const validMethods = PAYMENT_METHODS.filter(m => m.for.includes(orderType));
+
+  const handlePlace = async () => {
+    if (placingRef.current) return;
+    placingRef.current = true;
+    setPlacing(true);
+    try {
+      if (!name.trim() || !phone.trim() || !email.trim()) {
+        alert(lang === 'vi' ? 'Vui lòng điền đầy đủ thông tin' : 'Please fill in all required fields');
+        return;
+      }
+
+      const validation = await validateOrderAcceptance(restaurant.id);
+      if (!validation.accepting) {
+        alert(lang === 'vi' ? (validation.message_vi || 'Nhà hàng không nhận đơn lúc này.') : (validation.message || 'Restaurant is currently closed.'));
+        return;
+      }
+
+      const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
+      const order = await fetch(`${BASE44_URL}/entities/Order`, {
+        method: 'POST', headers: BASE44_HEADERS,
+        body: JSON.stringify({
+          restaurant_id: restaurant.id, restaurant_name: restaurant.name,
+          customer_email: email, customer_name: name, customer_phone: phone,
+          items, subtotal, service_fee: serviceFee,
+          delivery_fee: orderType === 'delivery' ? effectiveDelivery : 0,
+          tip_amount: tipAmount, tip_percentage: tipPct, total,
+          order_type: orderType,
+          delivery_address: orderType === 'delivery' ? deliveryAddress : '',
+          payment_method: paymentMethod,
+          payment_status: ONLINE.includes(paymentMethod) ? 'pending_payment' : 'waiting',
+          cash_collected: false, notes, language: lang, status: 'confirmed',
+          confirmed_at: new Date().toISOString(),
+        }),
+      }).then(r => r.json());
+
+      if (ONLINE.includes(paymentMethod)) {
+        const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
+        const result = await createPayment(paymentMethod as any, order.id, total, redirectUrl);
+        if (result.payUrl) { window.location.href = result.payUrl; return; }
+        alert(lang === 'vi' ? 'Lỗi kết nối thanh toán.' : 'Payment connection error.');
+        return;
+      }
+
+      onSuccess(order.id, orderType, paymentMethod);
+    } finally {
+      setPlacing(false);
+      placingRef.current = false;
+    }
+  };
+
+  // Mode selection screen
+  if (!checkoutMode) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ background: 'hsl(30,20%,97%)' }}>
+        <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+          <button onClick={onBack} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+            <ChevronLeft className="w-4 h-4 text-gray-600" />
+          </button>
+          <span className="font-bold text-gray-900 text-sm">{restaurant.name}</span>
+        </div>
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="w-full max-w-sm">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#FFF0ED' }}>
+                <ShoppingBag className="w-8 h-8" style={{ color: PRIMARY }} strokeWidth={1.5} />
+              </div>
+              <h2 className="font-heading font-black text-2xl text-gray-900 mb-2">
+                {lang === 'vi' ? 'Xác nhận đặt hàng' : 'Confirm your order'}
+              </h2>
+              <p className="text-sm text-gray-500">
+                {lang === 'vi' ? 'Chọn hình thức tiếp tục' : 'Choose how to continue'}
+              </p>
+            </div>
+
+            {/* Order summary */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
+              <div className="p-4">
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
+                  {lang === 'vi' ? 'Tóm tắt đơn hàng' : 'Order summary'}
+                </p>
+                <div className="space-y-1.5">
+                  {cart.slice(0, 3).map(item => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span className="text-gray-700">{item.qty}× {item.name}</span>
+                      <span className="font-medium text-gray-900">{fmt(item.price * item.qty)}</span>
+                    </div>
+                  ))}
+                  {cart.length > 3 && <p className="text-xs text-gray-400">+{cart.length - 3} {lang === 'vi' ? 'món khác' : 'more'}</p>}
+                </div>
+                <div className="flex justify-between font-bold text-sm pt-2 border-t border-gray-100 mt-2">
+                  <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
+                  <span style={{ color: PRIMARY }}>{fmt(subtotal)}</span>
+                </div>
+              </div>
+            </div>
+
+            {customer && (
+              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
+                <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-green-800">{customer.full_name}</p>
+                  <p className="text-xs text-green-600">{customer.email}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-3">
+              <button onClick={() => setCheckoutMode('checkout')}
+                className="w-full text-white rounded-2xl p-4 text-left transition-all shadow-lg hover:opacity-90"
+                style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-white">
+                        {customer ? (lang === 'vi' ? 'Tiếp tục đặt hàng' : 'Continue to checkout') : (lang === 'vi' ? 'Tiếp tục không cần đăng nhập' : 'Continue without signing in')}
+                      </p>
+                      <p className="text-xs text-white/80">
+                        {customer ? (lang === 'vi' ? 'Thông tin đã được điền sẵn' : 'Your details are pre-filled') : (lang === 'vi' ? 'Không cần tạo tài khoản' : 'No account required')}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronLeft className="w-5 h-5 text-white/70 rotate-180" />
+                </div>
+              </button>
+
+              {!customer && (
+                <button onClick={() => { localStorage.setItem('checkout_redirect', window.location.pathname); window.location.href = '/login'; }}
+                  className="w-full bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-red-200 rounded-2xl p-4 text-left transition-all">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FFF0ED' }}>
+                        <svg className="w-5 h-5" style={{ color: PRIMARY }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="font-bold text-sm text-gray-900">{lang === 'vi' ? 'Đăng nhập / Đăng ký' : 'Log in / Sign up'}</p>
+                        <p className="text-xs text-gray-500">{lang === 'vi' ? 'Xem lại đơn hàng và nhận ưu đãi' : 'Track orders and get offers'}</p>
+                      </div>
+                    </div>
+                    <ChevronLeft className="w-5 h-5 text-gray-400 rotate-180" />
+                  </div>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Full checkout form
+  return (
+    <div className="min-h-screen" style={{ background: 'hsl(30,20%,97%)' }}>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+          <button onClick={onBack} className="text-gray-400 hover:text-gray-700 transition-colors">
+            <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
+          </button>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center rounded-full p-1 text-xs font-semibold" style={{ background: '#FFF0ED' }}>
+              <button onClick={() => { onLangChange('vi'); }} className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'text-white' : 'text-gray-500'}`}
+                style={lang === 'vi' ? { backgroundColor: PRIMARY } : {}}>VI</button>
+              <button onClick={() => { onLangChange('en'); }} className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'text-white' : 'text-gray-500'}`}
+                style={lang === 'en' ? { backgroundColor: PRIMARY } : {}}>EN</button>
+            </div>
+            <span className="text-sm font-semibold text-gray-500">{lang === 'vi' ? 'Thanh toán' : 'Payment'}</span>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+        <div className="flex-1 space-y-6">
+          {/* Order type badge */}
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 bg-orange-50 text-orange-600 border border-orange-200 text-sm font-semibold px-3 py-1.5 rounded-full">
+              {orderType === 'delivery' ? <Bike className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
+              {orderType === 'delivery' ? (lang === 'vi' ? 'Giao hàng' : 'Delivery') : (lang === 'vi' ? 'Mang về' : 'Pickup')}
+            </span>
+          </div>
+
+          {/* Delivery info */}
+          {orderType === 'delivery' && deliveryAddress && (
+            <div className="bg-white border border-gray-200 rounded-2xl p-5">
+              <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+                <Bike className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Thông tin giao hàng' : 'Delivery Info'}
+              </h2>
+              <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-xs text-green-600 font-medium mb-1">✓ {lang === 'vi' ? 'Địa chỉ giao hàng' : 'Delivery Address'}</p>
+                  <p className="text-sm text-gray-800">{deliveryAddress}</p>
+                </div>
+              </div>
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mt-3 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-orange-500" />
+                <p className="text-sm text-gray-800">{lang === 'vi' ? '20-40 phút' : '20-40 minutes'}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Contact info */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+              <Phone className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Thông tin liên hệ' : 'Contact Information'}
+            </h2>
+            {customer ? (
+              <div className="bg-gray-50 rounded-xl p-4 mb-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-3">{lang === 'vi' ? 'Thông tin khách hàng' : 'Customer details'}</p>
+                <p className="text-sm font-bold text-gray-900">{customer.full_name}</p>
+                <p className="text-sm text-gray-600">{customer.email}</p>
+                <p className="text-sm text-gray-600">{customer.phone_number}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">{lang === 'vi' ? 'Họ và tên' : 'Full Name'} *</label>
+                  <input value={name} onChange={e => setName(e.target.value)} placeholder={lang === 'vi' ? 'Nguyễn Văn A' : 'John Doe'}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">{lang === 'vi' ? 'Số điện thoại' : 'Phone'} *</label>
+                    <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0912 345 678"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Email *</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com"
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                  </div>
+                </div>
+              </div>
+            )}
+            {orderType === 'delivery' && deliveryAddress && (
+              <div className="border border-green-200 bg-green-50 rounded-xl px-4 py-3 text-sm text-gray-700 flex items-start gap-2 mt-3">
+                <MapPin className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <span>{deliveryAddress}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Payment */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+              <span className="text-orange-400">💳</span> {lang === 'vi' ? 'Phương thức thanh toán' : 'Payment Method'}
+            </h2>
+            <div className="grid grid-cols-2 gap-2">
+              {validMethods.map(m => (
+                <button key={m.key} onClick={() => setPaymentMethod(m.key)}
+                  className={`flex items-center gap-2.5 px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all text-left ${paymentMethod === m.key ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600 hover:border-orange-200 hover:bg-orange-50/50'}`}>
+                  <span className="text-lg">{m.icon}</span>
+                  <span className="text-xs leading-tight">{lang === 'vi' ? m.vi : m.en}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5">
+            <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Ghi chú đặc biệt' : 'Special Instructions'}
+            </h2>
+            <textarea value={notes} onChange={e => setNotes(e.target.value)}
+              placeholder={lang === 'vi' ? 'Ít đường, không hành, dị ứng thực phẩm...' : 'Less sugar, no onions, food allergies...'}
+              rows={3} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-800 focus:ring-2 transition-all resize-none" />
+          </div>
+        </div>
+
+        {/* Order summary sidebar */}
+        <div className="w-full lg:w-80 flex-shrink-0">
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden sticky top-20">
+            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: '#FFF0ED' }}>
+              <div>
+                <h2 className="font-heading font-bold text-gray-900 text-base">{lang === 'vi' ? 'Đơn hàng của bạn' : 'Your Order'}</h2>
+                <p className="text-xs text-gray-500 mt-0.5">{restaurant.name}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-lg" style={{ color: PRIMARY }}>{fmt(subtotal)}</p>
+                <p className="text-xs text-gray-500">{lang === 'vi' ? 'Tạm tính' : 'Subtotal'}</p>
+              </div>
+            </div>
+
+            <div className="px-5 py-4 space-y-3 max-h-72 overflow-y-auto">
+              {cart.map(item => (
+                <div key={item.id} className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button onClick={() => onSetQty(item.id, item.qty - 1)}
+                      className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 transition-colors">
+                      {item.qty === 1 ? <Trash2 className="w-3 h-3 text-red-400" /> : <Minus className="w-3 h-3 text-gray-400" />}
+                    </button>
+                    <span className="text-sm font-bold text-gray-900 w-4 text-center">{item.qty}</span>
+                    <button onClick={() => onSetQty(item.id, item.qty + 1)}
+                      className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-orange-50 transition-colors">
+                      <Plus className="w-3 h-3 text-gray-400" />
+                    </button>
+                  </div>
+                  <p className="flex-1 text-xs text-gray-700 leading-snug">{item.name}</p>
+                  <p className="text-xs font-bold text-gray-900 flex-shrink-0">{fmt(item.price * item.qty)}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="px-5 py-4 border-t border-gray-100 space-y-2 text-sm">
+              <div className="flex justify-between text-gray-500"><span>{lang === 'vi' ? 'Tạm tính' : 'Subtotal'}</span><span>{fmt(subtotal)}</span></div>
+              <div className="flex justify-between text-gray-500"><span>{lang === 'vi' ? 'Phí dịch vụ' : 'Service fee'}</span><span>{fmt(serviceFee)}</span></div>
+              {orderType === 'delivery' && (
+                <div className="flex justify-between text-gray-500"><span>{lang === 'vi' ? 'Phí giao hàng' : 'Delivery fee'}</span><span>{fmt(effectiveDelivery)}</span></div>
+              )}
+              {/* Tip */}
+              <div className="border-t border-gray-100 pt-3">
+                <p className="text-xs font-semibold text-gray-600 mb-2">{lang === 'vi' ? 'Tip cho nhân viên' : 'Tip for Staff'}</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[0, 10, 15, 20].map(pct => (
+                    <button key={pct} onClick={() => setTipPct(pct)}
+                      className={`px-2 py-2 rounded-lg border text-xs font-semibold transition-all ${tipPct === pct ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 text-gray-600'}`}>
+                      {pct === 0 ? (lang === 'vi' ? 'Không' : 'None') : `${pct}%`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {tipAmount > 0 && (
+                <div className="flex justify-between text-gray-500"><span>Tip</span><span className="font-semibold text-orange-500">{fmt(tipAmount)}</span></div>
+              )}
+              <div className="flex justify-between font-bold text-gray-900 text-base border-t border-gray-100 pt-2">
+                <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
+                <span style={{ color: PRIMARY }}>{fmt(total)}</span>
+              </div>
+            </div>
+
+            <div className="px-5 pb-5">
+              <button onClick={handlePlace} disabled={placing || cart.length === 0}
+                className="w-full text-white font-bold py-4 rounded-xl text-sm transition-colors disabled:opacity-50 shadow-lg"
+                style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+                {placing ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    {lang === 'vi' ? 'Đang xử lý...' : 'Processing...'}
+                  </span>
+                ) : `${lang === 'vi' ? 'Xác nhận đặt hàng' : 'Place Order'} · ${fmt(total)}`}
+              </button>
+              <p className="text-center text-xs text-gray-400 mt-2">
+                {lang === 'vi' ? 'Bằng cách đặt hàng, bạn đồng ý với điều khoản dịch vụ' : 'By ordering you agree to our terms of service'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Success / Waiting Screens ─────────────────────────────────────────────────
+
+function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
+  successOrder: any; restaurant: Restaurant; lang: string; onBack: () => void;
+}) {
+  const { id, status, notes, orderType, paymentMethod } = successOrder;
+  const isWaiting = !['accepted', 'preparing', 'ready', 'delivering', 'completed', 'declined', 'timed_out'].includes(status);
+  const declineReason = notes?.match(/Reason: (.+)/)?.[1] || '';
+  const estTime = notes?.match(/Est: ([^|]+)/)?.[1]?.trim() || '';
+
+  const payLabel: Record<string, string> = {
+    cash_or_transfer: lang === 'vi' ? 'Tiền mặt / Chuyển khoản' : 'Cash / Bank Transfer',
+    cod: lang === 'vi' ? 'Tiền mặt khi giao' : 'Cash on Delivery',
+    momo: 'MoMo', zalopay: 'ZaloPay', vnpay: 'VNPay',
+  };
+
+  const Logo = () => restaurant.logo
+    ? <img src={restaurant.logo} alt={restaurant.name} className="h-14 object-contain mx-auto mb-8" />
+    : <p className="font-heading font-bold text-xl text-gray-900 mb-8">{restaurant.name}</p>;
+
+  if (status === 'timed_out') return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="max-w-sm w-full">
+        <Logo />
+        <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-5xl">⏰</span></div>
+        <h2 className="font-heading font-bold text-xl text-gray-900 mb-3">{lang === 'vi' ? 'Đơn hàng chưa được xác nhận.' : 'Order not confirmed.'}</h2>
+        <p className="text-gray-500 text-sm mb-6">{lang === 'vi' ? 'Vui lòng liên hệ nhà hàng.' : 'Please contact the restaurant.'}</p>
+        <button onClick={onBack} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90 w-full" style={{ backgroundColor: PRIMARY }}>
+          {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
+        </button>
+      </div>
+    </div>
+  );
+
+  if (status === 'declined') return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="max-w-sm w-full">
+        <Logo />
+        <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-5xl">❌</span></div>
+        <h2 className="font-heading font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đơn hàng bị từ chối' : 'Order Declined'}</h2>
+        {declineReason && <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3 mb-4"><p className="text-red-700 text-sm">{lang === 'vi' ? 'Lý do:' : 'Reason:'} {declineReason}</p></div>}
+        <p className="text-xs text-gray-400 font-mono mb-6">#{id?.slice(-8).toUpperCase()}</p>
+        <button onClick={onBack} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90 w-full" style={{ backgroundColor: PRIMARY }}>
+          {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
+        </button>
+      </div>
+    </div>
+  );
+
+  if (!isWaiting) return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
+      <div className="max-w-sm w-full text-center">
+        <Logo />
+        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg shadow-green-100"><span className="text-5xl">✅</span></div>
+        <h2 className="font-heading font-bold text-2xl text-gray-900 mb-1">{lang === 'vi' ? 'Đơn hàng đã được xác nhận!' : 'Order confirmed!'}</h2>
+        <p className="text-xs text-gray-400 font-mono mb-4">#{id?.slice(-8).toUpperCase()}</p>
+        {estTime && (
+          <div className="bg-orange-50 border border-orange-300 rounded-xl px-4 py-3 mb-4 flex items-center gap-2 justify-center">
+            <Clock className="w-4 h-4 text-orange-500 flex-shrink-0" />
+            <span className="text-orange-700 font-semibold text-sm">⏱ {estTime}</span>
+          </div>
+        )}
+        {successOrder.items?.length > 0 && (
+          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-4 text-left">
+            <p className="text-xs font-semibold text-gray-500 uppercase mb-3">{lang === 'vi' ? 'Món đã đặt' : 'Items ordered'}</p>
+            <div className="space-y-2">
+              {successOrder.items.map((item: any, idx: number) => (
+                <div key={idx} className="flex justify-between text-sm">
+                  <span className="text-gray-800">{item.quantity}× {item.name}</span>
+                  <span className="font-semibold text-gray-900">{fmt(item.price * item.quantity)}</span>
+                </div>
+              ))}
+              {successOrder.total && (
+                <div className="flex justify-between font-bold text-sm pt-2 border-t border-gray-100">
+                  <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
+                  <span style={{ color: PRIMARY }}>{fmt(successOrder.total)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4 text-sm text-gray-700 flex items-center gap-2">
+          <span className="text-lg">💳</span>
+          <span>{payLabel[paymentMethod] || paymentMethod}</span>
+        </div>
+        {orderType === 'delivery' && successOrder.delivery_address && (
+          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-5 text-sm text-gray-700 flex items-start gap-2 text-left">
+            <span className="text-lg flex-shrink-0">📍</span>
+            <span>{successOrder.delivery_address}</span>
+          </div>
+        )}
+        <button onClick={onBack} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90 w-full" style={{ backgroundColor: PRIMARY }}>
+          {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
+        </button>
+      </div>
+    </div>
+  );
+
+  // Waiting screen
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="max-w-sm w-full">
+        <Logo />
+        <div className="relative w-28 h-28 mx-auto mb-8">
+          <div className="absolute inset-0 rounded-full border-4 border-t-red-800 border-red-200 animate-spin" style={{ borderTopColor: PRIMARY }} />
+          <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{ background: '#FFF0ED' }}>
+            <span className="text-3xl">🍜</span>
+          </div>
+        </div>
+        <h2 className="font-heading font-bold text-xl text-gray-900 mb-2">
+          {lang === 'vi' ? 'Đang chờ quán xác nhận...' : 'Waiting for merchant to confirm...'}
+        </h2>
+        <p className="text-xs text-gray-400 mb-6">{lang === 'vi' ? 'Vui lòng không đóng trang này' : 'Please do not close this page'}</p>
+        <p className="text-xs text-gray-400 font-mono">#{id?.slice(-8).toUpperCase()}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Maintenance Page ──────────────────────────────────────────────────────────
+
+function MaintenancePage({ lang }: { lang: string }) {
+  return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      <div className="max-w-md w-full text-center">
+        <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly"
+          style={{ height: '100px', width: 'auto' }} className="mx-auto mb-12 object-contain" />
+        <h1 className="font-heading text-3xl font-bold text-gray-800 mb-4 leading-tight">
+          {lang === 'vi' ? 'Chúng tôi đang tạm thời nâng cấp hệ thống.' : 'We are currently working on improvements.'}
+        </h1>
+        <p className="text-gray-600 text-base leading-relaxed mb-12">
+          {lang === 'vi' ? 'Cảm ơn bạn đã kiên nhẫn chờ đợi. Vui lòng quay lại sau!' : 'Thank you for your patience. Please check back soon!'}
+        </p>
+        <div className="pt-8 border-t border-gray-100 mt-12">
+          <p className="text-xs text-gray-400">Powered by Ovenly</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
+export default function RestaurantPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const [categories, setCategories] = useState<MenuCategory[]>([]);
+  const [allItems, setAllItems] = useState<MenuItem[]>([]);
+  const [loadingRestaurant, setLoadingRestaurant] = useState(true);
+  const [loadingItems, setLoadingItems] = useState(true);
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [lang, setLang] = useState('vi');
+  const [customer, setCustomer] = useState<any>(null);
+  const [selectedItem, setSelectedItem] = useState<{ item: MenuItem; groups: any[] } | null>(null);
+  const [showMobileCart, setShowMobileCart] = useState(false);
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [checkoutOrderType, setCheckoutOrderType] = useState<string | null>(null);
+  const [deliveryDetails, setDeliveryDetails] = useState<{ address?: string; fee: number } | null>(null);
+  const [successOrder, setSuccessOrder] = useState<any>(null);
+  const [paymentReturnOrderId, setPaymentReturnOrderId] = useState<string | null>(null);
+  const [paymentReturnStatus, setPaymentReturnStatus] = useState<string | null>(null);
+  const pollStartRef = useRef<number | null>(null);
+
+  const { cart, add, set, clear, totalQty, subtotal } = useCart();
+
+  // Init
+  useEffect(() => {
+    const stored = localStorage.getItem('ovenly_language') || localStorage.getItem('marketplace_lang') || 'vi';
+    setLang(stored);
+    customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
+
+    // Check payment return
+    const urlParams = new URLSearchParams(window.location.search);
+    const payment = urlParams.get('payment');
+    const returnOrderId = urlParams.get('orderId');
+    if (payment || returnOrderId) {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('payment');
+      url.searchParams.delete('orderId');
+      window.history.replaceState({}, '', url.toString());
+    }
+    if (payment === 'success' && returnOrderId) {
+      setPaymentReturnOrderId(returnOrderId);
+      setPaymentReturnStatus('success');
+    } else if (payment === 'failed') {
+      setPaymentReturnStatus('failed');
+    } else if (payment === 'timeout') {
+      setPaymentReturnStatus('timeout');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('ovenly_language', lang);
+  }, [lang]);
+
+  // Fetch restaurant
+  useEffect(() => {
+    if (!slug) return;
+    const load = async () => {
+      const r = await getRestaurantBySlug(slug);
+      setRestaurant(r);
+      setLoadingRestaurant(false);
+      if (r) {
+        document.title = `${r.name} | Menu & Đặt Hàng Online`;
+        const [cats, items] = await Promise.all([getMenuCategories(r.id), getMenuItems(r.id)]);
+        setCategories(cats);
+        setAllItems(items);
+        setLoadingItems(false);
+      }
+    };
+    load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
+  }, [slug]);
+
+  // Poll payment return order
+  useEffect(() => {
+    if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
+    const fetchOrder = async () => {
+      try {
+        const res = await fetch(`${BASE44_URL}/functions/getOrderStatus`, {
+          method: 'POST', headers: BASE44_HEADERS,
+          body: JSON.stringify({ orderId: paymentReturnOrderId }),
+        });
+        const data = await res.json();
+        const order = data?.data || data;
+        if (order) {
+          setSuccessOrder({ id: paymentReturnOrderId, status: order.status || 'pending', notes: order.notes || '', orderType: order.order_type || 'delivery', paymentMethod: order.payment_method || '', items: order.items || [], total: order.total, delivery_address: order.delivery_address || '' });
+          setPaymentReturnStatus(null);
+          setPaymentReturnOrderId(null);
+        }
+      } catch {}
+    };
+    fetchOrder();
+  }, [paymentReturnOrderId, paymentReturnStatus]);
+
+  // Poll order status
+  useEffect(() => {
+    if (!successOrder?.id) return;
+    if (['accepted', 'preparing', 'ready', 'delivering', 'completed', 'declined', 'timed_out'].includes(successOrder.status)) return;
+    if (!pollStartRef.current) pollStartRef.current = Date.now();
+    const interval = setInterval(async () => {
+      try {
+        if (Date.now() - pollStartRef.current! > 10 * 60 * 1000) {
+          setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' }));
+          return;
+        }
+        const res = await fetch(`${BASE44_URL}/functions/getOrderStatus`, {
+          method: 'POST', headers: BASE44_HEADERS,
+          body: JSON.stringify({ orderId: successOrder.id }),
+        });
+        const data = await res.json();
+        const order = data?.data || data;
+        if (order?.status) {
+          setSuccessOrder((prev: any) => ({ ...prev, status: order.status, notes: order.notes || prev.notes, items: order.items || prev.items, total: order.total ?? prev.total, delivery_address: order.delivery_address || prev.delivery_address }));
+        }
+      } catch {}
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [successOrder?.id, successOrder?.status]);
+
+  const status = getRestaurantStatus(restaurant);
+  const isClosed = status !== 'OPEN';
+
+  const filteredMenu = useMemo(() => {
+    if (activeCategory === 'all') return allItems;
+    return allItems.filter(i => i.category_id === activeCategory);
+  }, [activeCategory, allItems]);
+
+  const groupedItems = useMemo(() => {
+    if (activeCategory !== 'all') {
+      const cat = categories.find(c => c.id === activeCategory);
+      return cat ? [{ category: cat, items: filteredMenu }] : [];
+    }
+    const sortedCats = [...categories].sort((a, b) => (a.sort_order || a.order || 0) - (b.sort_order || b.order || 0));
+    return sortedCats.map(cat => ({ category: cat, items: allItems.filter(i => i.category_id === cat.id) })).filter(g => g.items.length > 0);
+  }, [activeCategory, allItems, categories, filteredMenu]);
+
+  const getCatLabel = (name: string) => {
+    if (!name) return '';
+    const slash = name.indexOf('/');
+    if (slash === -1) return name.trim();
+    return lang === 'en' ? name.substring(slash + 1).trim() : name.substring(0, slash).trim();
+  };
+
+  const handleSuccess = (orderId: string, orderType: string, paymentMethod: string) => {
+    setCheckoutOrderType(null);
+    setDeliveryDetails(null);
+    clear();
+    setSuccessOrder({ id: orderId, status: 'pending', notes: '', orderType, paymentMethod, items: [], delivery_address: deliveryDetails?.address || '' });
+  };
+
+  // Special screens
+  if (paymentReturnStatus === 'timeout') return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">⏰</span></div>
+      <h2 className="font-heading font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đã hết thời gian thanh toán' : 'Payment Time Expired'}</h2>
+      <p className="text-gray-500 mb-6">{lang === 'vi' ? 'Vui lòng đặt lại đơn hàng.' : 'Please reorder.'}</p>
+      <button onClick={() => setPaymentReturnStatus(null)} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90" style={{ backgroundColor: PRIMARY }}>
+        {lang === 'vi' ? 'Thử lại' : 'Try Again'}
+      </button>
+    </div>
+  );
+
+  if (paymentReturnStatus === 'success' && paymentReturnOrderId) return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="relative w-28 h-28 mx-auto mb-8">
+        <div className="absolute inset-0 rounded-full border-4 border-t-red-800 border-red-200 animate-spin" style={{ borderTopColor: PRIMARY }} />
+        <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{ background: '#FFF0ED' }}>
+          <span className="text-3xl">🍜</span>
+        </div>
+      </div>
+      <h2 className="font-heading font-bold text-xl text-gray-900">{lang === 'vi' ? 'Đang xử lý...' : 'Processing...'}</h2>
+    </div>
+  );
+
+  if (loadingRestaurant) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-t-red-800 border-red-200 rounded-full animate-spin mx-auto mb-4" style={{ borderTopColor: PRIMARY }} />
+        <p className="text-gray-500">{lang === 'vi' ? 'Đang tải...' : 'Loading...'}</p>
+      </div>
+    </div>
+  );
+
+  if (!restaurant) return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-5xl mb-4">😕</p>
+        <p className="font-heading font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
+        <Link href="/" className="text-sm font-semibold hover:underline" style={{ color: PRIMARY }}>← {lang === 'vi' ? 'Quay lại' : 'Go back'}</Link>
+      </div>
+    </div>
+  );
+
+  if (!restaurant.is_active) return <MaintenancePage lang={lang} />;
+
+  if (successOrder) return (
+    <SuccessScreen successOrder={successOrder} restaurant={restaurant} lang={lang}
+      onBack={() => { setSuccessOrder(null); pollStartRef.current = null; }} />
+  );
+
+  if (checkoutOrderType) return (
+    <Checkout
+      cart={cart} restaurant={restaurant} orderType={checkoutOrderType}
+      deliveryAddress={deliveryDetails?.address}
+      deliveryFee={deliveryDetails?.fee ?? restaurant.delivery_fee ?? 0}
+      onBack={() => { setCheckoutOrderType(null); setDeliveryDetails(null); }}
+      onSuccess={handleSuccess}
+      onSetQty={set} lang={lang} onLangChange={setLang} customer={customer}
+    />
+  );
+
+  return (
+    <div className="min-h-screen flex flex-col" style={{ background: 'hsl(30,20%,97%)' }}>
 
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {restaurant.logo ? (
-              <Image src={restaurant.logo} alt={restaurant.name} width={60} height={60} className="object-contain" style={{ height: '60px', width: 'auto' }} />
+              <img src={restaurant.logo} alt={restaurant.name} className="object-contain" style={{ height: '60px', width: 'auto' }} />
             ) : (
-              <span className="font-bold text-gray-900 text-base">{restaurant.name}</span>
+              <span className="font-heading font-bold text-gray-900 text-base">{restaurant.name}</span>
             )}
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center rounded-full p-1 text-xs font-semibold" style={{ background: '#FFF0ED' }}>
-              <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
-                style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
-              <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
-                style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
+              <button onClick={() => setLang('vi')} className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'text-white' : 'text-gray-500'}`}
+                style={lang === 'vi' ? { backgroundColor: PRIMARY } : {}}>VI</button>
+              <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'text-white' : 'text-gray-500'}`}
+                style={lang === 'en' ? { backgroundColor: PRIMARY } : {}}>EN</button>
             </div>
-            <Link href="/login" className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition-colors" style={{ backgroundColor: PRIMARY }}>
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-              </svg>
-              {lang === 'vi' ? 'Đăng nhập' : 'Login'}
-            </Link>
-            <span className="flex items-center gap-1 font-semibold px-2.5 py-1 rounded-full border text-xs"
-              style={isOpen
-                ? { background: '#F0FDF4', color: '#166534', border: '1px solid #86EFAC' }
-                : { background: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB' }
-              }>
-              {isOpen
-                ? (lang === 'vi' ? '● Đang Mở' : '● Open')
-                : (lang === 'vi' ? '● Đóng Cửa' : '● Closed')}
+            {customer ? (
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#FFF0ED' }}>
+                  <svg className="w-3.5 h-3.5" style={{ color: PRIMARY }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                  </svg>
+                </div>
+                <span className="text-xs font-semibold text-gray-700 hidden sm:block max-w-24 truncate">{customer.full_name || customer.email}</span>
+              </div>
+            ) : (
+              <a href="/login" className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition-colors"
+                style={{ backgroundColor: PRIMARY }}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                </svg>
+                {lang === 'vi' ? 'Đăng nhập' : 'Login'}
+              </a>
+            )}
+            <span className={`flex items-center gap-1 font-semibold px-2.5 py-1 rounded-full border text-xs ${getStatusStyle(status)}`}>
+              {getStatusDisplay(status, lang)}
             </span>
           </div>
         </div>
@@ -228,21 +1275,19 @@ export default function RestaurantPage() {
       {/* Banner */}
       <div className="w-full overflow-hidden" style={{ height: 'clamp(200px, 25vw, 300px)' }}>
         {restaurant.banner ? (
-          <Image src={restaurant.banner} alt={restaurant.name} width={1200} height={300} className="w-full h-full object-cover" />
+          <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${PRIMARY} 0%, #6B1414 100%)` }} />
+          <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${PRIMARY} 0%, hsl(0,60%,18%) 100%)` }} />
         )}
       </div>
 
       {/* Closed banner */}
-      {!isOpen && (
+      {isClosed && (
         <div style={{ background: '#FFF5F5', borderLeft: `4px solid ${PRIMARY}`, padding: '16px', width: '100%' }}>
           <div className="max-w-6xl mx-auto flex items-start gap-3">
             <span className="text-lg flex-shrink-0">🔴</span>
             <p style={{ color: PRIMARY, fontWeight: 600, fontSize: '14px', lineHeight: '1.5' }}>
-              {lang === 'vi'
-                ? 'Nhà hàng hiện không nhận đơn trực tuyến. Vui lòng quay lại trong giờ mở cửa.'
-                : 'Online ordering is currently unavailable. Please come back during opening hours.'}
+              {lang === 'vi' ? 'Nhà hàng hiện không nhận đơn trực tuyến. Vui lòng quay lại trong giờ mở cửa.' : 'Online ordering is currently unavailable. Please come back during opening hours.'}
             </p>
           </div>
         </div>
@@ -251,23 +1296,34 @@ export default function RestaurantPage() {
       {/* Restaurant info */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4">
-          <h1 className="font-bold text-xl text-gray-900 mb-1">{restaurant.name}</h1>
+          <h1 className="font-heading font-bold text-xl text-gray-900 mb-1">{restaurant.name}</h1>
           {restaurant.address && (
-            <p className="text-sm text-gray-500 flex items-center gap-1.5 mb-1">
+            <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1">
               <span style={{ color: PRIMARY }}>📍</span> {restaurant.address}
-            </p>
+            </div>
           )}
-          <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={isOpen ? { background: '#F0FDF4', color: '#166534' } : { background: '#F9FAFB', color: '#6B7280' }}>
-              <span className="w-2 h-2 rounded-full inline-block" style={{ background: isOpen ? '#22C55E' : '#9CA3AF' }} />
-              {isOpen ? (lang === 'vi' ? 'Đang mở cửa' : 'Open') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
+          {restaurant.phone && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1">
+              <span>📞</span> {restaurant.phone}
+            </div>
+          )}
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusStyle(status)}`}>
+              <span className="w-2 h-2 rounded-full inline-block" style={{ background: status === 'OPEN' ? '#22C55E' : status === 'PAUSED' ? '#F97316' : '#9CA3AF' }} />
+              {status === 'OPEN' ? (lang === 'vi' ? 'Đang mở cửa' : 'Open') : status === 'PAUSED' ? (lang === 'vi' ? 'Tạm dừng' : 'Paused') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
             </span>
-            {restaurant.hours && typeof restaurant.hours === 'string' && (
-              <span className="text-xs text-gray-500 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                {restaurant.hours}
-              </span>
+            {(restaurant as any).total_ratings >= 3 && (
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map(s => (
+                    <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= Math.round((restaurant as any).average_rating) ? '#F59E0B' : '#E5E7EB'}>
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  ))}
+                </div>
+                <span style={{ fontSize: '13px', fontWeight: '600' }}>{(restaurant as any).average_rating?.toFixed(1)}</span>
+                <span style={{ fontSize: '12px', color: '#888' }}>({(restaurant as any).total_ratings} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
+              </div>
             )}
           </div>
         </div>
@@ -275,29 +1331,25 @@ export default function RestaurantPage() {
 
       {/* Category tabs */}
       <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
-        <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2" style={{ scrollbarWidth: 'none' }}>
-          <button
-            onClick={() => setActiveCategory('all')}
-            className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-            style={activeCategory === 'all' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#4B5563' }}
-          >
+        <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
+          <button onClick={() => setActiveCategory('all')}
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === 'all' ? 'text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            style={activeCategory === 'all' ? { backgroundColor: PRIMARY } : {}}>
             {lang === 'vi' ? 'Tất cả' : 'All'}
           </button>
           {categories
             .filter(cat => {
-              if (!cat.name) return false;
+              if (!cat.name || typeof cat.name !== 'string') return false;
               if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase().includes('all')) return false;
-              return items.filter(i => i.category_id === cat.id).length > 0;
+              if (cat.is_active === false) return false;
+              return allItems.filter(i => i.category_id === cat.id).length > 0;
             })
-            .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
+            .sort((a, b) => (a.sort_order || a.order || 0) - (b.sort_order || b.order || 0))
             .map(cat => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-                style={activeCategory === cat.id ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#4B5563' }}
-              >
-                {getCategoryLabel(cat.name)}
+              <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                style={activeCategory === cat.id ? { backgroundColor: PRIMARY } : {}}>
+                {getCatLabel(cat.name)}
               </button>
             ))}
         </div>
@@ -305,81 +1357,40 @@ export default function RestaurantPage() {
 
       {/* Body */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
-
         {/* Menu */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl font-black text-gray-900 tracking-tight">Menu</span>
+            <span className="font-heading text-2xl font-black text-gray-900 tracking-tight">Menu</span>
             <div className="h-0.5 flex-1 rounded-full" style={{ background: PRIMARY }} />
           </div>
 
-          {items.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-4xl mb-3">🍽️</p>
-              <p className="text-gray-500">{lang === 'vi' ? 'Chưa có món ăn' : 'No items yet'}</p>
-            </div>
+          {loadingItems ? (
+            <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Đang tải thực đơn...' : 'Loading menu...'}</div>
+          ) : groupedItems.length === 0 ? (
+            <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Chưa có món ăn' : 'No items yet'}</div>
           ) : (
-            <div className="space-y-6">
-              {groupedItems().map((group, idx) => (
-                group.items.length > 0 && (
-                  <div key={idx}>
-                    {group.category && (
-                      <div className="mb-4 pb-3 border-b border-gray-200">
-                        <h2 className="text-lg font-bold text-gray-900">
-                          {getCategoryLabel(group.category.name)}
-                        </h2>
-                      </div>
-                    )}
+            <div className="space-y-8">
+              {groupedItems.map(({ category, items }) => (
+                items.length > 0 && (
+                  <div key={category.id}>
+                    <div className="mb-4 pb-3 border-b border-gray-200">
+                      <h2 className="font-heading text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
+                    </div>
                     <div className="grid grid-cols-2 gap-3">
-                      {group.items.map(item => {
-                        const qty = cart.find(c => c.id === item.id)?.qty || 0;
-                        return (
-                          <div
-                            key={item.id}
-                            className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col cursor-pointer transition-all group"
-                            style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-                            onClick={() => isOpen && addToCart(item)}
-                          >
-                            <div className="relative w-full bg-gray-50 overflow-hidden" style={{ aspectRatio: '4/3' }}>
-                              {item.image ? (
-                                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-4xl">🍜</div>
-                              )}
-                            </div>
-                            <div className="p-3 flex flex-col flex-1">
-                              <p className="font-semibold text-gray-900 text-sm leading-snug flex-1">{item.name}</p>
-                              {item.description && (
-                                <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>
-                              )}
-                              <div className="flex items-center justify-between mt-3">
-                                <span className="font-bold text-sm" style={{ color: PRIMARY }}>{fmt(item.price)}</span>
-                                {isOpen && (
-                                  qty > 0 ? (
-                                    <div className="flex items-center gap-2 rounded-full px-2 py-1" style={{ backgroundColor: PRIMARY }} onClick={e => e.stopPropagation()}>
-                                      <button onClick={() => setQty(item.id, qty - 1)} className="w-5 h-5 flex items-center justify-center text-white">
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4"/></svg>
-                                      </button>
-                                      <span className="text-xs font-bold text-white min-w-[14px] text-center">{qty}</span>
-                                      <button onClick={() => setQty(item.id, qty + 1)} className="w-5 h-5 flex items-center justify-center text-white">
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/></svg>
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      onClick={e => { e.stopPropagation(); addToCart(item); }}
-                                      className="w-7 h-7 text-white rounded-full flex items-center justify-center hover:opacity-90 transition-colors"
-                                      style={{ backgroundColor: PRIMARY }}
-                                    >
-                                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4"/></svg>
-                                    </button>
-                                  )
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                      {items.map(item => (
+                        <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
+                          <MenuItemCard
+                            item={item}
+                            qty={cart.filter(c => c.id === item.id).reduce((s, i) => s + i.qty, 0)}
+                            onAdd={add}
+                            onSet={set}
+                            onOpen={(it, groups) => setSelectedItem({ item: it, groups })}
+                            isClosed={isClosed || item.is_available === false}
+                            isOutOfStock={item.is_available === false}
+                            lang={lang}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )
@@ -388,27 +1399,27 @@ export default function RestaurantPage() {
           )}
         </div>
 
-        {/* Cart sidebar desktop */}
+        {/* Cart sidebar (desktop) */}
         <div className="hidden md:block w-72 flex-shrink-0">
-          <div className="sticky top-28">
-            <CartSidebar />
+          <div className="sticky top-[112px]">
+            <CartSidebar
+              cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
+              onCheckout={() => setShowDeliveryModal(true)}
+              isClosed={isClosed} lang={lang}
+            />
           </div>
         </div>
       </div>
 
       {/* Mobile floating cart */}
-      {cartCount > 0 && isOpen && (
+      {totalQty > 0 && !isClosed && (
         <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
-          <button
-            onClick={() => setShowMobileCart(true)}
+          <button onClick={() => setShowMobileCart(true)}
             className="w-full text-white rounded-2xl py-4 px-5 font-bold flex items-center justify-between"
-            style={{ backgroundColor: PRIMARY, boxShadow: '0 8px 24px rgba(139,26,26,0.35)' }}
-          >
-            <span className="rounded-full text-xs font-bold px-2.5 py-0.5" style={{ background: 'rgba(255,255,255,0.2)' }}>{cartCount}</span>
-            <span className="flex items-center gap-2 text-sm">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
-            </span>
-            <span className="text-sm font-semibold">{fmt(cartTotal)}</span>
+            style={{ backgroundColor: PRIMARY, boxShadow: '0 8px 24px rgba(139,26,26,0.35)' }}>
+            <span className="rounded-full text-xs font-bold px-2.5 py-0.5" style={{ background: 'rgba(255,255,255,0.2)' }}>{totalQty}</span>
+            <span className="flex items-center gap-2 text-sm"><ShoppingBag className="w-4 h-4" /></span>
+            <span className="text-sm font-semibold">{fmt(subtotal)}</span>
           </button>
         </div>
       )}
@@ -419,39 +1430,52 @@ export default function RestaurantPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
           <div className="relative bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900 text-lg">{lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}</h2>
+              <h2 className="font-heading font-bold text-gray-900 text-lg">{lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}</h2>
               <button onClick={() => setShowMobileCart(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                <span className="text-gray-500 text-lg leading-none">×</span>
+                <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            <CartSidebar />
+            <CartSidebar
+              cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
+              onCheckout={() => { setShowMobileCart(false); setShowDeliveryModal(true); }}
+              isClosed={isClosed} lang={lang}
+            />
           </div>
         </div>
       )}
 
-      {/* Cuisine info */}
-      {restaurant.cuisine_type && (
-        <div className="max-w-6xl mx-auto w-full px-4 mt-4 mb-2">
-          <div className="border-t border-gray-200 pt-4">
-            <span className="text-sm font-semibold text-gray-500">
-              {lang === 'vi' ? 'Ẩm thực: ' : 'Cuisine: '}
-              <span style={{ color: PRIMARY }}>{restaurant.cuisine_type}</span>
-            </span>
-          </div>
-        </div>
+      {/* Item modal */}
+      {selectedItem && (
+        <ItemModal
+          item={selectedItem.item} groups={selectedItem.groups} lang={lang}
+          onClose={() => setSelectedItem(null)}
+          onAdd={item => { add(item); setSelectedItem(null); }}
+        />
       )}
+
+      {/* Delivery options modal */}
+      <DeliveryOptionsModal
+        isOpen={showDeliveryModal}
+        onClose={() => setShowDeliveryModal(false)}
+        onConfirm={details => {
+          setDeliveryDetails({ address: details.address, fee: details.fee || restaurant.delivery_fee || 0 });
+          setShowDeliveryModal(false);
+          setCheckoutOrderType(details.orderType);
+        }}
+        restaurant={restaurant} subtotal={subtotal} lang={lang}
+      />
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-4 mt-4">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <span className="text-xs text-gray-400">
-            LÒ ĐỒ ĂN™ | Powered by{' '}
-            <a href="https://ovenly.io" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">
-              Ovenly™
-            </a>
-          </span>
-        </div>
-      </footer>
+      {(restaurant as any).show_powered_by !== false && (
+        <footer className="bg-white border-t border-gray-100 py-4 mt-4">
+          <div className="max-w-6xl mx-auto px-4 text-center">
+            <span className="text-xs text-gray-400">
+              LÒ ĐỒ ĂN™ | Powered by{' '}
+              <a href="https://ovenly.io" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">Ovenly™</a>
+            </span>
+          </div>
+        </footer>
+      )}
     </div>
   );
 }
