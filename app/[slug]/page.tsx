@@ -939,7 +939,7 @@ export default function RestaurantPage() {
         let cats: any[] = [];
         let items: any[] = [];
         try {
-          const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}`);
+          const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}&slug=${encodeURIComponent(slug)}`);
           const menuData = await menuRes.json();
           cats = menuData.categories || [];
           items = menuData.items || [];

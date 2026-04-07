@@ -2,89 +2,87 @@ import { NextResponse } from 'next/server';
 
 const BASE44_APP_ID = '69c130c9110a89987aae7fb0';
 const BASE44_API_KEY = '1552c0075c5e4229b7c5a76cbbb9a457';
-const BASE = `https://api.base44.app/api/apps/${BASE44_APP_ID}/entities`;
+const BASE = `https://api.base44.app/api/apps/${BASE44_APP_ID}`;
 
-async function tryFetch(url: string, headers: Record<string, string> = {}): Promise<any[]> {
+async function tryEntityFetch(url: string, headers: Record<string, string> = {}): Promise<any[]> {
   try {
     const res = await fetch(url, {
       headers: { 'Content-Type': 'application/json', ...headers },
       cache: 'no-store',
     });
-    const text = await res.text();
-    console.log(`[menu] ${url} → ${res.status} (${text.slice(0, 120)})`);
-    let body: any;
-    try { body = JSON.parse(text); } catch { return []; }
+    if (!res.ok) return [];
+    const body = await res.json();
     const data = Array.isArray(body) ? body : (body?.items ?? body?.data ?? body?.results ?? []);
     return Array.isArray(data) ? data : [];
-  } catch (e: any) {
-    console.error(`[menu] FETCH ERROR ${url}: ${e.message}`);
-    return [];
-  }
+  } catch { return []; }
 }
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const restaurantId = searchParams.get('restaurantId');
+  const slug = searchParams.get('slug');
 
-  if (!restaurantId) {
+  if (!restaurantId && !slug) {
     return NextResponse.json({ categories: [], items: [] }, { status: 400 });
   }
 
-  console.log(`[menu] Fetching menu for restaurantId=${restaurantId}`);
+  let items: any[] = [];
+  let categories: any[] = [];
 
-  // Strategy 1: filter by restaurant_id in URL param, no auth
-  let items = await tryFetch(`${BASE}/MenuItem?restaurant_id=${restaurantId}&_limit=500`);
-  let categories = await tryFetch(`${BASE}/MenuCategory?restaurant_id=${restaurantId}&_limit=500`);
-
-  // Strategy 2: filter with api-key header
-  if (items.length === 0) {
-    items = await tryFetch(`${BASE}/MenuItem?restaurant_id=${restaurantId}&_limit=500`, { 'api-key': BASE44_API_KEY });
-  }
-  if (categories.length === 0) {
-    categories = await tryFetch(`${BASE}/MenuCategory?restaurant_id=${restaurantId}&_limit=500`, { 'api-key': BASE44_API_KEY });
-  }
-
-  // Strategy 3: JSON-encoded filter param
-  if (items.length === 0) {
-    const f = encodeURIComponent(JSON.stringify({ restaurant_id: restaurantId }));
-    items = await tryFetch(`${BASE}/MenuItem?filter=${f}`);
-  }
-  if (categories.length === 0) {
-    const f = encodeURIComponent(JSON.stringify({ restaurant_id: restaurantId }));
-    categories = await tryFetch(`${BASE}/MenuCategory?filter=${f}`);
-  }
-
-  // Strategy 4: Authorization Bearer header
-  if (items.length === 0) {
-    items = await tryFetch(`${BASE}/MenuItem?restaurant_id=${restaurantId}&_limit=500`, {
-      'Authorization': `Bearer ${BASE44_API_KEY}`,
-    });
+  // ── ITEMS: use getStorefront function (runs as service role inside Base44) ──
+  // This is the ONLY way to read MenuItem — entity API is locked to service role
+  if (slug) {
+    try {
+      const res = await fetch(`${BASE}/functions/getStorefront`, {
+        method: 'POST',
+        headers: { 'api-key': BASE44_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+        cache: 'no-store',
+      });
+      const text = await res.text();
+      console.log(`[menu] getStorefront(${slug}) → ${res.status}: ${text.slice(0, 200)}`);
+      if (res.ok) {
+        const data = JSON.parse(text);
+        if (Array.isArray(data.menuItems) && data.menuItems.length > 0) {
+          items = data.menuItems;
+        }
+      }
+    } catch (e: any) {
+      console.error('[menu] getStorefront error:', e.message);
+    }
   }
 
-  // Strategy 5: fetch ALL and filter server-side
-  if (items.length === 0) {
-    const all = await tryFetch(`${BASE}/MenuItem?_limit=2000`);
-    items = all.filter((i: any) => i.restaurant_id === restaurantId);
-    console.log(`[menu] Strategy 5 (all): ${all.length} total items, ${items.length} for this restaurant`);
-  }
-  if (categories.length === 0) {
-    const all = await tryFetch(`${BASE}/MenuCategory?_limit=2000`);
-    categories = all.filter((c: any) => c.restaurant_id === restaurantId);
-    console.log(`[menu] Strategy 5 (all): ${all.length} total cats, ${categories.length} for this restaurant`);
+  // ── CATEGORIES: try entity API (MenuCategory may be publicly readable) ──
+  if (restaurantId) {
+    // Try 1: no auth
+    categories = await tryEntityFetch(
+      `${BASE}/entities/MenuCategory?restaurant_id=${restaurantId}&_limit=500`
+    );
+
+    // Try 2: with api-key header
+    if (categories.length === 0) {
+      categories = await tryEntityFetch(
+        `${BASE}/entities/MenuCategory?restaurant_id=${restaurantId}&_limit=500`,
+        { 'api-key': BASE44_API_KEY }
+      );
+    }
+
+    // Try 3: fetch ALL categories, filter locally
+    if (categories.length === 0) {
+      const all = await tryEntityFetch(`${BASE}/entities/MenuCategory?_limit=2000`);
+      categories = all.filter((c: any) => c.restaurant_id === restaurantId);
+    }
+
+    // Try 4: fetch ALL with api-key, filter locally
+    if (categories.length === 0) {
+      const all = await tryEntityFetch(
+        `${BASE}/entities/MenuCategory?_limit=2000`,
+        { 'api-key': BASE44_API_KEY }
+      );
+      categories = all.filter((c: any) => c.restaurant_id === restaurantId);
+    }
   }
 
-  // Strategy 6: fetch ALL with api-key header
-  if (items.length === 0) {
-    const all = await tryFetch(`${BASE}/MenuItem?_limit=2000`, { 'api-key': BASE44_API_KEY });
-    items = all.filter((i: any) => i.restaurant_id === restaurantId);
-    console.log(`[menu] Strategy 6 (all+apikey): ${all.length} total items, ${items.length} for this restaurant`);
-  }
-  if (categories.length === 0) {
-    const all = await tryFetch(`${BASE}/MenuCategory?_limit=2000`, { 'api-key': BASE44_API_KEY });
-    categories = all.filter((c: any) => c.restaurant_id === restaurantId);
-  }
-
-  console.log(`[menu] FINAL: ${categories.length} categories, ${items.length} items for restaurant ${restaurantId}`);
-
+  console.log(`[menu] FINAL for ${slug || restaurantId}: ${categories.length} cats, ${items.length} items`);
   return NextResponse.json({ categories, items });
 }
