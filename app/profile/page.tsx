@@ -1,174 +1,312 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { User, ShoppingBag, Star } from 'lucide-react';
+import { customerAuth } from '@/lib/customerAuth';
 
 const PRIMARY = '#8B1A1A';
+const BASE44_URL = `https://api.base44.app/api/apps/${process.env.NEXT_PUBLIC_BASE44_APP_ID}`;
+const HEADERS = { 'Content-Type': 'application/json', 'api-key': process.env.NEXT_PUBLIC_BASE44_API_KEY! };
 
-interface Customer {
-  id: string;
-  full_name: string;
-  email: string;
-  phone_number?: string;
-  preferred_language?: string;
-}
+const fmt = (v: number) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
-export default function ProfilePage() {
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'text-yellow-600 bg-yellow-50',
+  confirmed: 'text-blue-600 bg-blue-50',
+  accepted: 'text-blue-600 bg-blue-50',
+  preparing: 'text-orange-600 bg-orange-50',
+  ready: 'text-green-600 bg-green-50',
+  delivering: 'text-orange-600 bg-orange-50',
+  delivered: 'text-green-600 bg-green-50',
+  completed: 'text-green-600 bg-green-50',
+  cancelled: 'text-red-600 bg-red-50',
+  declined: 'text-red-600 bg-red-50',
+};
+
+const T = {
+  vi: {
+    myProfile: 'Thông Tin Cá Nhân', orders: 'Lịch Sử Đơn Hàng',
+    fullName: 'Họ và Tên', phone: 'Số Điện Thoại', preferredLang: 'Ngôn ngữ ưa thích',
+    saveChanges: 'Lưu Thay Đổi', saving: 'Đang lưu...',
+    changePassword: 'Đổi Mật Khẩu', currentPw: 'Mật Khẩu Hiện Tại',
+    newPw: 'Mật Khẩu Mới', confirmPw: 'Xác Nhận Mật Khẩu Mới',
+    updatePw: 'Cập Nhật Mật Khẩu', noOrders: 'Chưa có đơn hàng nào.',
+    rateOrder: 'Đánh Giá', logout: 'Đăng Xuất',
+    langVi: 'Tiếng Việt', langEn: 'English',
+    profileSaved: 'Thông tin đã được cập nhật!',
+    pwUpdated: 'Mật khẩu đã được cập nhật!',
+    pwMismatch: 'Mật khẩu xác nhận không khớp',
+    wrongPw: 'Mật khẩu hiện tại không đúng',
+  },
+  en: {
+    myProfile: 'My Profile', orders: 'Order History',
+    fullName: 'Full Name', phone: 'Phone Number', preferredLang: 'Preferred Language',
+    saveChanges: 'Save Changes', saving: 'Saving...',
+    changePassword: 'Change Password', currentPw: 'Current Password',
+    newPw: 'New Password', confirmPw: 'Confirm New Password',
+    updatePw: 'Update Password', noOrders: 'No orders yet.',
+    rateOrder: 'Rate Order', logout: 'Logout',
+    langVi: 'Tiếng Việt', langEn: 'English',
+    profileSaved: 'Profile updated!',
+    pwUpdated: 'Password updated!',
+    pwMismatch: 'Passwords do not match',
+    wrongPw: 'Current password is incorrect',
+  },
+};
+
+function ProfileContent() {
   const router = useRouter();
-  const [customer, setCustomer] = useState<Customer | null>(null);
-  const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
   const [lang, setLang] = useState('vi');
+  const [customer, setCustomer] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'profile' | 'orders'>('profile');
+  const [profileForm, setProfileForm] = useState({ full_name: '', phone_number: '', preferred_language: 'vi' });
+  const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingPw, setSavingPw] = useState(false);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [msg, setMsg] = useState({ text: '', type: '' });
+  const t = T[lang as keyof typeof T];
 
   useEffect(() => {
-    const stored = localStorage.getItem('ovenly_language');
-    if (stored) setLang(stored);
+    const tab = searchParams?.get('tab');
+    if (tab === 'orders') setActiveTab('orders');
+  }, [searchParams]);
 
-    const data = localStorage.getItem('customer_data');
-    if (data) {
-      try { setCustomer(JSON.parse(data)); } catch {}
-    }
-    setLoading(false);
+  useEffect(() => {
+    const stored = localStorage.getItem('ovenly_language') || localStorage.getItem('marketplace_lang') || 'vi';
+    setLang(stored);
+    customerAuth.getCustomer().then(c => {
+      if (!c) { router.push('/login'); return; }
+      setCustomer(c);
+      setProfileForm({ full_name: c.full_name || '', phone_number: c.phone_number || '', preferred_language: c.preferred_language || 'vi' });
+      setLoading(false);
+    });
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('customer_session_token');
-    localStorage.removeItem('customer_data');
+  useEffect(() => {
+    localStorage.setItem('ovenly_language', lang);
+  }, [lang]);
+
+  useEffect(() => {
+    if (activeTab !== 'orders' || !customer?.email) return;
+    setLoadingOrders(true);
+    fetch(`${BASE44_URL}/entities/Order?customer_email=${encodeURIComponent(customer.email)}&_sort=-created_date&_limit=50`, { headers: HEADERS })
+      .then(r => r.json())
+      .then(data => { setOrders(Array.isArray(data) ? data : []); setLoadingOrders(false); })
+      .catch(() => setLoadingOrders(false));
+  }, [activeTab, customer?.email]);
+
+  const showMsg = (text: string, type: 'success' | 'error') => {
+    setMsg({ text, type });
+    setTimeout(() => setMsg({ text: '', type: '' }), 3000);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      await customerAuth.updateProfile(profileForm);
+      const updated = { ...customer, ...profileForm };
+      setCustomer(updated);
+      showMsg(t.profileSaved, 'success');
+    } catch { showMsg('Error saving profile', 'error'); }
+    finally { setSavingProfile(false); }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (pwForm.new_password !== pwForm.confirm_password) { showMsg(t.pwMismatch, 'error'); return; }
+    setSavingPw(true);
+    try {
+      await customerAuth.changePassword(pwForm.current_password, pwForm.new_password);
+      showMsg(t.pwUpdated, 'success');
+      setPwForm({ current_password: '', new_password: '', confirm_password: '' });
+    } catch (err: any) {
+      if (err.message === 'wrong_current_password') showMsg(t.wrongPw, 'error');
+      else showMsg('Error', 'error');
+    } finally { setSavingPw(false); }
+  };
+
+  const handleLogout = async () => {
+    await customerAuth.logout();
     router.push('/');
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-8 h-8 border-4 border-t-red-800 border-red-200 rounded-full animate-spin" />
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'hsl(30,20%,97%)' }}>
+      <div className="w-10 h-10 border-4 border-t-red-800 border-red-200 rounded-full animate-spin" style={{ borderTopColor: PRIMARY }} />
+    </div>
+  );
 
-  if (!customer) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-5xl mb-4">🔐</p>
-          <p className="text-lg font-bold text-gray-700 mb-4">
-            {lang === 'vi' ? 'Vui lòng đăng nhập' : 'Please log in'}
-          </p>
-          <Link href="/login" className="inline-block text-white font-bold px-6 py-3 rounded-xl" style={{ backgroundColor: PRIMARY }}>
-            {lang === 'vi' ? 'Đăng nhập' : 'Login'}
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  const initials = customer.full_name
-    ? customer.full_name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-    : customer.email[0].toUpperCase();
+  const TABS = [
+    { key: 'profile', label: t.myProfile, icon: User },
+    { key: 'orders', label: t.orders, icon: ShoppingBag },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: 'hsl(30,20%,97%)' }}>
+      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-lg mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
-          <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
-            <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
-              style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
-            <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
-              style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+          <Link href="/" className="font-heading font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
+              <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
+                style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
+              <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
+                style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
+            </div>
+            <button onClick={handleLogout} className="text-sm font-semibold text-red-600 hover:underline">{t.logout}</button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          {lang === 'vi' ? 'Hồ Sơ' : 'Profile'}
-        </h1>
-
-        {/* Avatar + info */}
-        <div className="bg-white border border-gray-100 rounded-2xl p-6 mb-4" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-black text-lg flex-shrink-0" style={{ backgroundColor: PRIMARY }}>
-              {initials}
-            </div>
-            <div>
-              <h2 className="font-bold text-lg text-gray-900">{customer.full_name || lang === 'vi' ? 'Khách hàng' : 'Customer'}</h2>
-              <p className="text-sm text-gray-500 flex items-center gap-1">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                </svg>
-                {customer.email}
-              </p>
-              {customer.phone_number && (
-                <p className="text-sm text-gray-500 flex items-center gap-1 mt-0.5">
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                  </svg>
-                  {customer.phone_number}
-                </p>
-              )}
-            </div>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Customer card */}
+        <div className="bg-white rounded-2xl p-6 mb-6 flex items-center gap-4" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <div className="w-16 h-16 rounded-full flex items-center justify-center text-2xl font-heading font-bold text-white flex-shrink-0"
+            style={{ backgroundColor: PRIMARY }}>
+            {customer?.full_name?.[0]?.toUpperCase() || customer?.email?.[0]?.toUpperCase()}
+          </div>
+          <div>
+            <h1 className="font-heading font-bold text-xl text-gray-900">{customer?.full_name}</h1>
+            <p className="text-sm text-gray-500">{customer?.email}</p>
           </div>
         </div>
 
-        {/* Order history link */}
-        <Link
-          href="/orders"
-          className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-5 mb-4 hover:border-gray-200 transition-colors"
-          style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FFF0ED' }}>
-              <span className="text-lg">📦</span>
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
+          {TABS.map(tab => (
+            <button key={tab.key} onClick={() => setActiveTab(tab.key as any)}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === tab.key ? 'bg-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              style={activeTab === tab.key ? { color: PRIMARY } : {}}>
+              <tab.icon className="w-4 h-4" />
+              <span className="hidden sm:inline">{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {msg.text && (
+          <div className={`rounded-xl px-4 py-3 mb-4 text-sm ${msg.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+            {msg.text}
+          </div>
+        )}
+
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <h2 className="font-heading font-bold text-lg text-gray-900 mb-4">{t.myProfile}</h2>
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t.fullName}</label>
+                  <input value={profileForm.full_name}
+                    onChange={e => setProfileForm(p => ({ ...p, full_name: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t.phone}</label>
+                  <input value={profileForm.phone_number}
+                    onChange={e => setProfileForm(p => ({ ...p, phone_number: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 mb-1.5">{t.preferredLang}</label>
+                  <select value={profileForm.preferred_language}
+                    onChange={e => setProfileForm(p => ({ ...p, preferred_language: e.target.value }))}
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all">
+                    <option value="vi">{t.langVi}</option>
+                    <option value="en">{t.langEn}</option>
+                  </select>
+                </div>
+                <button type="submit" disabled={savingProfile}
+                  className="text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90 disabled:opacity-50 transition-colors"
+                  style={{ backgroundColor: PRIMARY }}>
+                  {savingProfile ? t.saving : t.saveChanges}
+                </button>
+              </form>
             </div>
-            <div>
-              <p className="font-semibold text-gray-900 text-sm">
-                {lang === 'vi' ? 'Lịch Sử Đơn Hàng' : 'Order History'}
-              </p>
-              <p className="text-xs text-gray-400">
-                {lang === 'vi' ? 'Xem tất cả đơn hàng của bạn' : 'View all your orders'}
-              </p>
+
+            <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+              <h2 className="font-heading font-bold text-lg text-gray-900 mb-4">{t.changePassword}</h2>
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                {(['current_password', 'new_password', 'confirm_password'] as const).map((field, i) => (
+                  <div key={field}>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">
+                      {[t.currentPw, t.newPw, t.confirmPw][i]}
+                    </label>
+                    <input type="password" required value={pwForm[field]}
+                      onChange={e => setPwForm(p => ({ ...p, [field]: e.target.value }))}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                  </div>
+                ))}
+                <button type="submit" disabled={savingPw}
+                  className="bg-gray-800 text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90 disabled:opacity-50">
+                  {savingPw ? t.saving : t.updatePw}
+                </button>
+              </form>
             </div>
           </div>
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-          </svg>
-        </Link>
+        )}
 
-        {/* Back to marketplace */}
-        <Link
-          href="/"
-          className="flex items-center justify-between bg-white border border-gray-100 rounded-2xl p-5 mb-4 hover:border-gray-200 transition-colors"
-          style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FFF0ED' }}>
-              <span className="text-lg">🍜</span>
-            </div>
-            <div>
-              <p className="font-semibold text-gray-900 text-sm">
-                {lang === 'vi' ? 'Khám Phá Nhà Hàng' : 'Browse Restaurants'}
-              </p>
-              <p className="text-xs text-gray-400">
-                {lang === 'vi' ? 'Quay lại trang chủ' : 'Back to marketplace'}
-              </p>
-            </div>
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <h2 className="font-heading font-bold text-lg text-gray-900 mb-4">{t.orders}</h2>
+            {loadingOrders ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-4 border-t-red-800 border-red-200 rounded-full animate-spin mx-auto" style={{ borderTopColor: PRIMARY }} />
+              </div>
+            ) : orders.length === 0 ? (
+              <p className="text-gray-400 text-center py-8">{t.noOrders}</p>
+            ) : (
+              <div className="space-y-4">
+                {orders.map(order => (
+                  <div key={order.id} className="border border-gray-200 rounded-xl p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-heading font-bold text-sm text-gray-900">{order.restaurant_name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {new Date(order.created_date).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
+                        </p>
+                      </div>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_COLORS[order.status] || 'text-gray-600 bg-gray-50'}`}>
+                        {order.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {order.items?.map((i: any) => `${i.quantity}× ${i.name}`).join(', ')}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <p className="font-heading font-bold" style={{ color: PRIMARY }}>{fmt(order.total)}</p>
+                      {(order.status === 'delivered' || order.status === 'completed') && order.rating_token && (
+                        <Link href={`/rate/${order.id}?token=${order.rating_token}`}
+                          className="text-xs bg-yellow-400 text-yellow-900 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-yellow-500">
+                          <Star className="w-3 h-3" /> {t.rateOrder}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
-          </svg>
-        </Link>
-
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 border-2 border-gray-200 rounded-2xl py-4 text-sm font-semibold text-gray-500 hover:text-red-600 hover:border-red-200 transition-colors mt-2"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-          </svg>
-          {lang === 'vi' ? 'Đăng Xuất' : 'Sign Out'}
-        </button>
+        )}
       </div>
     </div>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-t-red-800 border-red-200 rounded-full animate-spin" /></div>}>
+      <ProfileContent />
+    </Suspense>
   );
 }

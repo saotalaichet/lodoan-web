@@ -2,102 +2,89 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { customerAuth } from '@/lib/customerAuth';
 
 const PRIMARY = '#8B1A1A';
 const BASE44_URL = `https://api.base44.app/api/apps/${process.env.NEXT_PUBLIC_BASE44_APP_ID}`;
-const BASE44_HEADERS = {
-  'api-key': process.env.NEXT_PUBLIC_BASE44_API_KEY!,
-  'Content-Type': 'application/json',
-};
+const HEADERS = { 'Content-Type': 'application/json', 'api-key': process.env.NEXT_PUBLIC_BASE44_API_KEY! };
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
-const STATUS_CONFIG: Record<string, { label: string; labelVi: string; color: string; bg: string; icon: string }> = {
-  pending:    { label: 'Pending',    labelVi: 'Chờ xác nhận', color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
-  confirmed:  { label: 'Confirmed',  labelVi: 'Đã xác nhận',  color: '#2563EB', bg: '#DBEAFE', icon: '✅' },
-  accepted:   { label: 'Accepted',   labelVi: 'Đã chấp nhận', color: '#2563EB', bg: '#DBEAFE', icon: '👍' },
-  preparing:  { label: 'Preparing',  labelVi: 'Đang chuẩn bị', color: PRIMARY,  bg: '#FFF0ED', icon: '👨‍🍳' },
-  ready:      { label: 'Ready',      labelVi: 'Sẵn sàng',     color: '#059669', bg: '#D1FAE5', icon: '🛍️' },
-  delivering: { label: 'On the way', labelVi: 'Đang giao',    color: PRIMARY,   bg: '#FFF0ED', icon: '🛵' },
-  completed:  { label: 'Completed',  labelVi: 'Hoàn thành',   color: '#059669', bg: '#D1FAE5', icon: '✅' },
-  declined:   { label: 'Declined',   labelVi: 'Bị từ chối',   color: '#DC2626', bg: '#FEE2E2', icon: '❌' },
-  cancelled:  { label: 'Cancelled',  labelVi: 'Đã hủy',       color: '#6B7280', bg: '#F3F4F6', icon: '🚫' },
+const STATUS_CONFIG: Record<string, { labelVi: string; labelEn: string; color: string; bg: string; icon: string }> = {
+  pending:    { labelVi: 'Chờ xác nhận', labelEn: 'Pending',    color: '#D97706', bg: '#FEF3C7', icon: '⏳' },
+  confirmed:  { labelVi: 'Đã xác nhận',  labelEn: 'Confirmed',  color: '#2563EB', bg: '#DBEAFE', icon: '✅' },
+  accepted:   { labelVi: 'Đã chấp nhận', labelEn: 'Accepted',   color: '#2563EB', bg: '#DBEAFE', icon: '👍' },
+  preparing:  { labelVi: 'Đang chuẩn bị',labelEn: 'Preparing',  color: PRIMARY,   bg: '#FFF0ED', icon: '👨‍🍳' },
+  ready:      { labelVi: 'Sẵn sàng',     labelEn: 'Ready',      color: '#059669', bg: '#D1FAE5', icon: '🛍️' },
+  delivering: { labelVi: 'Đang giao',    labelEn: 'On the way', color: PRIMARY,   bg: '#FFF0ED', icon: '🛵' },
+  completed:  { labelVi: 'Hoàn thành',   labelEn: 'Completed',  color: '#059669', bg: '#D1FAE5', icon: '✅' },
+  delivered:  { labelVi: 'Đã giao',      labelEn: 'Delivered',  color: '#059669', bg: '#D1FAE5', icon: '✅' },
+  declined:   { labelVi: 'Bị từ chối',   labelEn: 'Declined',   color: '#DC2626', bg: '#FEE2E2', icon: '❌' },
+  cancelled:  { labelVi: 'Đã hủy',       labelEn: 'Cancelled',  color: '#6B7280', bg: '#F3F4F6', icon: '🚫' },
 };
 
-interface OrderItem { name: string; quantity: number; price: number; }
-interface Order {
-  id: string;
-  restaurant_name: string;
-  status: string;
-  order_type: string;
-  payment_method: string;
-  items: OrderItem[];
-  total: number;
-  created_date: string;
-}
-
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
   const [lang, setLang] = useState('vi');
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [customer, setCustomer] = useState<any>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('ovenly_language');
-    if (stored) setLang(stored);
+    const stored = localStorage.getItem('ovenly_language') || localStorage.getItem('marketplace_lang') || 'vi';
+    setLang(stored);
 
-    const fetchOrders = async () => {
-      try {
-        const token = localStorage.getItem('customer_session_token');
-        const customerData = localStorage.getItem('customer_data');
-        if (!token || !customerData) { setLoading(false); return; }
-        const customer = JSON.parse(customerData);
-
-        const res = await fetch(
-          `${BASE44_URL}/entities/Order?customer_email=${encodeURIComponent(customer.email)}&_sort=-created_date&_limit=50`,
-          { headers: BASE44_HEADERS }
-        );
-        if (!res.ok) throw new Error('Failed to fetch orders');
-        const data = await res.json();
-        setOrders(Array.isArray(data) ? data : []);
-      } catch {
-        setError(lang === 'vi' ? 'Không thể tải đơn hàng.' : 'Could not load orders.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 10000);
-    return () => clearInterval(interval);
+    customerAuth.getCustomer().then(async c => {
+      if (!c) { setLoading(false); return; }
+      setCustomer(c);
+      await fetchOrders(c.email);
+    });
   }, []);
 
-  const customerData = typeof window !== 'undefined' ? localStorage.getItem('customer_data') : null;
-  const isLoggedIn = !!customerData;
+  const fetchOrders = async (email: string) => {
+    try {
+      const res = await fetch(
+        `${BASE44_URL}/entities/Order?customer_email=${encodeURIComponent(email)}&_sort=-created_date&_limit=50`,
+        { headers: HEADERS }
+      );
+      if (!res.ok) throw new Error('Failed to fetch orders');
+      const data = await res.json();
+      setOrders(Array.isArray(data) ? data : []);
+    } catch {
+      setError(lang === 'vi' ? 'Không thể tải đơn hàng.' : 'Could not load orders.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Poll every 10s for real-time updates
+  useEffect(() => {
+    if (!customer?.email) return;
+    const interval = setInterval(() => fetchOrders(customer.email), 10000);
+    return () => clearInterval(interval);
+  }, [customer?.email]);
 
   const formatDate = (dateStr: string) => {
     try {
-      const d = new Date(dateStr);
-      return d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      return new Date(dateStr).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
     } catch { return dateStr; }
   };
 
   const paymentLabel = (method: string) => {
     const map: Record<string, string> = {
       cash_or_transfer: lang === 'vi' ? 'Tiền mặt / CK' : 'Cash / Transfer',
-      cod: lang === 'vi' ? 'COD' : 'Cash on Delivery',
-      momo: 'MoMo', zalopay: 'ZaloPay', vnpay: 'VNPay',
-      creditcard: lang === 'vi' ? 'Thẻ tín dụng' : 'Credit Card',
+      cod: 'COD', momo: 'MoMo', zalopay: 'ZaloPay', vnpay: 'VNPay',
     };
     return map[method] || method;
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen" style={{ background: 'hsl(30,20%,97%)' }}>
+      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
+          <Link href="/" className="font-heading font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
           <div className="flex items-center gap-3">
             <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
               <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
@@ -113,20 +100,21 @@ export default function OrdersPage() {
       </header>
 
       <div className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <h1 className="font-heading text-3xl font-bold text-gray-900 mb-2">
           {lang === 'vi' ? 'Đơn hàng của tôi' : 'My Orders'}
         </h1>
         <p className="text-gray-500 mb-8">
           {lang === 'vi' ? 'Theo dõi trạng thái đơn hàng theo thời gian thực' : 'Track your order status in real-time'}
         </p>
 
-        {!isLoggedIn ? (
+        {!customer ? (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">🔐</p>
-            <p className="text-lg font-bold text-gray-700 mb-2">
+            <p className="font-heading font-bold text-gray-700 text-lg mb-4">
               {lang === 'vi' ? 'Vui lòng đăng nhập để xem đơn hàng' : 'Please log in to view your orders'}
             </p>
-            <Link href="/login" className="inline-block mt-4 text-white font-bold px-6 py-3 rounded-xl" style={{ backgroundColor: PRIMARY }}>
+            <Link href="/login" className="inline-block text-white font-heading font-bold px-6 py-3 rounded-xl hover:opacity-90 transition-opacity"
+              style={{ backgroundColor: PRIMARY }}>
               {lang === 'vi' ? 'Đăng nhập' : 'Login'}
             </Link>
           </div>
@@ -143,13 +131,14 @@ export default function OrdersPage() {
         ) : orders.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">📦</p>
-            <p className="text-xl font-bold text-gray-500">
+            <p className="font-heading font-bold text-gray-500 text-xl">
               {lang === 'vi' ? 'Chưa có đơn hàng nào' : 'No orders yet'}
             </p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-gray-400 mt-1 mb-6">
               {lang === 'vi' ? 'Lịch sử đặt hàng sẽ hiển thị ở đây' : 'Your order history will appear here'}
             </p>
-            <Link href="/" className="inline-block mt-6 text-white font-bold px-6 py-3 rounded-xl" style={{ backgroundColor: PRIMARY }}>
+            <Link href="/" className="inline-block text-white font-heading font-bold px-6 py-3 rounded-xl hover:opacity-90"
+              style={{ backgroundColor: PRIMARY }}>
               {lang === 'vi' ? 'Đặt món ngay' : 'Order now'}
             </Link>
           </div>
@@ -158,19 +147,21 @@ export default function OrdersPage() {
             {orders.map(order => {
               const config = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending;
               return (
-                <div key={order.id} className="bg-white border border-gray-100 rounded-2xl p-5" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+                <div key={order.id} className="bg-white border border-gray-100 rounded-2xl p-5"
+                  style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                   <div className="flex items-start justify-between mb-3">
                     <div>
-                      <h3 className="font-bold text-gray-900">{order.restaurant_name}</h3>
+                      <h3 className="font-heading font-bold text-gray-900">{order.restaurant_name}</h3>
                       <p className="text-sm text-gray-400 mt-0.5">{formatDate(order.created_date)}</p>
                     </div>
-                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold" style={{ background: config.bg, color: config.color }}>
-                      {config.icon} {lang === 'vi' ? config.labelVi : config.label}
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold"
+                      style={{ background: config.bg, color: config.color }}>
+                      {config.icon} {lang === 'vi' ? config.labelVi : config.labelEn}
                     </span>
                   </div>
 
                   <div className="space-y-1 mb-3">
-                    {order.items?.map((item, idx) => (
+                    {order.items?.map((item: any, idx: number) => (
                       <div key={idx} className="flex justify-between text-sm">
                         <span className="text-gray-500">{item.quantity}× {item.name}</span>
                         <span className="text-gray-700">{fmt(item.price * item.quantity)}</span>
@@ -180,13 +171,14 @@ export default function OrdersPage() {
 
                   <div className="border-t border-gray-100 pt-3 flex justify-between items-center">
                     <span className="text-xs text-gray-400">
-                      {order.order_type === 'delivery' ? (lang === 'vi' ? '🛵 Giao hàng' : '🛵 Delivery') : (lang === 'vi' ? '🛍️ Mang về' : '🛍️ Pickup')}
+                      {order.order_type === 'delivery'
+                        ? (lang === 'vi' ? '🛵 Giao hàng' : '🛵 Delivery')
+                        : (lang === 'vi' ? '🛍️ Mang về' : '🛍️ Pickup')}
                       {' · '}{paymentLabel(order.payment_method)}
                     </span>
-                    <span className="font-bold text-base" style={{ color: PRIMARY }}>{fmt(order.total)}</span>
+                    <span className="font-heading font-bold text-base" style={{ color: PRIMARY }}>{fmt(order.total)}</span>
                   </div>
-
-                  <p className="text-xs text-gray-300 mt-2 font-mono">#{order.id.slice(-8).toUpperCase()}</p>
+                  <p className="text-xs text-gray-300 mt-2 font-mono">#{order.id?.slice(-8).toUpperCase()}</p>
                 </div>
               );
             })}
