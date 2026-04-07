@@ -371,7 +371,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
     <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-20">
       <div className="w-full bg-white rounded-3xl p-6 max-w-md shadow-xl max-h-[80vh] overflow-y-auto mx-4">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-heading font-bold text-gray-900 text-lg flex items-center gap-2">
+          <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2">
             🛵 {lang === 'vi' ? 'Chi tiết đặt hàng' : 'Order Details'}
           </h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
@@ -472,7 +472,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         alert(lang === 'vi' ? 'Vui lòng điền đầy đủ thông tin' : 'Please fill in all required fields');
         return;
       }
-
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
       const orderRes = await fetch(`${BASE44_URL}/entities/Order`, {
         method: 'POST', headers: BASE44_HEADERS,
@@ -491,27 +490,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         }),
       });
       const order = await orderRes.json();
-
-      // Save to local order history so profile page can display it
-      try {
-        const saved = JSON.parse(localStorage.getItem('lo_do_an_order_history') || '[]');
-        saved.unshift({
-          id: order.id,
-          restaurant_name: restaurant.name,
-          created_date: new Date().toISOString(),
-          items: cart.map(i => ({ name: i.name, quantity: i.qty, price: i.price })),
-          total,
-          status: 'confirmed',
-          order_type: orderType,
-          payment_method: paymentMethod,
-          delivery_address: orderType === 'delivery' ? deliveryAddress : '',
-          customer_email: email,
-        });
-        localStorage.setItem('lo_do_an_order_history', JSON.stringify(saved.slice(0, 100)));
-      } catch {}
-
-      // No Railway/WebSocket notify here — vendor app polling (3s interval) handles notification
-      // Previously calling Railway + sendOrderConfirmation simultaneously caused double sounds
 
       if (ONLINE.includes(paymentMethod)) {
         const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
@@ -539,7 +517,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ShoppingBag className="w-8 h-8 text-primary" strokeWidth={1.5} />
               </div>
-              <h2 className="font-heading font-black text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Xác nhận đặt hàng' : 'Confirm your order'}</h2>
+              <h2 className="font-black text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Xác nhận đặt hàng' : 'Confirm your order'}</h2>
               <p className="text-sm text-gray-500">{lang === 'vi' ? 'Chọn hình thức tiếp tục' : 'Choose how to continue'}</p>
             </div>
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
@@ -643,7 +621,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
           </div>
           {orderType === 'delivery' && deliveryAddress && (
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
-              <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+              <h2 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
                 <Bike className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Thông tin giao hàng' : 'Delivery Info'}
               </h2>
               <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2">
@@ -660,7 +638,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
             </div>
           )}
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
-            <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+            <h2 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
               <Phone className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Thông tin liên hệ' : 'Contact Information'}
             </h2>
             {customer ? (
@@ -693,7 +671,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
             )}
           </div>
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
-            <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+            <h2 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
               <span className="text-orange-400">💳</span> {lang === 'vi' ? 'Phương thức thanh toán' : 'Payment Method'}
             </h2>
             <div className="grid grid-cols-2 gap-2">
@@ -707,7 +685,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
             </div>
           </div>
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
-            <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
+            <h2 className="font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Ghi chú đặc biệt' : 'Special Instructions'}
             </h2>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
@@ -719,7 +697,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden sticky top-20">
             <div className="px-5 py-4 border-b border-gray-100 bg-primary/10 flex items-center justify-between">
               <div>
-                <h2 className="font-heading font-bold text-gray-900 text-base">{lang === 'vi' ? 'Đơn hàng của bạn' : 'Your Order'}</h2>
+                <h2 className="font-bold text-gray-900 text-base">{lang === 'vi' ? 'Đơn hàng của bạn' : 'Your Order'}</h2>
                 <p className="text-xs text-gray-500 mt-0.5">{restaurant.name}</p>
               </div>
               <div className="text-right">
@@ -803,7 +781,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
   };
   const Logo = () => restaurant?.logo
     ? <img src={restaurant.logo} alt={restaurant.name} className="h-14 object-contain mx-auto mb-8" />
-    : <p className="font-heading font-bold text-xl text-gray-900 mb-8">{restaurant?.name}</p>;
+    : <p className="font-bold text-xl text-gray-900 mb-8">{restaurant?.name}</p>;
   const BackBtn = () => (
     <button onClick={onBack} className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-colors w-full">
       {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
@@ -814,7 +792,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
       <div className="max-w-sm w-full"><Logo />
         <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-5xl">⏰</span></div>
-        <h2 className="font-heading font-bold text-xl text-gray-900 mb-3">{lang === 'vi' ? 'Đơn hàng chưa được xác nhận.' : 'Order not confirmed.'}</h2>
+        <h2 className="font-bold text-xl text-gray-900 mb-3">{lang === 'vi' ? 'Đơn hàng chưa được xác nhận.' : 'Order not confirmed.'}</h2>
         <p className="text-gray-500 text-sm mb-6">{lang === 'vi' ? 'Vui lòng liên hệ nhà hàng.' : 'Please contact the restaurant.'}</p>
         <BackBtn />
       </div>
@@ -825,7 +803,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
       <div className="max-w-sm w-full"><Logo />
         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-5xl">❌</span></div>
-        <h2 className="font-heading font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đơn hàng bị từ chối' : 'Order Declined'}</h2>
+        <h2 className="font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đơn hàng bị từ chối' : 'Order Declined'}</h2>
         {declineReason && <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3 mb-4"><p className="text-red-700 text-sm">{lang === 'vi' ? 'Lý do:' : 'Reason:'} {declineReason}</p></div>}
         <p className="text-xs text-gray-400 font-mono mb-6">#{id?.slice(-8).toUpperCase()}</p>
         <BackBtn />
@@ -837,7 +815,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <div className="max-w-sm w-full text-center"><Logo />
         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg shadow-green-100"><span className="text-5xl">✅</span></div>
-        <h2 className="font-heading font-bold text-2xl text-gray-900 mb-1">{lang === 'vi' ? 'Đơn hàng đã được xác nhận!' : 'Order confirmed!'}</h2>
+        <h2 className="font-bold text-2xl text-gray-900 mb-1">{lang === 'vi' ? 'Đơn hàng đã được xác nhận!' : 'Order confirmed!'}</h2>
         <p className="text-xs text-gray-400 font-mono mb-4">#{id?.slice(-8).toUpperCase()}</p>
         {estTime && (
           <div className="bg-orange-50 border border-orange-300 rounded-xl px-4 py-3 mb-4 flex items-center gap-2 justify-center">
@@ -884,7 +862,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
           <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
           <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><span className="text-3xl">🍜</span></div>
         </div>
-        <h2 className="font-heading font-bold text-xl text-gray-900 mb-2">{lang === 'vi' ? 'Đang chờ quán xác nhận...' : 'Waiting for merchant to confirm...'}</h2>
+        <h2 className="font-bold text-xl text-gray-900 mb-2">{lang === 'vi' ? 'Đang chờ quán xác nhận...' : 'Waiting for merchant to confirm...'}</h2>
         <p className="text-xs text-gray-400 mb-6">{lang === 'vi' ? 'Vui lòng không đóng trang này' : 'Please do not close this page'}</p>
         <p className="text-xs text-gray-400 font-mono">#{id?.slice(-8).toUpperCase()}</p>
       </div>
@@ -951,7 +929,6 @@ export default function RestaurantPage() {
 
         let cats: any[] = [];
         let items: any[] = [];
-
         try {
           const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}&slug=${encodeURIComponent(slug)}`);
           const menuData = await menuRes.json();
@@ -1080,7 +1057,7 @@ export default function RestaurantPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <p className="text-5xl mb-4">😕</p>
-        <p className="font-heading font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
+        <p className="font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
         <Link href="/" className="text-sm font-semibold text-primary hover:underline">← {lang === 'vi' ? 'Quay lại' : 'Go back'}</Link>
       </div>
     </div>
@@ -1089,7 +1066,7 @@ export default function RestaurantPage() {
   if (paymentReturnStatus === 'timeout') return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
       <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">⏰</span></div>
-      <h2 className="font-heading font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đã hết thời gian thanh toán' : 'Payment Time Expired'}</h2>
+      <h2 className="font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đã hết thời gian thanh toán' : 'Payment Time Expired'}</h2>
       <button onClick={() => setPaymentReturnStatus(null)} className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:opacity-90">
         {lang === 'vi' ? 'Thử lại' : 'Try Again'}
       </button>
@@ -1102,7 +1079,7 @@ export default function RestaurantPage() {
         <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
         <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><span className="text-3xl">🍜</span></div>
       </div>
-      <h2 className="font-heading font-bold text-xl text-gray-900">{lang === 'vi' ? 'Đang xử lý...' : 'Processing...'}</h2>
+      <h2 className="font-bold text-xl text-gray-900">{lang === 'vi' ? 'Đang xử lý...' : 'Processing...'}</h2>
     </div>
   );
 
@@ -1119,7 +1096,7 @@ export default function RestaurantPage() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <p className="text-5xl mb-4">😕</p>
-        <p className="font-heading font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
+        <p className="font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
         <Link href="/" className="text-sm font-semibold text-primary hover:underline">← {lang === 'vi' ? 'Quay lại' : 'Go back'}</Link>
       </div>
     </div>
@@ -1128,7 +1105,7 @@ export default function RestaurantPage() {
   if (!restaurant.is_active) return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
       <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" style={{ height: '100px', width: 'auto' }} className="mx-auto mb-12 object-contain" />
-      <h1 className="font-heading text-3xl font-bold text-gray-800 mb-4 text-center">{lang === 'vi' ? 'Chúng tôi đang tạm thời nâng cấp hệ thống.' : 'We are currently working on improvements.'}</h1>
+      <h1 className="font-bold text-3xl text-gray-800 mb-4 text-center">{lang === 'vi' ? 'Chúng tôi đang tạm thời nâng cấp hệ thống.' : 'We are currently working on improvements.'}</h1>
       <p className="text-gray-600 text-base leading-relaxed mb-12 text-center">{lang === 'vi' ? 'Cảm ơn bạn đã kiên nhẫn chờ đợi. Vui lòng quay lại sau!' : 'Thank you for your patience. Please check back soon!'}</p>
       <div className="pt-8 border-t border-gray-100 mt-12"><p className="text-xs text-gray-400">Powered by Ovenly</p></div>
     </div>
@@ -1339,7 +1316,7 @@ export default function RestaurantPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
           <div className="relative bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-heading font-bold text-gray-900 text-lg">{lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}</h2>
+              <h2 className="font-bold text-gray-900 text-lg">{lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}</h2>
               <button onClick={() => setShowMobileCart(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                 <X className="w-4 h-4 text-gray-500" />
               </button>

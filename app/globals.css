@@ -1,37 +1,18 @@
+@import "tailwindcss";
+
 @theme inline {
   --color-primary: hsl(0 75% 38%);
   --color-accent: hsl(25 90% 55%);
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html {
-  -webkit-text-size-adjust: 100%;
-}
-
 body {
-  margin: 0;
-  padding: 0;
   background-color: #fafafa;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-img,
-video {
-  max-width: 100%;
-  height: auto;
 }
 
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
