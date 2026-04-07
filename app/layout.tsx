@@ -12,12 +12,18 @@ const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin', 'vietnamese'],
   variable: '--font-jakarta',
   display: 'swap',
+  weight: ['400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
-  title: 'LÒ ĐỒ ĂN — Đặt món trực tuyến',
-  description: 'Khám phá và đặt món từ các nhà hàng tốt nhất tại Việt Nam',
-  keywords: 'đặt món, nhà hàng, giao đồ ăn, Việt Nam',
+  title: 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
+  description: 'Khám phá và đặt món từ các nhà hàng tốt nhất tại Việt Nam. Giao hàng nhanh chóng, thực đơn phong phú.',
+  keywords: 'đặt món, nhà hàng, giao đồ ăn, Việt Nam, food delivery',
+  openGraph: {
+    title: 'LÒ ĐỒ ĂN',
+    description: 'Khám phá ẩm thực Việt Nam',
+    siteName: 'LÒ ĐỒ ĂN by Ovenly',
+  },
 };
 
 export default function RootLayout({
@@ -27,7 +33,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="vi" className={`${inter.variable} ${plusJakarta.variable}`}>
-      <body style={{ fontFamily: 'var(--font-inter, Inter, sans-serif)' }}>
+      <body>
         {children}
       </body>
     </html>

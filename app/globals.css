@@ -1,10 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #8B1A1A;
-  --background: hsl(30, 20%, 97%);
-  --foreground: hsl(10, 20%, 8%);
-  --border: hsl(20, 15%, 86%);
+  --primary: 0 75% 38%;
+  --primary-foreground: 0 0% 100%;
+  --accent: 40 90% 50%;
+  --accent-foreground: 10 20% 8%;
+  --background: 30 20% 97%;
+  --foreground: 10 20% 8%;
+  --card: 0 0% 100%;
+  --card-foreground: 10 20% 8%;
+  --muted: 25 12% 91%;
+  --muted-foreground: 10 10% 45%;
+  --border: 20 15% 86%;
+  --input: 20 15% 86%;
+  --ring: 0 72% 35%;
+  --radius: 0.75rem;
+  --secondary: 25 15% 92%;
+  --secondary-foreground: 10 20% 18%;
+  --destructive: 0 72% 45%;
+  --destructive-foreground: 0 0% 98%;
 }
 
 * {
@@ -14,17 +28,28 @@
 }
 
 body {
-  background: var(--background);
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
   font-family: var(--font-inter, 'Inter', sans-serif);
-  color: var(--foreground);
   overscroll-behavior-y: none;
+  -webkit-overscroll-behavior-y: none;
 }
 
-.font-heading, h1, h2, h3, h4, h5, h6 {
+h1, h2, h3, h4, h5, h6,
+.font-heading {
   font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif);
 }
 
-button, a, [role="button"] {
+button, a, [role="button"], [role="tab"], [role="menuitem"] {
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* Scrollbar hide utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
