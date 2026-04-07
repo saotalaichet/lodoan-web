@@ -3,6 +3,8 @@
 :root {
   --primary: #8B1A1A;
   --background: hsl(30, 20%, 97%);
+  --foreground: hsl(10, 20%, 8%);
+  --border: hsl(20, 15%, 86%);
 }
 
 * {
@@ -14,11 +16,11 @@
 body {
   background: var(--background);
   font-family: var(--font-inter, 'Inter', sans-serif);
-  color: hsl(10, 20%, 8%);
+  color: var(--foreground);
   overscroll-behavior-y: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
+.font-heading, h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif);
 }
 
