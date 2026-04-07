@@ -473,9 +473,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         return;
       }
 
-      // No validateOrderAcceptance call — removed to eliminate checkout delay
-      // Restaurant open/closed is already enforced by isClosed check on the menu page
-
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
       const orderRes = await fetch(`${BASE44_URL}/entities/Order`, {
         method: 'POST', headers: BASE44_HEADERS,
@@ -495,31 +492,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
       });
       const order = await orderRes.json();
 
-      // Notify vendor app via Railway WebSocket immediately (fire and forget)
-      // This is what Base44's sendOrderConfirmation does — without it, vendor
-      // relies on polling only which is slow on Android background tabs
-      if (order?.id) {
-        fetch('https://ovenly-backend-production-ce50.up.railway.app/api/orders/notify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ order }),
-        }).catch(() => {});
-
-        // Also trigger sendOrderConfirmation for customer email + redundant notify
-        fetch(`${BASE44_URL}/functions/sendOrderConfirmation`, {
-          method: 'POST',
-          headers: BASE44_HEADERS,
-          body: JSON.stringify({ data: order }),
-        }).catch(() => {});
-      }
-
-      if (ONLINE.includes(paymentMethod)) {
-        const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
-        const result = await createPayment(paymentMethod as any, order.id, total, redirectUrl);
-        if (result.payUrl) { window.location.href = result.payUrl; return; }
-        alert(lang === 'vi' ? 'Lỗi kết nối thanh toán.' : 'Payment connection error.');
-        return;
-      }
       // Save to local order history so profile page can display it
       try {
         const saved = JSON.parse(localStorage.getItem('lo_do_an_order_history') || '[]');
@@ -538,6 +510,16 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         localStorage.setItem('lo_do_an_order_history', JSON.stringify(saved.slice(0, 100)));
       } catch {}
 
+      // No Railway/WebSocket notify here — vendor app polling (3s interval) handles notification
+      // Previously calling Railway + sendOrderConfirmation simultaneously caused double sounds
+
+      if (ONLINE.includes(paymentMethod)) {
+        const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
+        const result = await createPayment(paymentMethod as any, order.id, total, redirectUrl);
+        if (result.payUrl) { window.location.href = result.payUrl; return; }
+        alert(lang === 'vi' ? 'Lỗi kết nối thanh toán.' : 'Payment connection error.');
+        return;
+      }
       onSuccess(order.id, orderType, paymentMethod);
     } finally { setPlacing(false); placingRef.current = false; }
   };
@@ -957,7 +939,6 @@ export default function RestaurantPage() {
 
   useEffect(() => { localStorage.setItem('ovenly_language', lang); }, [lang]);
 
-  // Fetch restaurant + menu — proxy first, then direct client-side fallback
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
     const load = async () => {
@@ -971,7 +952,6 @@ export default function RestaurantPage() {
         let cats: any[] = [];
         let items: any[] = [];
 
-        // Step 1: server-side proxy (uses getStorefront + category strategies)
         try {
           const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}&slug=${encodeURIComponent(slug)}`);
           const menuData = await menuRes.json();
@@ -979,7 +959,6 @@ export default function RestaurantPage() {
           items = menuData.items || [];
         } catch {}
 
-        // Step 2: direct client-side fetch if proxy returned nothing
         if (items.length === 0) {
           try {
             const B44 = `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities`;
@@ -1170,7 +1149,6 @@ export default function RestaurantPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1212,7 +1190,6 @@ export default function RestaurantPage() {
         </div>
       </header>
 
-      {/* Hero Banner */}
       <div className="w-full overflow-hidden" style={{ height: 'clamp(200px, 25vw, 300px)' }}>
         {restaurant.banner ? (
           <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" />
@@ -1221,7 +1198,6 @@ export default function RestaurantPage() {
         )}
       </div>
 
-      {/* Closed Banner */}
       {isClosed && (
         <div className="bg-red-50 border-l-4 border-primary px-4 py-4 w-full">
           <div className="max-w-6xl mx-auto flex items-start gap-3">
@@ -1233,7 +1209,6 @@ export default function RestaurantPage() {
         </div>
       )}
 
-      {/* Restaurant Info */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">{restaurant.name}</h1>
@@ -1277,7 +1252,6 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-      {/* Category Tabs */}
       <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
         <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
           <button onClick={() => setActiveCategory('all')}
@@ -1301,7 +1275,6 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-      {/* Body */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-6">
@@ -1350,7 +1323,6 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-      {/* Mobile Floating Cart */}
       {totalQty > 0 && !isClosed && (
         <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
           <button onClick={() => setShowMobileCart(true)}
@@ -1362,7 +1334,6 @@ export default function RestaurantPage() {
         </div>
       )}
 
-      {/* Mobile Cart Drawer */}
       {showMobileCart && (
         <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
@@ -1397,7 +1368,6 @@ export default function RestaurantPage() {
         restaurant={restaurant} subtotal={subtotal} lang={lang}
       />
 
-      {/* Cuisine & dietary info */}
       {(restaurant.cuisine_type || (Array.isArray(restaurant.dietary_options) && restaurant.dietary_options.length > 0)) && (
         <div className="max-w-6xl mx-auto w-full px-4 mt-4 mb-2">
           <div className="border-t border-gray-200 pt-4 flex flex-wrap items-center gap-2">
@@ -1430,7 +1400,6 @@ export default function RestaurantPage() {
         </div>
       )}
 
-      {/* Footer */}
       {restaurant?.show_powered_by !== false && (
         <footer className="bg-white border-t border-gray-100 py-4 mt-4">
           <div className="max-w-6xl mx-auto px-4 text-center">
