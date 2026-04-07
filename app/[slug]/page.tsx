@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -51,6 +51,13 @@ export default function RestaurantPage() {
     load();
   }, [slug]);
 
+  // Save cart to sessionStorage whenever it changes
+  useEffect(() => {
+    if (cart.length > 0) {
+      sessionStorage.setItem(`cart_${slug}`, JSON.stringify(cart));
+    }
+  }, [cart, slug]);
+
   const addToCart = useCallback((item: MenuItem) => {
     setCart(prev => {
       const exists = prev.find(i => i.id === item.id);
@@ -68,10 +75,8 @@ export default function RestaurantPage() {
 
   const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-
   const isOpen = restaurant?.is_open && restaurant?.is_accepting_orders;
 
-  // Group items by category
   const groupedItems = () => {
     if (activeCategory !== 'all') {
       return [{ category: categories.find(c => c.id === activeCategory), items: items.filter(i => i.category_id === activeCategory) }];
@@ -83,6 +88,7 @@ export default function RestaurantPage() {
   };
 
   const getCategoryLabel = (name: string) => {
+    if (!name) return '';
     const slash = name.indexOf('/');
     if (slash === -1) return name.trim();
     return lang === 'en' ? name.substring(slash + 1).trim() : name.substring(0, slash).trim();
@@ -138,10 +144,7 @@ export default function RestaurantPage() {
             {cart.map(item => (
               <div key={item.id} className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <button
-                    onClick={() => setQty(item.id, item.qty - 1)}
-                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 transition-colors"
-                  >
+                  <button onClick={() => setQty(item.id, item.qty - 1)} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 transition-colors">
                     {item.qty === 1 ? (
                       <svg className="w-3 h-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                     ) : (
@@ -149,10 +152,7 @@ export default function RestaurantPage() {
                     )}
                   </button>
                   <span className="text-sm font-bold text-gray-900 w-4 text-center">{item.qty}</span>
-                  <button
-                    onClick={() => setQty(item.id, item.qty + 1)}
-                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
-                  >
+                  <button onClick={() => setQty(item.id, item.qty + 1)} className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
                     <svg className="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4"/></svg>
                   </button>
                 </div>
@@ -201,34 +201,22 @@ export default function RestaurantPage() {
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center rounded-full p-1 text-xs font-semibold" style={{ background: '#FFF0ED' }}>
-              <button
-                onClick={() => setLang('vi')}
-                className="px-3 py-1 rounded-full transition-all"
-                style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}
-              >VI</button>
-              <button
-                onClick={() => setLang('en')}
-                className="px-3 py-1 rounded-full transition-all"
-                style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}
-              >EN</button>
+              <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
+                style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
+              <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
+                style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
             </div>
-            <Link
-              href="/login"
-              className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition-colors"
-              style={{ backgroundColor: PRIMARY }}
-            >
+            <Link href="/login" className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition-colors" style={{ backgroundColor: PRIMARY }}>
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
               </svg>
               {lang === 'vi' ? 'Đăng nhập' : 'Login'}
             </Link>
-            <span
-              className="flex items-center gap-1 font-semibold px-2.5 py-1 rounded-full border text-xs"
+            <span className="flex items-center gap-1 font-semibold px-2.5 py-1 rounded-full border text-xs"
               style={isOpen
                 ? { background: '#F0FDF4', color: '#166534', border: '1px solid #86EFAC' }
                 : { background: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB' }
-              }
-            >
+              }>
               {isOpen
                 ? (lang === 'vi' ? '● Đang Mở' : '● Open')
                 : (lang === 'vi' ? '● Đóng Cửa' : '● Closed')}
@@ -270,19 +258,12 @@ export default function RestaurantPage() {
             </p>
           )}
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span
-              className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
-              style={isOpen
-                ? { background: '#F0FDF4', color: '#166534' }
-                : { background: '#F9FAFB', color: '#6B7280' }
-              }
-            >
+            <span className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
+              style={isOpen ? { background: '#F0FDF4', color: '#166534' } : { background: '#F9FAFB', color: '#6B7280' }}>
               <span className="w-2 h-2 rounded-full inline-block" style={{ background: isOpen ? '#22C55E' : '#9CA3AF' }} />
-              {isOpen
-                ? (lang === 'vi' ? 'Đang mở cửa' : 'Open')
-                : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
+              {isOpen ? (lang === 'vi' ? 'Đang mở cửa' : 'Open') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
             </span>
-            {restaurant.hours && (
+            {restaurant.hours && typeof restaurant.hours === 'string' && (
               <span className="text-xs text-gray-500 flex items-center gap-1">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 {restaurant.hours}
@@ -298,16 +279,14 @@ export default function RestaurantPage() {
           <button
             onClick={() => setActiveCategory('all')}
             className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-            style={activeCategory === 'all'
-              ? { backgroundColor: PRIMARY, color: 'white' }
-              : { color: '#4B5563' }
-            }
+            style={activeCategory === 'all' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#4B5563' }}
           >
             {lang === 'vi' ? 'Tất cả' : 'All'}
           </button>
           {categories
             .filter(cat => {
-              if (cat.name?.toLowerCase().includes('tất cả') || cat.name?.toLowerCase().includes('all')) return false;
+              if (!cat.name) return false;
+              if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase().includes('all')) return false;
               return items.filter(i => i.category_id === cat.id).length > 0;
             })
             .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
@@ -316,10 +295,7 @@ export default function RestaurantPage() {
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
                 className="flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap"
-                style={activeCategory === cat.id
-                  ? { backgroundColor: PRIMARY, color: 'white' }
-                  : { color: '#4B5563' }
-                }
+                style={activeCategory === cat.id ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#4B5563' }}
               >
                 {getCategoryLabel(cat.name)}
               </button>
@@ -366,12 +342,7 @@ export default function RestaurantPage() {
                           >
                             <div className="relative w-full bg-gray-50 overflow-hidden" style={{ aspectRatio: '4/3' }}>
                               {item.image ? (
-                                <Image
-                                  src={item.image}
-                                  alt={item.name}
-                                  fill
-                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                />
+                                <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-4xl">🍜</div>
                               )}
@@ -385,11 +356,7 @@ export default function RestaurantPage() {
                                 <span className="font-bold text-sm" style={{ color: PRIMARY }}>{fmt(item.price)}</span>
                                 {isOpen && (
                                   qty > 0 ? (
-                                    <div
-                                      className="flex items-center gap-2 rounded-full px-2 py-1"
-                                      style={{ backgroundColor: PRIMARY }}
-                                      onClick={e => e.stopPropagation()}
-                                    >
+                                    <div className="flex items-center gap-2 rounded-full px-2 py-1" style={{ backgroundColor: PRIMARY }} onClick={e => e.stopPropagation()}>
                                       <button onClick={() => setQty(item.id, qty - 1)} className="w-5 h-5 flex items-center justify-center text-white">
                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M20 12H4"/></svg>
                                       </button>
@@ -452,9 +419,7 @@ export default function RestaurantPage() {
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
           <div className="relative bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900 text-lg">
-                {lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}
-              </h2>
+              <h2 className="font-bold text-gray-900 text-lg">{lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}</h2>
               <button onClick={() => setShowMobileCart(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
                 <span className="text-gray-500 text-lg leading-none">×</span>
               </button>
