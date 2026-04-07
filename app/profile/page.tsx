@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, CreditCard, ShoppingBag, Star, Trash2, Check, Lock } from 'lucide-react';
@@ -57,7 +57,8 @@ const T = {
   },
 };
 
-export default function ProfilePage() {
+// Inner component that uses useSearchParams — must be inside Suspense
+function ProfileInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [lang, setLang] = useState('vi');
@@ -96,11 +97,10 @@ export default function ProfilePage() {
     });
   }, [router]);
 
-  // Fetch orders when tab is active
   useEffect(() => {
     if (activeTab === 'orders' && customer?.email) {
+      setLoadingOrders(true);
       const fetchOrders = async () => {
-        setLoadingOrders(true);
         try {
           const token = customerAuth.getToken() || '';
           const res = await fetch(
@@ -120,7 +120,6 @@ export default function ProfilePage() {
     }
   }, [activeTab, customer?.email]);
 
-  // Fetch payment methods when tab is active
   useEffect(() => {
     if (activeTab === 'payments' && customer?.id) {
       const fetchPayments = async () => {
@@ -132,8 +131,7 @@ export default function ProfilePage() {
           );
           if (res.ok) {
             const body = await res.json();
-            const data = Array.isArray(body) ? body : (body?.items ?? body?.data ?? []);
-            setPaymentMethods(data);
+            setPaymentMethods(Array.isArray(body) ? body : (body?.items ?? body?.data ?? []));
           }
         } catch {}
       };
@@ -178,10 +176,8 @@ export default function ProfilePage() {
   const handleDeletePayment = async (pmId: string) => {
     if (!window.confirm(t.deleteConfirm)) return;
     try {
-      await fetch(`${BASE44}/entities/PaymentMethod/${pmId}`, {
-        method: 'DELETE', headers: HEADERS,
-      });
-      setPaymentMethods(prev => prev.filter(pm => pm.id !== pmId));
+      await fetch(`${BASE44}/entities/PaymentMethod/${pmId}`, { method: 'DELETE', headers: HEADERS });
+      setPaymentMethods(prev => prev.filter((pm: any) => pm.id !== pmId));
     } catch {}
   };
 
@@ -190,16 +186,14 @@ export default function ProfilePage() {
       for (const pm of paymentMethods) {
         if (pm.is_default) {
           await fetch(`${BASE44}/entities/PaymentMethod/${pm.id}`, {
-            method: 'PUT', headers: HEADERS,
-            body: JSON.stringify({ is_default: false }),
+            method: 'PUT', headers: HEADERS, body: JSON.stringify({ is_default: false }),
           });
         }
       }
       await fetch(`${BASE44}/entities/PaymentMethod/${pmId}`, {
-        method: 'PUT', headers: HEADERS,
-        body: JSON.stringify({ is_default: true }),
+        method: 'PUT', headers: HEADERS, body: JSON.stringify({ is_default: true }),
       });
-      setPaymentMethods(prev => prev.map(pm => ({ ...pm, is_default: pm.id === pmId })));
+      setPaymentMethods(prev => prev.map((pm: any) => ({ ...pm, is_default: pm.id === pmId })));
     } catch {}
   };
 
@@ -222,7 +216,6 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link href="/" className="font-heading font-black text-primary text-lg">LÒ ĐỒ ĂN</Link>
@@ -237,7 +230,6 @@ export default function ProfilePage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Customer header card */}
         <div className="bg-white rounded-2xl p-6 mb-6 flex items-center gap-4" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-2xl font-bold text-primary flex-shrink-0">
             {customer?.full_name?.[0]?.toUpperCase() || '?'}
@@ -248,7 +240,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
           {TABS.map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -286,7 +277,7 @@ export default function ProfilePage() {
                     <option value="en">{t.langEn}</option>
                   </select>
                 </div>
-                {profileMsg && <p className="text-sm font-medium text-green-600">{profileMsg}</p>}
+                {profileMsg && <p className={`text-sm font-medium ${profileMsg.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{profileMsg}</p>}
                 <button type="submit" disabled={savingProfile}
                   className="bg-primary text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90 disabled:opacity-50 transition-colors">
                   {savingProfile ? t.saving : t.saveChanges}
@@ -396,9 +387,7 @@ export default function ProfilePage() {
                       </span>
                     </div>
                     <p className="text-xs text-gray-500 mb-2">
-                      {Array.isArray(order.items)
-                        ? order.items.map((i: any) => `${i.quantity}× ${i.name}`).join(', ')
-                        : ''}
+                      {Array.isArray(order.items) ? order.items.map((i: any) => `${i.quantity}× ${i.name}`).join(', ') : ''}
                     </p>
                     <div className="flex items-center justify-between">
                       <p className="font-bold text-primary">{fmt(order.total)}</p>
@@ -417,5 +406,18 @@ export default function ProfilePage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Outer component wraps inner in Suspense (required for useSearchParams in Next.js)
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+      </div>
+    }>
+      <ProfileInner />
+    </Suspense>
   );
 }
