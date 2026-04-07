@@ -104,17 +104,12 @@ export interface Order {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-async function get<T>(path: string): Promise<T> {
-  const res = await fetch(`${BASE44_URL}${path}`, { headers: HEADERS, next: { revalidate: 60 } });
-  if (!res.ok) throw new Error(`Base44 API error: ${res.status} ${path}`);
-  return res.json();
-}
-
 async function post<T>(path: string, body: unknown): Promise<T> {
   const res = await fetch(`${BASE44_URL}${path}`, {
     method: 'POST',
     headers: HEADERS,
     body: JSON.stringify(body),
+    cache: 'no-store',
   });
   if (!res.ok) throw new Error(`Base44 API error: ${res.status} ${path}`);
   return res.json();
@@ -124,10 +119,17 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 
 export async function getRestaurants(): Promise<Restaurant[]> {
   try {
-    const data = await get<Restaurant[]>(
-      '/entities/Restaurant?is_active=true&show_on_marketplace=true&_limit=500'
+    const res = await fetch(
+      `${BASE44_URL}/entities/Restaurant?_limit=500`,
+      {
+        headers: HEADERS,
+        cache: 'no-store',
+      }
     );
-    return Array.isArray(data) ? data : [];
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data.filter((r: any) => r.is_active === true && r.show_on_marketplace === true);
   } catch {
     return [];
   }
@@ -135,7 +137,12 @@ export async function getRestaurants(): Promise<Restaurant[]> {
 
 export async function getRestaurantBySlug(slug: string): Promise<Restaurant | null> {
   try {
-    const data = await get<Restaurant[]>(`/entities/Restaurant?slug=${encodeURIComponent(slug)}`);
+    const res = await fetch(
+      `${BASE44_URL}/entities/Restaurant?slug=${encodeURIComponent(slug)}`,
+      { headers: HEADERS, cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
     return Array.isArray(data) && data.length > 0 ? data[0] : null;
   } catch {
     return null;
@@ -144,7 +151,12 @@ export async function getRestaurantBySlug(slug: string): Promise<Restaurant | nu
 
 export async function getRestaurantById(id: string): Promise<Restaurant | null> {
   try {
-    const data = await get<Restaurant[]>(`/entities/Restaurant?id=${encodeURIComponent(id)}`);
+    const res = await fetch(
+      `${BASE44_URL}/entities/Restaurant?id=${encodeURIComponent(id)}`,
+      { headers: HEADERS, cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
     return Array.isArray(data) && data.length > 0 ? data[0] : null;
   } catch {
     return null;
@@ -155,9 +167,12 @@ export async function getRestaurantById(id: string): Promise<Restaurant | null> 
 
 export async function getMenuCategories(restaurantId: string): Promise<MenuCategory[]> {
   try {
-    const data = await get<MenuCategory[]>(
-      `/entities/MenuCategory?restaurant_id=${encodeURIComponent(restaurantId)}`
+    const res = await fetch(
+      `${BASE44_URL}/entities/MenuCategory?restaurant_id=${encodeURIComponent(restaurantId)}`,
+      { headers: HEADERS, cache: 'no-store' }
     );
+    if (!res.ok) return [];
+    const data = await res.json();
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
@@ -166,9 +181,12 @@ export async function getMenuCategories(restaurantId: string): Promise<MenuCateg
 
 export async function getMenuItems(restaurantId: string): Promise<MenuItem[]> {
   try {
-    const data = await get<MenuItem[]>(
-      `/entities/MenuItem?restaurant_id=${encodeURIComponent(restaurantId)}`
+    const res = await fetch(
+      `${BASE44_URL}/entities/MenuItem?restaurant_id=${encodeURIComponent(restaurantId)}`,
+      { headers: HEADERS, cache: 'no-store' }
     );
+    if (!res.ok) return [];
+    const data = await res.json();
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
@@ -177,24 +195,21 @@ export async function getMenuItems(restaurantId: string): Promise<MenuItem[]> {
 
 // ── Orders ────────────────────────────────────────────────────────────────────
 
-export async function createOrder(orderData: Omit<Order, 'id' | 'created_date'>): Promise<Order> {
-  return post<Order>('/entities/Order', orderData);
-}
-
 export async function getOrdersByEmail(email: string): Promise<Order[]> {
   try {
-    const data = await fetch(
+    const res = await fetch(
       `${BASE44_URL}/entities/Order?customer_email=${encodeURIComponent(email)}&_sort=-created_date&_limit=50`,
-      { headers: HEADERS }
+      { headers: HEADERS, cache: 'no-store' }
     );
-    const json = await data.json();
-    return Array.isArray(json) ? json : [];
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }
 }
 
-export async function getOrderStatus(orderId: string): Promise<{ status: string; notes?: string; items?: OrderItem[]; total?: number; delivery_address?: string; order_type?: string; payment_method?: string } | null> {
+export async function getOrderStatus(orderId: string): Promise<any | null> {
   try {
     const data = await post<any>('/functions/getOrderStatus', { orderId });
     return data?.data || data || null;
@@ -216,7 +231,7 @@ export async function getPromo(code: string, restaurantId: string): Promise<{ va
 
 // ── Payments ──────────────────────────────────────────────────────────────────
 
-export const PAYMENT_BACKEND_URL = 'https://ovenly-backend-production-ce50.up.railway.app';
+export const PAYMENT_BACKEND_URL = process.env.NEXT_PUBLIC_RAILWAY_URL || 'https://ovenly-backend-production-ce50.up.railway.app';
 
 export async function createPayment(
   method: 'momo' | 'zalopay' | 'vnpay',
@@ -268,10 +283,7 @@ export async function submitContactForm(form: {
 // ── Auth (customer) ───────────────────────────────────────────────────────────
 
 export async function customerLogin(email: string, password: string): Promise<{
-  success: boolean;
-  session_token?: string;
-  customer?: any;
-  error?: string;
+  success: boolean; session_token?: string; customer?: any; error?: string;
 }> {
   try {
     const data = await post<any>('/functions/customerAuth', { action: 'login', email, password });
@@ -282,11 +294,8 @@ export async function customerLogin(email: string, password: string): Promise<{
 }
 
 export async function customerSignup(params: {
-  full_name: string;
-  email: string;
-  password: string;
-  phone_number?: string;
-  preferred_language?: string;
+  full_name: string; email: string; password: string;
+  phone_number?: string; preferred_language?: string;
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const data = await post<any>('/functions/customerAuth', { action: 'signup', ...params });
@@ -313,9 +322,7 @@ export async function customerUpdateProfile(
 }
 
 export async function validateOrderAcceptance(restaurantId: string): Promise<{
-  accepting: boolean;
-  message?: string;
-  message_vi?: string;
+  accepting: boolean; message?: string; message_vi?: string;
 }> {
   try {
     const data = await post<any>('/functions/validateOrderAcceptance', { restaurant_id: restaurantId });
@@ -328,9 +335,7 @@ export async function validateOrderAcceptance(restaurantId: string): Promise<{
 // ── Ratings ───────────────────────────────────────────────────────────────────
 
 export async function validateRatingToken(orderId: string, token: string): Promise<{
-  valid: boolean;
-  reason?: string;
-  order?: any;
+  valid: boolean; reason?: string; order?: any;
 }> {
   try {
     const data = await post<any>('/functions/validateRatingToken', { orderId, token });
@@ -341,8 +346,7 @@ export async function validateRatingToken(orderId: string, token: string): Promi
 }
 
 export async function submitRating(orderId: string, token: string, rating: number, comment: string): Promise<{
-  success: boolean;
-  google_review_link?: string;
+  success: boolean; google_review_link?: string;
 }> {
   try {
     const data = await post<any>('/functions/submitRating', { orderId, token, rating, comment });
