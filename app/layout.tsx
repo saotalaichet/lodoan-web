@@ -1,5 +1,18 @@
 import type { Metadata } from 'next';
+import { Plus_Jakarta_Sans, Inter } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-inter',
+  display: 'swap',
+});
+
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin', 'vietnamese'],
+  variable: '--font-jakarta',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'LÒ ĐỒ ĂN — Đặt món trực tuyến',
@@ -13,8 +26,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi">
-      <body>{children}</body>
+    <html lang="vi" className={`${inter.variable} ${plusJakarta.variable}`}>
+      <body style={{ fontFamily: 'var(--font-inter, Inter, sans-serif)' }}>
+        {children}
+      </body>
     </html>
   );
 }

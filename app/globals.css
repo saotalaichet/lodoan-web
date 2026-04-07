@@ -2,8 +2,7 @@
 
 :root {
   --primary: #8B1A1A;
-  --primary-light: #B22222;
-  --bg: #FAF8F0;
+  --background: hsl(30, 20%, 97%);
 }
 
 * {
@@ -13,6 +12,17 @@
 }
 
 body {
-  background: var(--bg);
-  font-family: 'Inter', Arial, sans-serif;
+  background: var(--background);
+  font-family: var(--font-inter, 'Inter', sans-serif);
+  color: hsl(10, 20%, 8%);
+  overscroll-behavior-y: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif);
+}
+
+button, a, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
 }
