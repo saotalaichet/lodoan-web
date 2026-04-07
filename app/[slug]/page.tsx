@@ -495,6 +495,24 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
       });
       const order = await orderRes.json();
 
+      // Notify vendor app via Railway WebSocket immediately (fire and forget)
+      // This is what Base44's sendOrderConfirmation does — without it, vendor
+      // relies on polling only which is slow on Android background tabs
+      if (order?.id) {
+        fetch('https://ovenly-backend-production-ce50.up.railway.app/api/orders/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order }),
+        }).catch(() => {});
+
+        // Also trigger sendOrderConfirmation for customer email + redundant notify
+        fetch(`${BASE44_URL}/functions/sendOrderConfirmation`, {
+          method: 'POST',
+          headers: BASE44_HEADERS,
+          body: JSON.stringify({ data: order }),
+        }).catch(() => {});
+      }
+
       if (ONLINE.includes(paymentMethod)) {
         const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
         const result = await createPayment(paymentMethod as any, order.id, total, redirectUrl);
