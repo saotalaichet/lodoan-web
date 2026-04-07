@@ -65,7 +65,7 @@ export interface Promo {
 export async function getRestaurants(): Promise<Restaurant[]> {
   try {
     const res = await fetch(
-      `${BASE44_URL}/entities/Restaurant`,
+      `${BASE44_URL}/entities/Restaurant?is_active=true&show_on_marketplace=true`,
       {
         headers: BASE44_HEADERS,
         next: { revalidate: 60 }, // cache for 60 seconds
