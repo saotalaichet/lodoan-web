@@ -2,12 +2,13 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Crown, User, ChevronDown, Menu, X } from 'lucide-react';
 import FilterBar from './FilterBar';
-import { Restaurant } from '@/lib/api';
+import AddressInput from './AddressInput';
 import { customerAuth } from '@/lib/customerAuth';
 
+const BASE44_APP_ID = process.env.NEXT_PUBLIC_BASE44_APP_ID || '69c130c9110a89987aae7fb0';
+const BASE44_API_KEY = process.env.NEXT_PUBLIC_BASE44_API_KEY || '1552c0075c5e4229b7c5a76cbbb9a457';
 const CURRENT_YEAR = new Date().getFullYear();
 
 const fmt = (v: number) =>
@@ -26,7 +27,7 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function getRestaurantStatus(restaurant: Restaurant): 'OPEN' | 'CLOSED' | 'PAUSED' {
+function getRestaurantStatus(restaurant: any): 'OPEN' | 'CLOSED' | 'PAUSED' {
   if (!restaurant) return 'CLOSED';
   if (restaurant.is_accepting_orders === false) return 'PAUSED';
   const hours = restaurant.hours;
@@ -34,7 +35,7 @@ function getRestaurantStatus(restaurant: Restaurant): 'OPEN' | 'CLOSED' | 'PAUSE
   const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const now = new Date();
   const vn = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
-  const dayHours = (hours as any)[DAYS[vn.getDay()]];
+  const dayHours = hours[DAYS[vn.getDay()]];
   if (!dayHours?.trim()) return 'CLOSED';
   const [openStr, closeStr] = dayHours.split('-').map((s: string) => s.trim());
   if (!openStr || !closeStr) return 'CLOSED';
@@ -47,7 +48,7 @@ function getRestaurantStatus(restaurant: Restaurant): 'OPEN' | 'CLOSED' | 'PAUSE
 }
 
 function getStatusText(status: string, lang: string) {
-  const m: Record<string, { vi: string; en: string }> = {
+  const m: Record<string, any> = {
     OPEN: { vi: '● Đang Mở', en: '● Open' },
     CLOSED: { vi: '● Đã Đóng Cửa', en: '● Closed' },
     PAUSED: { vi: '● Tạm Dừng', en: '● Paused' },
@@ -58,10 +59,10 @@ function getStatusText(status: string, lang: string) {
 function getStatusBadgeClass(status: string) {
   if (status === 'OPEN') return 'bg-green-50 text-green-600 border-green-200';
   if (status === 'PAUSED') return 'bg-orange-50 text-orange-600 border-orange-200';
-  return 'bg-gray-100 text-gray-500 border-gray-200';
+  return 'bg-red-50 text-red-600 border-red-200';
 }
 
-const CUISINE_DISPLAY: Record<string, { en: string; vi: string }> = {
+const CUISINE_DISPLAY: Record<string, any> = {
   Vietnamese: { en: 'Vietnamese', vi: 'Việt Nam' },
   Japanese: { en: 'Japanese', vi: 'Nhật Bản' },
   Korean: { en: 'Korean', vi: 'Hàn Quốc' },
@@ -72,8 +73,9 @@ const CUISINE_DISPLAY: Record<string, { en: string; vi: string }> = {
   Fusion: { en: 'Fusion', vi: 'Đa Phong Cách' },
   Cafe: { en: 'Cafe', vi: 'Cafe' },
   Dessert: { en: 'Dessert', vi: 'Tráng Miệng' },
-  DessertCafeBubbleTea: { en: 'Dessert Cafe', vi: 'Tráng Miệng & Trà Sữa' },
   Other: { en: 'Other', vi: 'Khác' },
+  vietnamese: { en: 'Vietnamese', vi: 'Việt Nam' },
+  japanese: { en: 'Japanese', vi: 'Nhật Bản' },
 };
 
 function HighlightText({ text, query }: { text: string; query: string }) {
@@ -85,169 +87,229 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <span className="text-primary font-bold">{text.slice(idx, idx + query.length)}</span>
+      <span style={{ color: '#8B1A1A', fontWeight: 700 }}>{text.slice(idx, idx + query.length)}</span>
       {text.slice(idx + query.length)}
     </>
   );
 }
 
-function RestaurantCard({ restaurant, lang, search }: { restaurant: Restaurant; lang: string; search: string }) {
+function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: string; search: string }) {
   const status = getRestaurantStatus(restaurant);
   const isOrderingDisabled = status !== 'OPEN';
   const badgeClass = getStatusBadgeClass(status);
   const statusText = getStatusText(status, lang);
-  const isPremium = (restaurant as any).subscription_tier === 'Premium';
-  const isFeatured = (restaurant as any).featured;
+  const isPremium = restaurant.subscription_tier === 'Premium';
   const firstLetter = restaurant.name?.charAt(0)?.toUpperCase() || '?';
   const rawCuisine = restaurant.cuisine_type || '';
   const cuisineLabel = rawCuisine
-    ? (CUISINE_DISPLAY[rawCuisine]?.[lang === 'vi' ? 'vi' : 'en'] ?? ((restaurant as any).cuisine_type_vietnamese || rawCuisine))
+    ? (CUISINE_DISPLAY[rawCuisine]?.[lang === 'vi' ? 'vi' : 'en'] ?? (lang === 'vi' ? (restaurant.cuisine_type_vietnamese || rawCuisine) : rawCuisine))
     : '';
-  const avgRating = (restaurant as any).average_rating;
-  const totalRatings = (restaurant as any).total_ratings;
+  const avgRating = restaurant.average_rating;
+  const totalRatings = restaurant.total_ratings;
+  const hasSlug = !!restaurant.slug;
+
+  const handleClick = () => {
+    window.location.href = `/order/${restaurant.slug}`;
+  };
+
+  const handleOrderNow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (hasSlug && !isOrderingDisabled) {
+      window.location.href = `/order/${restaurant.slug}`;
+    }
+  };
 
   return (
-    <Link href={`/${restaurant.slug}`} className="block">
-      <div
-        className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer flex flex-col h-full"
-        style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)', transition: 'box-shadow 0.2s ease, transform 0.2s ease' }}
-        onMouseEnter={e => {
-          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.10)';
-          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)';
-          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
-        }}
-      >
-        {/* Banner */}
-        <div className="relative flex-shrink-0" style={{ height: '180px' }}>
-          {restaurant.banner ? (
-            <Image src={restaurant.banner} alt={restaurant.name} fill className="object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center" style={{ background: '#F5F0EE' }}>
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#D4C5C0" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" opacity="0.4"/>
-                <path d="M7 12h10M8 9c0 0 1 1.5 4 1.5S16 9 16 9"/>
-                <path d="M9 15c0 0 1 2 3 2s3-2 3-2"/>
-              </svg>
-            </div>
-          )}
-
-          {isPremium && (
-            <span className="absolute top-2 left-2 z-20 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Ưu Tiên' : 'Priority'}
-            </span>
-          )}
-          {isFeatured && !isPremium && (
-            <span className="absolute top-2 left-2 z-20 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Nổi Bật' : 'Featured'}
-            </span>
-          )}
-
-          <div className="absolute top-2 right-2 z-20">
-            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badgeClass}`}>
-              {statusText}
-            </span>
+    <div
+      onClick={handleClick}
+      className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer flex flex-col h-full"
+      style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)', transition: 'box-shadow 0.2s ease, transform 0.2s ease' }}
+      onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.10)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; }}
+    >
+      <div className="relative flex-shrink-0" style={{ height: '180px' }}>
+        {restaurant.banner ? (
+          <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center" style={{ background: '#F5F0EE' }}>
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#D4C5C0" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z" opacity="0.4"/>
+              <path d="M7 12h10M8 9c0 0 1 1.5 4 1.5S16 9 16 9"/>
+              <path d="M9 15c0 0 1 2 3 2s3-2 3-2"/>
+            </svg>
           </div>
+        )}
 
-          <div
-            className="absolute flex items-center justify-center overflow-hidden"
-            style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}
-          >
-            {restaurant.logo ? (
-              <Image src={restaurant.logo} alt="" width={40} height={40} className="object-cover rounded-full" />
-            ) : (
-              <div className="w-full h-full rounded-full bg-primary flex items-center justify-center font-heading font-bold" style={{ fontSize: '14px', color: 'white' }}>
-                {firstLetter}
-              </div>
-            )}
-          </div>
+        {isPremium && (
+          <span className="absolute top-2 left-2 z-20 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+            <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Ưu Tiên' : 'Priority'}
+          </span>
+        )}
+        {restaurant.featured && (
+          <span className="absolute top-2 right-2 z-20 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+            <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Nổi Bật' : 'Featured'}
+          </span>
+        )}
+
+        <div className="absolute top-2 right-2 z-20">
+          <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badgeClass}`}>
+            {statusText}
+          </span>
         </div>
 
-        {/* Card body */}
-        <div className="flex flex-col flex-1" style={{ padding: '24px 14px 14px 14px' }}>
-          <h3 className="font-bold leading-tight mb-1.5" style={{ fontSize: '15px', color: '#1A1A1A' }}>
-            <HighlightText text={restaurant.name} query={search} />
-          </h3>
-
-          {cuisineLabel && (
-            <span className="inline-block self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2 bg-primary/10 text-primary">
-              {cuisineLabel}
-            </span>
-          )}
-
-          {totalRatings >= 3 && (
-            <div className="flex items-center gap-1 mb-2">
-              <div className="flex items-center gap-0.5">
-                {[1, 2, 3, 4, 5].map(star => (
-                  <svg key={star} width="11" height="11" viewBox="0 0 24 24"
-                    fill={star <= Math.round(avgRating) ? '#F59E0B' : '#E5E7EB'}>
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                ))}
-              </div>
-              <span style={{ fontSize: '11px', fontWeight: '600', color: '#1A1A1A' }}>{avgRating?.toFixed(1)}</span>
-              <span style={{ fontSize: '11px', color: '#888888' }}>({totalRatings} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
+        <div
+          className="absolute flex items-center justify-center overflow-hidden flex-shrink-0"
+          style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}
+        >
+          {restaurant.logo ? (
+            <img src={restaurant.logo} alt="" className="w-full h-full object-cover rounded-full" />
+          ) : (
+            <div className="w-full h-full rounded-full flex items-center justify-center" style={{ background: '#8B1A1A' }}>
+              <span style={{ color: 'white', fontSize: '14px', fontWeight: '700', lineHeight: 1 }}>{firstLetter}</span>
             </div>
           )}
-
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
-            {restaurant.delivery_fee !== undefined && (
-              <span>{restaurant.delivery_fee === 0
-                ? (lang === 'vi' ? 'Miễn phí ship' : 'Free delivery')
-                : `${lang === 'vi' ? 'Phí ship' : 'Delivery'}: ${fmt(restaurant.delivery_fee)}`}
-              </span>
-            )}
-            {restaurant.min_order_amount && restaurant.min_order_amount > 0 && (
-              <span>{lang === 'vi' ? 'Tối thiểu' : 'Min'}: {fmt(restaurant.min_order_amount)}</span>
-            )}
-          </div>
-
-          <button
-            className={`w-full h-9 font-heading font-bold rounded-lg text-sm transition-opacity mt-auto ${isOrderingDisabled ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-primary text-white hover:opacity-90'}`}
-          >
-            {isOrderingDisabled
-              ? (lang === 'vi' ? 'Đang Đóng Cửa' : 'Currently Closed')
-              : (lang === 'vi' ? 'Đặt Ngay' : 'Order Now')}
-          </button>
         </div>
       </div>
-    </Link>
+
+      <div className="flex flex-col flex-1" style={{ padding: '24px 14px 14px 14px' }}>
+        <h3 className="font-bold leading-tight mb-1.5" style={{ fontSize: '15px', color: '#1A1A1A' }}>
+          <HighlightText text={restaurant.name} query={search} />
+        </h3>
+
+        {cuisineLabel && (
+          <span className="inline-block self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2"
+            style={{ background: '#FFF0ED', color: '#8B1A1A' }}>
+            {cuisineLabel}
+          </span>
+        )}
+
+        {totalRatings >= 3 && (
+          <div className="flex items-center gap-1 mb-2">
+            <div className="flex items-center gap-0.5">
+              {[1, 2, 3, 4, 5].map(star => (
+                <svg key={star} width="11" height="11" viewBox="0 0 24 24"
+                  fill={star <= Math.round(avgRating) ? '#F59E0B' : '#E5E7EB'}>
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              ))}
+            </div>
+            <span style={{ fontSize: '11px', fontWeight: '600', color: '#1A1A1A' }}>{avgRating?.toFixed(1)}</span>
+            <span style={{ fontSize: '11px', color: '#888888' }}>({totalRatings} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
+          {restaurant.delivery_fee !== undefined && (
+            <span>{restaurant.delivery_fee === 0
+              ? (lang === 'vi' ? 'Miễn phí ship' : 'Free delivery')
+              : `${lang === 'vi' ? 'Phí ship' : 'Delivery'}: ${fmt(restaurant.delivery_fee)}`}
+            </span>
+          )}
+          {restaurant.min_order_amount > 0 && (
+            <span>{lang === 'vi' ? 'Tối thiểu' : 'Min'}: {fmt(restaurant.min_order_amount)}</span>
+          )}
+        </div>
+
+        <button
+          onClick={handleOrderNow}
+          disabled={!hasSlug || isOrderingDisabled}
+          className="w-full h-9 font-bold rounded-lg text-sm transition-opacity mt-auto"
+          style={
+            isOrderingDisabled
+              ? { background: '#D3D3D3', color: '#666', cursor: 'not-allowed' }
+              : hasSlug
+              ? { background: '#8B1A1A', color: 'white' }
+              : { background: '#E5E5E5', color: '#999', cursor: 'not-allowed' }
+          }
+        >
+          {isOrderingDisabled
+            ? (lang === 'vi' ? 'Đang Đóng Cửa' : 'Currently Closed')
+            : hasSlug
+            ? (lang === 'vi' ? 'Đặt Ngay' : 'Order Now')
+            : (lang === 'vi' ? 'Sắp Ra Mắt' : 'Coming Soon')}
+        </button>
+      </div>
+    </div>
   );
 }
 
-const POPULAR_VI = ['Phở', 'Bánh Mì', 'Cơm', 'Bún Bò', 'Hải Sản', 'Lẩu'];
-const POPULAR_EN = ['Pho', 'Banh Mi', 'Rice', 'Beef Noodles', 'Seafood', 'Hotpot'];
 const NAV_LINKS = [
   { href: '/about', vi: 'Giới Thiệu', en: 'About' },
   { href: '/contact', vi: 'Liên Hệ', en: 'Contact' },
 ];
 
-export default function MarketplaceClient({ restaurants }: { restaurants: Restaurant[] }) {
+export default function MarketplaceClient() {
   const [lang, setLang] = useState('vi');
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [allMenuItems, setAllMenuItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [nearMe, setNearMe] = useState(false);
-  const [userCoords, setUserCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedDietary, setSelectedDietary] = useState<string[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [nearMe, setNearMe] = useState(false);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lon: number } | null>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryCoords, setDeliveryCoords] = useState<{ lat: number; lon: number } | null>(null);
   const [customer, setCustomer] = useState<any>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Load language
   useEffect(() => {
     const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
     setLang(stored);
     customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
+
+    // Restore saved delivery address
+    const savedAddr = localStorage.getItem('marketplace_delivery_address');
+    const savedCoords = localStorage.getItem('marketplace_delivery_coords');
+    if (savedAddr) setDeliveryAddress(savedAddr);
+    if (savedCoords) { try { setDeliveryCoords(JSON.parse(savedCoords)); } catch {} }
   }, []);
 
   useEffect(() => {
     localStorage.setItem('marketplace_lang', lang);
     localStorage.setItem('ovenly_language', lang);
   }, [lang]);
+
+  // Fetch restaurants CLIENT-SIDE (matching Base44's approach)
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      try {
+        const res = await fetch(
+          `https://api.base44.app/api/apps/${BASE44_APP_ID}/entities/Restaurant?_limit=500`,
+          { headers: { 'api-key': BASE44_API_KEY, 'Content-Type': 'application/json' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setRestaurants(data);
+        }
+      } catch {}
+      setLoading(false);
+    };
+    fetchRestaurants();
+    const interval = setInterval(fetchRestaurants, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch menu items for search
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const res = await fetch(
+          `https://api.base44.app/api/apps/${BASE44_APP_ID}/entities/MenuItem?_limit=2000`,
+          { headers: { 'api-key': BASE44_API_KEY, 'Content-Type': 'application/json' } }
+        );
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) setAllMenuItems(data);
+        }
+      } catch {}
+    };
+    fetchItems();
+  }, []);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -272,52 +334,70 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
     setShowDropdown(false);
   };
 
-  const filtered = useMemo(() => {
-    let list = restaurants.filter(r => r.slug && r.is_active === true && (r as any).show_on_marketplace === true);
+  const filteredRestaurants = useMemo(() => {
+    let list = restaurants.filter(r => r.is_active === true && r.show_on_marketplace === true);
+
     if (search.trim()) {
       const q = normalize(search);
+      const matchingRestaurantIds = new Set(
+        allMenuItems.filter(item => normalize(item.name).includes(q)).map(item => item.restaurant_id)
+      );
       list = list.filter(r =>
         normalize(r.name).includes(q) ||
         normalize(r.cuisine_type || '').includes(q) ||
-        normalize((r as any).cuisine_type_vietnamese || '').includes(q) ||
+        normalize(r.cuisine_type_vietnamese || '').includes(q) ||
         normalize(r.address || '').includes(q) ||
-        normalize((r as any).district || '').includes(q) ||
-        normalize((r as any).city || '').includes(q)
+        normalize(r.district || '').includes(q) ||
+        normalize(r.city || '').includes(q) ||
+        matchingRestaurantIds.has(r.id)
       );
     }
-    if (selectedCuisines.length > 0) list = list.filter(r => selectedCuisines.includes(r.cuisine_type || ''));
-    if (selectedCity) list = list.filter(r => (r as any).city === selectedCity);
-    if (selectedDietary.length > 0) list = list.filter(r => Array.isArray((r as any).dietary_options) && selectedDietary.every(opt => (r as any).dietary_options.includes(opt)));
-    if (nearMe && userCoords) {
-      list = list.map(r => {
-        if (!(r as any).latitude || !(r as any).longitude) return { ...r, _distance: 9999 };
-        const d = haversineDistance(userCoords.lat, userCoords.lon, (r as any).latitude, (r as any).longitude);
-        return { ...r, _distance: d };
-      }).filter(r => (r as any)._distance <= 5);
+
+    if (selectedCuisines.length > 0) {
+      list = list.filter(r => {
+        const types = Array.isArray(r.cuisine_type) ? r.cuisine_type : (r.cuisine_type ? [r.cuisine_type] : []);
+        return types.some((t: string) => selectedCuisines.includes(t));
+      });
     }
+
+    if (selectedCity) list = list.filter(r => r.city === selectedCity);
+
+    if (selectedDietary.length > 0) {
+      list = list.filter(r => Array.isArray(r.dietary_options) && selectedDietary.every(opt => r.dietary_options.includes(opt)));
+    }
+
+    const activeCoords = deliveryCoords || (nearMe && userCoords ? userCoords : null);
+    if (activeCoords) {
+      list = list.map(r => {
+        if (!r.latitude || !r.longitude) return { ...r, _distance: 9999 };
+        const d = haversineDistance(activeCoords.lat, activeCoords.lon, r.latitude, r.longitude);
+        return { ...r, _distance: d };
+      }).filter(r => r._distance <= 5);
+    }
+
     const tierOrder: Record<string, number> = { Premium: 0, Standard: 1, Basic: 2 };
     list.sort((a, b) => {
-      if (nearMe && userCoords) {
-        const distDiff = ((a as any)._distance || 0) - ((b as any)._distance || 0);
-        if (Math.abs(distDiff) > 0.3) return distDiff;
+      if (activeCoords) {
+        const dd = (a._distance || 0) - (b._distance || 0);
+        if (Math.abs(dd) > 0.3) return dd;
       }
-      const tierDiff = (tierOrder[(a as any).subscription_tier] ?? 2) - (tierOrder[(b as any).subscription_tier] ?? 2);
+      const tierDiff = (tierOrder[a.subscription_tier] ?? 2) - (tierOrder[b.subscription_tier] ?? 2);
       if (tierDiff !== 0) return tierDiff;
-      return ((b as any).average_rating || 0) - ((a as any).average_rating || 0);
+      return (b.average_rating || 0) - (a.average_rating || 0);
     });
-    return list;
-  }, [restaurants, search, selectedCuisines, selectedCity, selectedDietary, nearMe, userCoords]);
 
-  const featured = useMemo(() =>
-    restaurants.filter(r => (r as any).featured && r.is_active === true && (r as any).show_on_marketplace === true)
-      .sort((a, b) => ((a as any).featured_display_order || 0) - ((b as any).featured_display_order || 0)),
+    return list;
+  }, [restaurants, allMenuItems, search, selectedCuisines, selectedDietary, selectedCity, nearMe, userCoords, deliveryCoords]);
+
+  const featuredRestaurants = useMemo(() =>
+    restaurants.filter(r => r.featured && r.is_active === true && r.show_on_marketplace === true)
+      .sort((a, b) => (a.featured_display_order || 0) - (b.featured_display_order || 0)),
     [restaurants]
   );
 
   const toggleCuisine = (key: string) => setSelectedCuisines(prev => prev.includes(key) ? prev.filter(c => c !== key) : [...prev, key]);
   const toggleDietary = (key: string) => setSelectedDietary(prev => prev.includes(key) ? prev.filter(d => d !== key) : [...prev, key]);
-  const clearAll = () => { setSelectedCuisines([]); setSelectedDietary([]); setSelectedCity(null); setNearMe(false); setUserCoords(null); };
-  const popular = lang === 'vi' ? POPULAR_VI : POPULAR_EN;
+  const clearAllFilters = () => { setSelectedCuisines([]); setSelectedDietary([]); setSelectedCity(null); setNearMe(false); setUserCoords(null); };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -326,8 +406,8 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center gap-4">
           <Link href="/" className="flex items-center flex-shrink-0" style={{ gap: '10px' }}>
-            <Image src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" width={44} height={44}
-              className="w-auto h-9 md:h-11 object-contain" />
+            <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly"
+              className="w-auto object-contain" style={{ height: '36px' }} />
             <div className="leading-none">
               <div className="font-heading font-black text-primary text-xl tracking-tight leading-none">LÒ ĐỒ ĂN</div>
               <div className="text-[10px] font-normal text-gray-400 leading-tight tracking-normal">by Ovenly</div>
@@ -344,10 +424,8 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
 
           <div className="flex items-center gap-3 ml-auto">
             <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
-              <button onClick={() => setLang('vi')}
-                className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>VI</button>
-              <button onClick={() => setLang('en')}
-                className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>EN</button>
+              <button onClick={() => setLang('vi')} className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>VI</button>
+              <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>EN</button>
             </div>
 
             {customer ? (
@@ -433,7 +511,7 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
         )}
       </header>
 
-      {/* HERO — exact match to Base44: bg-gradient-to-br from-primary via-primary/90 to-primary/75 */}
+      {/* HERO */}
       <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-14 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-3xl md:text-5xl font-black mb-3 leading-tight">
@@ -443,46 +521,23 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
             {lang === 'vi' ? 'Đặt món dễ dàng — Giao hàng nhanh chóng' : 'Easy ordering — Fast delivery'}
           </p>
           <div className="max-w-2xl mx-auto">
-            <div className="relative">
-              <div className="bg-white rounded-2xl shadow-2xl p-2 flex gap-2 items-center">
-                <svg className="w-5 h-5 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
-                <input value={search} onChange={e => setSearch(e.target.value)}
-                  onFocus={() => setSearchFocused(true)}
-                  onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
-                  placeholder={lang === 'vi' ? 'Tìm nhà hàng hoặc món ăn...' : 'Search restaurants or dishes...'}
-                  className="flex-1 text-sm text-gray-900 outline-none py-2 bg-transparent" />
-                {search && (
-                  <button onClick={() => setSearch('')} className="text-gray-400 hover:text-gray-600">
-                    <X className="w-4 h-4" />
-                  </button>
-                )}
-                <button className="bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex-shrink-0 hover:opacity-90">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                  </svg>
-                </button>
-              </div>
-
-              {searchFocused && !search.trim() && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl p-4 z-50"
-                  style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.12)', border: '1px solid #F0F0F0' }}>
-                  <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-3">
-                    {lang === 'vi' ? 'Tìm kiếm phổ biến' : 'Popular searches'}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {popular.map(term => (
-                      <button key={term} onClick={() => { setSearch(term); setSearchFocused(false); }}
-                        className="px-3 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-gray-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all">
-                        {term}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+            <div className="bg-white rounded-2xl shadow-2xl p-2">
+              <AddressInput
+                onAddressValidated={(isValid, address, coords) => {
+                  if (isValid && address) {
+                    setDeliveryAddress(address);
+                    localStorage.setItem('marketplace_delivery_address', address);
+                    if (coords?.lat && coords?.lon) {
+                      setDeliveryCoords(coords);
+                      localStorage.setItem('marketplace_delivery_coords', JSON.stringify(coords));
+                    }
+                    window.scrollTo({ top: 620, behavior: 'smooth' });
+                  }
+                }}
+                lang={lang}
+                heroMode={true}
+              />
             </div>
-
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-3">
               <button onClick={handleNearMe}
                 className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium transition-colors">
@@ -495,12 +550,12 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
               {!customer && (
                 <>
                   <span className="text-white/40 hidden sm:block">•</span>
-                  <Link href="/login" className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium transition-colors">
+                  <a href="/login" className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium transition-colors">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
                     {lang === 'vi' ? 'Đăng nhập để lưu địa chỉ' : 'Sign in to save address'}
-                  </Link>
+                  </a>
                 </>
               )}
             </div>
@@ -508,44 +563,87 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
         </div>
       </div>
 
-      {/* FILTERS + GRID */}
+      {/* Delivery address bar */}
+      {deliveryAddress && (
+        <div className="bg-white border-b border-gray-100 shadow-sm sticky top-16 z-30">
+          <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <svg className="w-4 h-4 text-primary flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <span className="text-sm font-medium text-gray-800 truncate">{deliveryAddress}</span>
+              {deliveryCoords && <span className="text-xs text-green-600 font-medium flex-shrink-0">✓ {lang === 'vi' ? 'Đang lọc nhà hàng gần bạn' : 'Filtering nearby restaurants'}</span>}
+            </div>
+            <button
+              onClick={() => {
+                setDeliveryAddress('');
+                setDeliveryCoords(null);
+                localStorage.removeItem('marketplace_delivery_address');
+                localStorage.removeItem('marketplace_delivery_coords');
+              }}
+              className="flex-shrink-0 text-xs text-gray-400 hover:text-gray-600 transition-colors font-medium">
+              {lang === 'vi' ? 'Xóa' : 'Clear'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CONTENT */}
       <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 flex-1 w-full">
         <FilterBar
           lang={lang} nearMe={nearMe} onToggleNearMe={handleNearMe}
           selectedCuisines={selectedCuisines} onToggleCuisine={toggleCuisine}
           selectedDietary={selectedDietary} onToggleDietary={toggleDietary}
-          onClearAll={clearAll} selectedCity={selectedCity} onCityChange={setSelectedCity}
+          onClearAll={clearAllFilters} selectedCity={selectedCity} onCityChange={setSelectedCity}
         />
 
-        {featured.length > 0 && !search && selectedCuisines.length === 0 && !selectedCity && (
+        {/* Featured */}
+        {featuredRestaurants.length > 0 && (
           <div className="mb-10">
-            <h2 className="font-heading font-bold text-gray-900 text-xl mb-4 flex items-center gap-2">
+            <h2 className="font-bold text-gray-900 text-xl mb-4 flex items-center gap-2">
               <Crown className="w-5 h-5 text-yellow-500" />
               {lang === 'vi' ? 'Nhà Hàng Nổi Bật' : 'Featured Restaurants'}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {featured.map(r => <RestaurantCard key={r.id} restaurant={r} lang={lang} search={search} />)}
+              {featuredRestaurants.map(r => <RestaurantCard key={r.id} restaurant={r} lang={lang} search={search} />)}
             </div>
           </div>
         )}
 
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-heading font-bold text-gray-900 text-xl">
-            {lang === 'vi' ? 'Tất Cả Nhà Hàng' : 'All Restaurants'}
-          </h2>
+          <h2 className="font-bold text-gray-900 text-xl">{lang === 'vi' ? 'Tất Cả Nhà Hàng' : 'All Restaurants'}</h2>
           <span className="text-sm text-gray-500">
-            {filtered.length} {lang === 'vi' ? 'nhà hàng' : 'restaurants'}
+            {loading ? '...' : `${filteredRestaurants.length} ${lang === 'vi' ? 'nhà hàng' : 'restaurants'}`}
           </span>
         </div>
 
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {Array(8).fill(0).map((_, i) => (
+              <div key={i} className="bg-white rounded-xl border border-gray-200 overflow-hidden animate-pulse">
+                <div className="h-44 bg-gray-200" />
+                <div className="p-4 space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                  <div className="h-9 bg-gray-200 rounded mt-4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredRestaurants.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">🍜</p>
-            <p className="font-heading font-bold text-gray-700 text-lg mb-2">
-              {search ? (lang === 'vi' ? `Không tìm thấy kết quả cho "${search}"` : `No results for "${search}"`) : (lang === 'vi' ? 'Chưa có nhà hàng nào.' : 'No restaurants found.')}
+            <p className="text-gray-700 text-lg font-semibold mb-2">
+              {deliveryCoords && !search.trim()
+                ? (lang === 'vi' ? 'Chưa có nhà hàng giao đến địa chỉ này. Vui lòng thử địa chỉ khác.' : 'No restaurants deliver to this address yet.')
+                : search.trim()
+                ? (lang === 'vi' ? `Không tìm thấy kết quả cho "${search}"` : `No results for "${search}"`)
+                : (lang === 'vi' ? 'Chưa có nhà hàng nào.' : 'No restaurants yet.')}
             </p>
-            {search && (
-              <button onClick={() => setSearch('')}
+            {(search || deliveryCoords) && (
+              <button
+                onClick={() => { setSearch(''); setDeliveryCoords(null); setDeliveryAddress(''); localStorage.removeItem('marketplace_delivery_coords'); localStorage.removeItem('marketplace_delivery_address'); }}
                 className="mt-3 px-5 py-2 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-red-50 transition-colors">
                 {lang === 'vi' ? 'Xóa tìm kiếm' : 'Clear search'}
               </button>
@@ -553,7 +651,7 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {filtered.map(r => <RestaurantCard key={r.id} restaurant={r} lang={lang} search={search} />)}
+            {filteredRestaurants.map(r => <RestaurantCard key={r.id} restaurant={r} lang={lang} search={search} />)}
           </div>
         )}
       </div>
@@ -564,8 +662,7 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center mb-3" style={{ gap: '10px' }}>
-                <Image src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" width={44} height={44}
-                  className="w-auto h-11 object-contain" />
+                <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" style={{ height: '44px', width: 'auto' }} />
                 <div className="leading-none">
                   <div className="font-heading font-black text-primary text-2xl leading-none">LÒ ĐỒ ĂN</div>
                   <div className="text-xs text-gray-400 font-normal">by Ovenly</div>
@@ -577,30 +674,17 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
                   : 'The food discovery platform connecting diners with amazing restaurants across Vietnam.'}
               </p>
               <div className="flex gap-3">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-                  style={{ background: '#EEEEEE', color: '#1877F2' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                  </svg>
-                </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-                  style={{ background: '#EEEEEE', color: '#E1306C' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2"/>
-                    <rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
-                  </svg>
-                </a>
-                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-                  style={{ background: '#EEEEEE', color: '#000000' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19.321 5.562a5.122 5.122 0 01-2.756-3.106V2h-3.686v13.67a2.4 2.4 0 11-2.4-2.4c.293 0 .575.022.856.065V9.237c-.307-.05-.596-.065-.88-.065a6.3 6.3 0 105.894 6.3v-3.27a8.23 8.23 0 004.822 1.533V5.562z"/>
-                  </svg>
-                </a>
+                {[
+                  { href: 'https://facebook.com', color: '#1877F2', icon: <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/> },
+                  { href: 'https://instagram.com', color: '#E1306C', icon: <><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2"/><rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></> },
+                  { href: 'https://tiktok.com', color: '#000000', icon: <path d="M19.321 5.562a5.122 5.122 0 01-2.756-3.106V2h-3.686v13.67a2.4 2.4 0 11-2.4-2.4c.293 0 .575.022.856.065V9.237c-.307-.05-.596-.065-.88-.065a6.3 6.3 0 105.894 6.3v-3.27a8.23 8.23 0 004.822 1.533V5.562z"/> },
+                ].map((s, i) => (
+                  <a key={i} href={s.href} target="_blank" rel="noopener noreferrer"
+                    className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                    style={{ background: '#EEEEEE', color: s.color }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">{s.icon}</svg>
+                  </a>
+                ))}
               </div>
             </div>
 
@@ -620,6 +704,7 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
               </h4>
               <ul className="space-y-2">
                 <li><Link href="/contact" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Mở quán trên LÒ ĐỒ ĂN' : 'Become a Merchant'}</Link></li>
+                <li><Link href="/about" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Tìm hiểu thêm' : 'Learn more'}</Link></li>
                 <li><a href="mailto:hello@ovenly.io" className="text-sm text-gray-500 hover:text-primary transition-colors">hello@ovenly.io</a></li>
               </ul>
             </div>
@@ -628,13 +713,13 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
           <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-xs text-gray-400">© {CURRENT_YEAR} LÒ ĐỒ ĂN™ {lang === 'vi' ? 'Bảo lưu mọi quyền.' : 'All rights reserved.'}</p>
             <div className="flex items-center gap-4 flex-wrap justify-center">
-              <a href="/terms" className="text-gray-400 hover:text-gray-600 text-xs">Điều Khoản Dịch Vụ</a>
+              <a href="/terms" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Điều Khoản Dịch Vụ</a>
               <span className="text-gray-300 text-xs">•</span>
-              <a href="/privacy" className="text-gray-400 hover:text-gray-600 text-xs">Chính Sách Bảo Mật</a>
+              <a href="/privacy" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Chính Sách Bảo Mật</a>
               <span className="text-gray-300 text-xs">•</span>
-              <a href="/security" className="text-gray-400 hover:text-gray-600 text-xs">An Toàn Thông Tin</a>
+              <a href="/security" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">An Toàn Thông Tin</a>
               <span className="text-gray-300 text-xs">•</span>
-              <a href="/claims" className="text-gray-400 hover:text-gray-600 text-xs">Giải Quyết Khiếu Nại</a>
+              <a href="/claims" className="text-gray-400 hover:text-gray-600 text-xs transition-colors">Giải Quyết Khiếu Nại</a>
               <p className="text-xs text-gray-400">{lang === 'vi' ? 'Được cung cấp bởi Ovenly™' : 'Powered by Ovenly™'}</p>
             </div>
           </div>
