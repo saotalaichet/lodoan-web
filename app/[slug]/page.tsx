@@ -38,6 +38,15 @@ function getRestaurantStatus(restaurant: any): 'OPEN' | 'CLOSED' | 'PAUSED' {
   return cur >= oH * 60 + oM && cur < closeMins ? 'OPEN' : 'CLOSED';
 }
 
+function getTodayHours(restaurant: any): string | null {
+  if (!restaurant?.hours) return null;
+  const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const now = new Date();
+  const vn = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+  const h = restaurant.hours[DAYS[vn.getDay()]];
+  return h?.trim() || null;
+}
+
 function getStatusDisplay(status: string, lang: string) {
   const m: Record<string, any> = {
     OPEN: { vi: '● Đang Mở', en: '● Open' },
@@ -469,7 +478,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         return;
       }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
-      const order = await fetch(`${BASE44_URL}/entities/Order`, {
+      const orderRes = await fetch(`${BASE44_URL}/entities/Order`, {
         method: 'POST', headers: BASE44_HEADERS,
         body: JSON.stringify({
           restaurant_id: restaurant.id, restaurant_name: restaurant.name,
@@ -484,7 +493,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
           cash_collected: false, notes, language: lang, status: 'confirmed',
           confirmed_at: new Date().toISOString(),
         }),
-      }).then(r => r.json());
+      });
+      const order = await orderRes.json();
 
       if (ONLINE.includes(paymentMethod)) {
         const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
@@ -913,7 +923,7 @@ export default function RestaurantPage() {
 
   useEffect(() => { localStorage.setItem('ovenly_language', lang); }, [lang]);
 
-  // Fetch restaurant via server-side proxy (avoids CORS)
+  // Fetch restaurant + menu via server-side proxies
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
     const load = async () => {
@@ -923,7 +933,6 @@ export default function RestaurantPage() {
         if (data) {
           setRestaurant(data);
           document.title = `${data.name} | Menu & Đặt Hàng Online`;
-          // Fetch menu via proxy
           const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}`);
           const menuData = await menuRes.json();
           setCategories(menuData.categories || []);
@@ -980,15 +989,34 @@ export default function RestaurantPage() {
 
   const status = getRestaurantStatus(restaurant);
   const isClosed = status !== 'OPEN';
+  const todayHours = getTodayHours(restaurant);
 
+  // Group items by category — with fallback for empty/missing categories
   const groupedItems = useMemo(() => {
+    if (allItems.length === 0) return [];
+
     if (activeCategory !== 'all') {
       const cat = categories.find((c: any) => c.id === activeCategory);
       return cat ? [{ category: cat, items: allItems.filter((i: any) => i.category_id === activeCategory) }] : [];
     }
-    const sortedCats = [...categories].sort((a: any, b: any) => (a.order || a.sort_order || 0) - (b.order || b.sort_order || 0));
-    return sortedCats.map((cat: any) => ({ category: cat, items: allItems.filter((i: any) => i.category_id === cat.id) })).filter(g => g.items.length > 0);
-  }, [activeCategory, allItems, categories]);
+
+    if (categories.length > 0) {
+      const sortedCats = [...categories].sort((a: any, b: any) => (a.order || a.sort_order || 0) - (b.order || b.sort_order || 0));
+      const grouped = sortedCats
+        .map((cat: any) => ({ category: cat, items: allItems.filter((i: any) => i.category_id === cat.id) }))
+        .filter(g => g.items.length > 0);
+      // Add any uncategorized items at end
+      const categorizedIds = new Set(categories.map((c: any) => c.id));
+      const uncategorized = allItems.filter((i: any) => !categorizedIds.has(i.category_id));
+      if (uncategorized.length > 0) {
+        grouped.push({ category: { id: '__uncategorized', name: lang === 'vi' ? 'Khác / Other' : 'Other / Khác', order: 9999 }, items: uncategorized });
+      }
+      return grouped;
+    }
+
+    // Fallback: no categories, show all items in one group
+    return [{ category: { id: '__all', name: lang === 'vi' ? 'Thực Đơn / Menu' : 'Menu / Thực Đơn', order: 0 }, items: allItems }];
+  }, [activeCategory, allItems, categories, lang]);
 
   const getCatLabel = (name: string) => {
     if (!name) return '';
@@ -1077,6 +1105,7 @@ export default function RestaurantPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -1118,6 +1147,7 @@ export default function RestaurantPage() {
         </div>
       </header>
 
+      {/* Hero Banner */}
       <div className="w-full overflow-hidden" style={{ height: 'clamp(200px, 25vw, 300px)' }}>
         {restaurant.banner ? (
           <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" />
@@ -1126,6 +1156,7 @@ export default function RestaurantPage() {
         )}
       </div>
 
+      {/* Closed Banner */}
       {isClosed && (
         <div className="bg-red-50 border-l-4 border-primary px-4 py-4 w-full">
           <div className="max-w-6xl mx-auto flex items-start gap-3">
@@ -1137,16 +1168,33 @@ export default function RestaurantPage() {
         </div>
       )}
 
+      {/* Restaurant Info Bar */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">{restaurant.name}</h1>
-          {restaurant.address && <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-1"><span>📍</span> {restaurant.address}</div>}
-          {restaurant.phone && <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-1"><span>📞</span> {restaurant.phone}</div>}
+          {restaurant.address && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-1">
+              <span>📍</span> {restaurant.address}
+            </div>
+          )}
+          {restaurant.phone && restaurant.phone !== 'N/A' && restaurant.phone !== 'n/a' && (
+            <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-1">
+              <span>📞</span> {restaurant.phone}
+            </div>
+          )}
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusBadgeClass(status)}`}>
               <span className="w-2 h-2 rounded-full inline-block" style={{ background: status === 'OPEN' ? '#22C55E' : status === 'PAUSED' ? '#F97316' : '#9CA3AF' }} />
               {status === 'OPEN' ? (lang === 'vi' ? 'Đang mở cửa' : 'Open') : status === 'PAUSED' ? (lang === 'vi' ? 'Tạm dừng' : 'Paused') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
             </span>
+            {todayHours && (
+              <span className="flex items-center gap-1 text-xs text-gray-500 font-medium">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {todayHours}
+              </span>
+            )}
             {restaurant.total_ratings >= 3 && (
               <div className="flex items-center gap-1">
                 <div className="flex items-center gap-0.5">
@@ -1164,6 +1212,7 @@ export default function RestaurantPage() {
         </div>
       </div>
 
+      {/* Category Tabs */}
       <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
         <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
           <button onClick={() => setActiveCategory('all')}
@@ -1187,6 +1236,7 @@ export default function RestaurantPage() {
         </div>
       </div>
 
+      {/* Body */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-6">
@@ -1227,6 +1277,7 @@ export default function RestaurantPage() {
           )}
         </div>
 
+        {/* Cart Sidebar Desktop */}
         <div className="hidden md:block w-72 flex-shrink-0">
           <div className="sticky top-[112px]">
             <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
@@ -1235,6 +1286,7 @@ export default function RestaurantPage() {
         </div>
       </div>
 
+      {/* Mobile Floating Cart */}
       {totalQty > 0 && !isClosed && (
         <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
           <button onClick={() => setShowMobileCart(true)}
@@ -1246,6 +1298,7 @@ export default function RestaurantPage() {
         </div>
       )}
 
+      {/* Mobile Cart Drawer */}
       {showMobileCart && (
         <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
@@ -1280,6 +1333,41 @@ export default function RestaurantPage() {
         restaurant={restaurant} subtotal={subtotal} lang={lang}
       />
 
+      {/* Cuisine & dietary info */}
+      {(restaurant.cuisine_type || (restaurant.dietary_options && restaurant.dietary_options.length > 0)) && (
+        <div className="max-w-6xl mx-auto w-full px-4 mt-4 mb-2">
+          <div className="border-t border-gray-200 pt-4 flex flex-wrap items-center gap-2">
+            {restaurant.cuisine_type && (
+              <span className="text-sm font-semibold text-gray-500">
+                {lang === 'vi' ? 'Ẩm thực:' : 'Cuisine:'}
+                {' '}
+                <span className="text-primary">
+                  {lang === 'vi' ? (restaurant.cuisine_type_vietnamese || restaurant.cuisine_type) : restaurant.cuisine_type}
+                </span>
+              </span>
+            )}
+            {Array.isArray(restaurant.dietary_options) && restaurant.dietary_options.map((opt: string) => {
+              const dietaryLabels: Record<string, { vi: string; emoji: string }> = {
+                'Vegetarian Friendly': { vi: 'Thân Thiện Với Người Ăn Chay', emoji: '🥗' },
+                'Vegan Friendly': { vi: 'Thuần Chay', emoji: '🌱' },
+                'Gluten Free': { vi: 'Không Chứa Gluten', emoji: '🌾' },
+                'Halal': { vi: 'Halal', emoji: '☪️' },
+                'Nut Free': { vi: 'Không Có Hạt', emoji: '🥜' },
+                'Dairy Free': { vi: 'Không Có Sữa', emoji: '🥛' },
+                'Seafood Free': { vi: 'Không Có Hải Sản', emoji: '🦐' },
+              };
+              const info = dietaryLabels[opt] || { vi: opt, emoji: '✓' };
+              return (
+                <span key={opt} className="inline-flex items-center gap-1 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-full">
+                  {info.emoji} {lang === 'vi' ? info.vi : opt}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
       {restaurant?.show_powered_by !== false && (
         <footer className="bg-white border-t border-gray-100 py-4 mt-4">
           <div className="max-w-6xl mx-auto px-4 text-center">
