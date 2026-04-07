@@ -1,48 +1,55 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const PRIMARY = '#8B1A1A';
 
-const sections = [
-  { title: 'Điều 1 — GIỚI THIỆU', content: 'Ovenly cam kết bảo vệ thông tin cá nhân của người dùng theo đúng quy định pháp luật Việt Nam. Chính sách này giải thích cách chúng tôi thu thập sử dụng và bảo vệ thông tin của bạn. Bằng việc sử dụng dịch vụ bạn đồng ý với chính sách này.' },
-  { title: 'Điều 2 — THÔNG TIN CHÚNG TÔI THU THẬP', content: 'Thông tin cá nhân bao gồm họ tên số điện thoại địa chỉ email và địa chỉ giao hàng. Thông tin giao dịch bao gồm lịch sử đặt hàng và phương thức thanh toán. Thông tin thiết bị bao gồm địa chỉ IP loại thiết bị và trình duyệt. Dữ liệu vị trí khi bạn cho phép ứng dụng truy cập vị trí của bạn.' },
-  { title: 'Điều 3 — MỤC ĐÍCH SỬ DỤNG', content: 'Xử lý và quản lý đơn hàng của bạn. Gửi thông báo liên quan đến đơn hàng qua email. Cải thiện chất lượng dịch vụ và trải nghiệm người dùng. Phòng chống gian lận và bảo vệ an toàn nền tảng. Tuân thủ các quy định pháp luật khi có yêu cầu từ cơ quan có thẩm quyền.' },
-  { title: 'Điều 4 — CHIA SẺ THÔNG TIN', content: 'Chúng tôi chia sẻ thông tin giao hàng cần thiết với nhà hàng để thực hiện đơn hàng. Chúng tôi không bán thông tin cá nhân cho bên thứ ba. Chúng tôi có thể chia sẻ thông tin khi có yêu cầu hợp pháp từ cơ quan nhà nước có thẩm quyền.' },
-  { title: 'Điều 5 — BẢO MẬT DỮ LIỆU', content: 'Dữ liệu được lưu trữ trên hệ thống bảo mật. Chỉ nhân viên được cấp quyền mới có thể truy cập thông tin khách hàng. Chúng tôi áp dụng các biện pháp bảo mật kỹ thuật tiêu chuẩn ngành.' },
-  { title: 'Điều 6 — QUYỀN CỦA NGƯỜI DÙNG', content: 'Bạn có quyền yêu cầu xem chỉnh sửa hoặc xóa thông tin cá nhân của mình. Bạn có quyền từ chối nhận email tiếp thị bất kỳ lúc nào. Liên hệ support@ovenly.io để thực hiện các quyền này.' },
-  { title: 'Điều 7 — COOKIE', content: 'Chúng tôi sử dụng cookie để cải thiện trải nghiệm người dùng và phân tích lưu lượng truy cập. Bạn có thể tắt cookie trong cài đặt trình duyệt tuy nhiên một số tính năng có thể bị ảnh hưởng.' },
-  { title: 'Điều 8 — THÔNG TIN TRẺ EM', content: 'Dịch vụ không dành cho người dưới 13 tuổi. Chúng tôi không cố tình thu thập thông tin cá nhân của trẻ em dưới 13 tuổi.' },
-  { title: 'Điều 9 — THAY ĐỔI CHÍNH SÁCH', content: 'Chính sách này có thể được cập nhật định kỳ. Chúng tôi sẽ thông báo cho người dùng về các thay đổi quan trọng qua email hoặc thông báo trên nền tảng. Việc tiếp tục sử dụng dịch vụ sau khi thay đổi đồng nghĩa với việc bạn chấp nhận chính sách mới.' },
-  { title: 'Điều 10 — LIÊN HỆ', content: 'Email: support@ovenly.io' },
-];
-
 export default function PrivacyPage() {
+  const [lang, setLang] = useState('vi');
+  useEffect(() => {
+    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
+    setLang(stored);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
-          <Link href="/" className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors">← Quay lại</Link>
+    <div className="min-h-screen" style={{ background: 'hsl(30,20%,97%)' }}>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+          <Link href="/" className="font-heading font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
+          <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
+            <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
+              style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
+            <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
+              style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
+          </div>
         </div>
       </header>
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-black text-gray-900 mb-1">CHÍNH SÁCH BẢO MẬT THÔNG TIN</h1>
-        <p className="text-sm text-gray-500 mb-1">LÒ ĐỒ ĂN — Nền tảng đặt món trực tuyến</p>
-        <p className="text-xs text-gray-400 mb-8">Cập nhật lần cuối: 01/04/2026</p>
-        <div className="space-y-0">
-          {sections.map((s, i) => (
-            <div key={i}>
-              <div className="py-5">
-                <h2 className="font-bold text-base mb-2" style={{ color: PRIMARY }}>{s.title}</h2>
-                <p className="text-sm text-gray-700 leading-relaxed">{s.content}</p>
-              </div>
-              {i < sections.length - 1 && <div className="border-t border-gray-100" />}
-            </div>
-          ))}
+      <div className="max-w-3xl mx-auto px-4 py-12">
+        <h1 className="font-heading text-3xl font-black mb-8" style={{ color: PRIMARY }}>
+          {lang === 'vi' ? 'Chính Sách Bảo Mật' : 'Privacy Policy'}
+        </h1>
+        <div className="bg-white rounded-2xl p-8 space-y-6 text-gray-700 leading-relaxed" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <p className="text-sm text-gray-400">{lang === 'vi' ? 'Cập nhật lần cuối: Tháng 1 năm 2025' : 'Last updated: January 2025'}</p>
+          {lang === 'vi' ? (
+            <>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">1. Thông Tin Chúng Tôi Thu Thập</h2><p>Chúng tôi thu thập thông tin bạn cung cấp trực tiếp (tên, email, số điện thoại, địa chỉ giao hàng), thông tin đơn hàng và lịch sử giao dịch, dữ liệu sử dụng và thông tin thiết bị, và vị trí địa lý khi bạn cho phép.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">2. Cách Chúng Tôi Sử Dụng Thông Tin</h2><p>Thông tin của bạn được sử dụng để xử lý và giao hàng đơn hàng, liên lạc về đơn hàng và dịch vụ, cải thiện trải nghiệm người dùng, tuân thủ các yêu cầu pháp lý, và ngăn chặn gian lận.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">3. Chia Sẻ Thông Tin</h2><p>Chúng tôi chia sẻ thông tin cần thiết với nhà hàng đối tác để hoàn thành đơn hàng và với đối tác thanh toán để xử lý giao dịch. Chúng tôi không bán thông tin cá nhân của bạn cho bên thứ ba.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">4. Bảo Mật Dữ Liệu</h2><p>Chúng tôi sử dụng các biện pháp bảo mật tiêu chuẩn ngành để bảo vệ thông tin của bạn, bao gồm mã hóa SSL và kiểm soát truy cập nghiêm ngặt.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">5. Quyền Của Bạn</h2><p>Bạn có quyền truy cập, chỉnh sửa hoặc xóa thông tin cá nhân của mình bất kỳ lúc nào bằng cách liên hệ với chúng tôi qua <a href="mailto:hello@ovenly.io" className="underline" style={{ color: PRIMARY }}>hello@ovenly.io</a>.</p></section>
+            </>
+          ) : (
+            <>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">1. Information We Collect</h2><p>We collect information you provide directly (name, email, phone, delivery address), order information and transaction history, usage data and device information, and geographic location when you permit.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">2. How We Use Information</h2><p>Your information is used to process and fulfill orders, communicate about orders and services, improve user experience, comply with legal requirements, and prevent fraud.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">3. Information Sharing</h2><p>We share necessary information with partner restaurants to complete orders and with payment partners to process transactions. We do not sell your personal information to third parties.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">4. Data Security</h2><p>We use industry-standard security measures to protect your information, including SSL encryption and strict access controls.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">5. Your Rights</h2><p>You have the right to access, correct, or delete your personal information at any time by contacting us at <a href="mailto:hello@ovenly.io" className="underline" style={{ color: PRIMARY }}>hello@ovenly.io</a>.</p></section>
+            </>
+          )}
         </div>
-      </main>
-      <footer className="border-t border-gray-100 py-6 mt-4">
-        <p className="text-xs text-gray-400 text-center">LÒ ĐỒ ĂN™ | Powered by Ovenly™</p>
-      </footer>
+      </div>
     </div>
   );
 }

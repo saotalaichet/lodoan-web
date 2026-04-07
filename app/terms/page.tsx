@@ -1,50 +1,59 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const PRIMARY = '#8B1A1A';
 
-const sections = [
-  { title: 'Điều 1 — GIỚI THIỆU', content: 'LÒ ĐỒ ĂN là sàn giao dịch thương mại điện tử được vận hành bởi Công ty TNHH MTV Công Nghệ Ovenly. Nền tảng kết nối khách hàng với các nhà hàng và cơ sở ẩm thực. Bằng việc sử dụng dịch vụ hoặc tạo tài khoản bạn đồng ý với các điều khoản dưới đây. Nếu bạn không đồng ý vui lòng không sử dụng dịch vụ.' },
-  { title: 'Điều 2 — ĐỊNH NGHĨA', content: 'Sàn LÒ ĐỒ ĂN là website và ứng dụng tại lodoan.vn. Nhà hàng là các đối tác cung cấp thực phẩm trên nền tảng. Khách hàng là cá nhân đặt hàng qua nền tảng. Đơn hàng là yêu cầu mua thực phẩm được xác nhận giữa khách hàng và nhà hàng.' },
-  { title: 'Điều 3 — TÀI KHOẢN VÀ BẢO MẬT', content: 'Người dùng chịu trách nhiệm bảo mật thông tin tài khoản. Không chia sẻ mật khẩu cho bên thứ ba. Thông báo ngay cho chúng tôi nếu phát hiện truy cập trái phép. Ovenly có quyền khóa tài khoản nếu phát hiện vi phạm.' },
-  { title: 'Điều 4 — QUY TRÌNH ĐẶT HÀNG', content: 'Khách hàng chọn nhà hàng và món ăn trên lodoan.vn. Điền thông tin giao hàng và chọn phương thức thanh toán. Đặt đơn và chờ nhà hàng xác nhận. Đơn hàng được xác nhận khi nhà hàng chấp thuận. Hợp đồng mua bán là trực tiếp giữa khách hàng và nhà hàng.' },
-  { title: 'Điều 5 — THANH TOÁN', content: 'Các phương thức thanh toán bao gồm: Tiền mặt khi nhận hàng (COD), Chuyển khoản ngân hàng, Ví điện tử MoMo và ZaloPay. Ovenly không chịu trách nhiệm về sai sót do nhập sai thông tin thanh toán.' },
-  { title: 'Điều 6 — GIAO HÀNG', content: 'Phí giao hàng do khách hàng thanh toán theo quy định của từng nhà hàng. Thời gian giao hàng là ước tính và có thể thay đổi do điều kiện thời tiết hoặc giao thông. Ovenly không trực tiếp thực hiện dịch vụ giao hàng.' },
-  { title: 'Điều 7 — HỦY ĐƠN VÀ HOÀN TIỀN', content: 'Khách hàng có thể hủy đơn trước khi nhà hàng xác nhận. Sau khi nhà hàng xác nhận việc hủy đơn phụ thuộc vào chính sách nhà hàng. Hoàn tiền được xử lý trong vòng 5-7 ngày làm việc. Tài khoản có thể bị hạn chế nếu hủy đơn nhiều lần không có lý do chính đáng.' },
-  { title: 'Điều 8 — TRÁCH NHIỆM NỀN TẢNG', content: 'Ovenly đóng vai trò là nền tảng kết nối và không phải là nhà cung cấp thực phẩm. Chất lượng món ăn là trách nhiệm của nhà hàng. Ovenly không chịu trách nhiệm về sự chậm trễ do yếu tố khách quan. Ovenly bảo lưu quyền chỉnh sửa điều khoản này.' },
-  { title: 'Điều 9 — HÀNH VI BỊ CẤM', content: 'Nghiêm cấm sử dụng nền tảng cho mục đích gian lận lừa đảo hoặc bất hợp pháp. Không đăng thông tin sai lệch hoặc gây hiểu nhầm. Không can thiệp vào hệ thống kỹ thuật của nền tảng. Vi phạm sẽ bị xử lý theo quy định pháp luật.' },
-  { title: 'Điều 10 — QUYỀN SỞ HỮU TRÍ TUỆ', content: 'Toàn bộ nội dung trên LÒ ĐỒ ĂN bao gồm logo thương hiệu LÒ ĐỒ ĂN™ và OVENLY™ hình ảnh và văn bản thuộc quyền sở hữu của Ovenly. Nghiêm cấm sao chép hoặc sử dụng mà không có sự cho phép bằng văn bản.' },
-  { title: 'Điều 11 — LUẬT ÁP DỤNG', content: 'Các điều khoản này được điều chỉnh bởi pháp luật Việt Nam. Mọi tranh chấp được giải quyết tại cơ quan có thẩm quyền tại Thành phố Hồ Chí Minh.' },
-  { title: 'Điều 12 — LIÊN HỆ', content: 'Email: support@ovenly.io — Website: lodoan.vn/contact' },
-];
-
 export default function TermsPage() {
+  const [lang, setLang] = useState('vi');
+  useEffect(() => {
+    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
+    setLang(stored);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
-          <Link href="/" className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors">← Quay lại</Link>
+    <div className="min-h-screen" style={{ background: 'hsl(30,20%,97%)' }}>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+          <Link href="/" className="font-heading font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
+          <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
+            <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
+              style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
+            <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
+              style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
+          </div>
         </div>
       </header>
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-black text-gray-900 mb-1">ĐIỀU KHOẢN DỊCH VỤ</h1>
-        <p className="text-sm text-gray-500 mb-1">LÒ ĐỒ ĂN — Nền tảng đặt món trực tuyến</p>
-        <p className="text-xs text-gray-400 mb-8">Cập nhật lần cuối: 01/04/2026</p>
-        <div className="space-y-0">
-          {sections.map((s, i) => (
-            <div key={i}>
-              <div className="py-5">
-                <h2 className="font-bold text-base mb-2" style={{ color: PRIMARY }}>{s.title}</h2>
-                <p className="text-sm text-gray-700 leading-relaxed">{s.content}</p>
-              </div>
-              {i < sections.length - 1 && <div className="border-t border-gray-100" />}
-            </div>
-          ))}
+      <div className="max-w-3xl mx-auto px-4 py-12">
+        <h1 className="font-heading text-3xl font-black mb-8" style={{ color: PRIMARY }}>
+          {lang === 'vi' ? 'Điều Khoản Dịch Vụ' : 'Terms of Service'}
+        </h1>
+        <div className="bg-white rounded-2xl p-8 space-y-6 text-gray-700 leading-relaxed" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <p className="text-sm text-gray-400">{lang === 'vi' ? 'Cập nhật lần cuối: Tháng 1 năm 2025' : 'Last updated: January 2025'}</p>
+          {lang === 'vi' ? (
+            <>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">1. Chấp Nhận Điều Khoản</h2><p>Bằng cách sử dụng nền tảng LÒ ĐỒ ĂN ("Nền tảng"), bạn đồng ý bị ràng buộc bởi các Điều Khoản Dịch Vụ này. Nếu bạn không đồng ý với bất kỳ điều khoản nào, vui lòng không sử dụng Nền tảng.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">2. Mô Tả Dịch Vụ</h2><p>LÒ ĐỒ ĂN là nền tảng đặt hàng thực phẩm trực tuyến kết nối khách hàng với các nhà hàng đối tác. Chúng tôi tạo điều kiện thuận lợi cho việc đặt hàng nhưng không phải là bên bán hàng trực tiếp. Các nhà hàng chịu trách nhiệm về chất lượng thực phẩm và giao hàng.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">3. Tài Khoản Người Dùng</h2><p>Bạn có thể tạo tài khoản để trải nghiệm đầy đủ tính năng. Bạn chịu trách nhiệm duy trì tính bảo mật của tài khoản và thông báo cho chúng tôi ngay lập tức nếu có bất kỳ sử dụng trái phép nào. Bạn phải cung cấp thông tin chính xác và cập nhật khi đăng ký.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">4. Đặt Hàng và Thanh Toán</h2><p>Tất cả đơn hàng phải được xác nhận bởi nhà hàng. Giá cả được hiển thị bằng đồng Việt Nam (VNĐ) và có thể thay đổi. Thanh toán được xử lý an toàn thông qua các đối tác thanh toán được ủy quyền. Hoàn tiền tuân theo chính sách của từng nhà hàng.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">5. Hành Vi Bị Cấm</h2><p>Bạn đồng ý không sử dụng Nền tảng cho bất kỳ mục đích bất hợp pháp, cung cấp thông tin sai lệch, cố gắng truy cập trái phép vào hệ thống của chúng tôi, hoặc tham gia vào bất kỳ hành vi nào có thể gây hại cho người dùng khác hoặc nhà hàng đối tác.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">6. Giới Hạn Trách Nhiệm</h2><p>LÒ ĐỒ ĂN không chịu trách nhiệm về chất lượng thực phẩm, thời gian giao hàng, hoặc bất kỳ thiệt hại nào phát sinh từ việc sử dụng dịch vụ của các nhà hàng đối tác. Trách nhiệm của chúng tôi được giới hạn ở mức tối đa theo luật pháp Việt Nam.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">7. Liên Hệ</h2><p>Nếu bạn có câu hỏi về Điều Khoản Dịch Vụ này, vui lòng liên hệ: <a href="mailto:hello@ovenly.io" className="underline" style={{ color: PRIMARY }}>hello@ovenly.io</a></p></section>
+            </>
+          ) : (
+            <>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">1. Acceptance of Terms</h2><p>By using the LÒ ĐỒ ĂN platform ("Platform"), you agree to be bound by these Terms of Service. If you do not agree to any terms, please do not use the Platform.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">2. Service Description</h2><p>LÒ ĐỒ ĂN is an online food ordering platform connecting customers with partner restaurants. We facilitate ordering but are not the direct seller. Restaurants are responsible for food quality and delivery.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">3. User Accounts</h2><p>You may create an account for full features. You are responsible for maintaining account security and notifying us immediately of any unauthorized use. You must provide accurate information when registering.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">4. Orders and Payments</h2><p>All orders must be confirmed by the restaurant. Prices are in Vietnamese Dong (VND) and may change. Payments are securely processed through authorized payment partners. Refunds follow each restaurant's policy.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">5. Prohibited Conduct</h2><p>You agree not to use the Platform for any illegal purpose, provide false information, attempt unauthorized access to our systems, or engage in any conduct that may harm other users or partner restaurants.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">6. Limitation of Liability</h2><p>LÒ ĐỒ ĂN is not responsible for food quality, delivery times, or any damages arising from the use of partner restaurant services. Our liability is limited to the maximum extent permitted by Vietnamese law.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">7. Contact</h2><p>If you have questions about these Terms, please contact: <a href="mailto:hello@ovenly.io" className="underline" style={{ color: PRIMARY }}>hello@ovenly.io</a></p></section>
+            </>
+          )}
         </div>
-      </main>
-      <footer className="border-t border-gray-100 py-6 mt-4">
-        <p className="text-xs text-gray-400 text-center">LÒ ĐỒ ĂN™ | Powered by Ovenly™</p>
-      </footer>
+      </div>
     </div>
   );
 }

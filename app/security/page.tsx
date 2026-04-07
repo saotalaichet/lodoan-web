@@ -1,46 +1,52 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 const PRIMARY = '#8B1A1A';
 
-const sections = [
-  { title: 'Điều 1 — CAM KẾT BẢO MẬT', content: 'Ovenly cam kết bảo vệ thông tin cá nhân và tài chính của người dùng theo tiêu chuẩn cao nhất. Chúng tôi liên tục cải thiện hệ thống bảo mật để đảm bảo an toàn cho mọi giao dịch trên nền tảng.' },
-  { title: 'Điều 2 — BẢO MẬT TÀI KHOẢN', content: 'Mật khẩu được mã hóa và không được lưu dưới dạng văn bản thô. Khuyến nghị sử dụng mật khẩu mạnh gồm chữ hoa chữ thường số và ký tự đặc biệt. Đăng xuất khỏi tài khoản sau khi sử dụng trên thiết bị công cộng. Thông báo ngay cho chúng tôi nếu phát hiện truy cập trái phép vào tài khoản của bạn.' },
-  { title: 'Điều 3 — BẢO MẬT GIAO DỊCH', content: 'Tất cả giao dịch thanh toán được xử lý qua cổng thanh toán bảo mật. Chúng tôi không lưu trữ thông tin thẻ ngân hàng đầy đủ của khách hàng. Mọi giao dịch được bảo vệ bằng kết nối mã hóa SSL.' },
-  { title: 'Điều 4 — PHÒNG CHỐNG GIAN LẬN', content: 'Hệ thống tự động phát hiện và chặn các địa chỉ IP có hành vi đáng ngờ. Chúng tôi duy trì danh sách đen IP để bảo vệ nhà hàng và khách hàng khỏi hành vi gian lận. Mọi hành vi gian lận sẽ bị xử lý theo quy định pháp luật. Báo cáo hành vi gian lận qua email: support@ovenly.io' },
-  { title: 'Điều 5 — TRÁCH NHIỆM NGƯỜI DÙNG', content: 'Không chia sẻ thông tin đăng nhập với bất kỳ ai. Không sử dụng tài khoản của người khác. Không sử dụng công cụ hoặc phần mềm tự động để can thiệp vào hệ thống. Báo ngay cho chúng tôi nếu phát hiện lỗ hổng bảo mật.' },
-  { title: 'Điều 6 — XỬ LÝ SỰ CỐ', content: 'Nếu phát hiện sự cố bảo mật vui lòng báo cáo ngay qua support@ovenly.io. Chúng tôi cam kết xử lý sự cố trong vòng 24 giờ kể từ khi nhận được báo cáo.' },
-  { title: 'Điều 7 — LƯU TRỮ DỮ LIỆU', content: 'Dữ liệu được lưu trữ trên máy chủ bảo mật tại Việt Nam. Chúng tôi lưu trữ dữ liệu theo đúng thời hạn quy định của pháp luật Việt Nam.' },
-  { title: 'Điều 8 — LIÊN HỆ', content: 'Email: support@ovenly.io' },
-];
-
 export default function SecurityPage() {
+  const [lang, setLang] = useState('vi');
+  useEffect(() => {
+    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
+    setLang(stored);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
-          <Link href="/" className="text-sm font-medium text-gray-500 hover:text-gray-800 transition-colors">← Quay lại</Link>
+    <div className="min-h-screen" style={{ background: 'hsl(30,20%,97%)' }}>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+          <Link href="/" className="font-heading font-black text-lg" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</Link>
+          <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
+            <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
+              style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
+            <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
+              style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
+          </div>
         </div>
       </header>
-      <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-black text-gray-900 mb-1">CHÍNH SÁCH AN TOÀN THÔNG TIN</h1>
-        <p className="text-sm text-gray-500 mb-1">LÒ ĐỒ ĂN — Nền tảng đặt món trực tuyến</p>
-        <p className="text-xs text-gray-400 mb-8">Cập nhật lần cuối: 01/04/2026</p>
-        <div className="space-y-0">
-          {sections.map((s, i) => (
-            <div key={i}>
-              <div className="py-5">
-                <h2 className="font-bold text-base mb-2" style={{ color: PRIMARY }}>{s.title}</h2>
-                <p className="text-sm text-gray-700 leading-relaxed">{s.content}</p>
-              </div>
-              {i < sections.length - 1 && <div className="border-t border-gray-100" />}
-            </div>
-          ))}
+      <div className="max-w-3xl mx-auto px-4 py-12">
+        <h1 className="font-heading text-3xl font-black mb-8" style={{ color: PRIMARY }}>
+          {lang === 'vi' ? 'An Toàn Thông Tin' : 'Information Security'}
+        </h1>
+        <div className="bg-white rounded-2xl p-8 space-y-6 text-gray-700 leading-relaxed" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          {lang === 'vi' ? (
+            <>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Cam Kết Bảo Mật</h2><p>LÒ ĐỒ ĂN cam kết bảo vệ thông tin và dữ liệu cá nhân của người dùng theo các tiêu chuẩn bảo mật cao nhất.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Mã Hóa Dữ Liệu</h2><p>Tất cả dữ liệu truyền tải được mã hóa bằng SSL/TLS. Thông tin thanh toán được xử lý bởi các đối tác thanh toán được chứng nhận PCI DSS.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Kiểm Soát Truy Cập</h2><p>Chúng tôi áp dụng nguyên tắc đặc quyền tối thiểu — chỉ những nhân viên được ủy quyền mới có thể truy cập dữ liệu người dùng, và chỉ khi cần thiết để cung cấp dịch vụ.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Báo Cáo Lỗ Hổng Bảo Mật</h2><p>Nếu bạn phát hiện lỗ hổng bảo mật, vui lòng báo cáo cho chúng tôi qua <a href="mailto:hello@ovenly.io" className="underline" style={{ color: PRIMARY }}>hello@ovenly.io</a>. Chúng tôi cam kết phản hồi trong vòng 24 giờ.</p></section>
+            </>
+          ) : (
+            <>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Security Commitment</h2><p>LÒ ĐỒ ĂN is committed to protecting user information and personal data according to the highest security standards.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Data Encryption</h2><p>All transmitted data is encrypted with SSL/TLS. Payment information is processed by PCI DSS certified payment partners.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Access Control</h2><p>We apply the principle of least privilege — only authorized employees can access user data, and only when necessary to provide services.</p></section>
+              <section><h2 className="font-heading font-bold text-lg text-gray-900 mb-3">Vulnerability Reporting</h2><p>If you discover a security vulnerability, please report it to us at <a href="mailto:hello@ovenly.io" className="underline" style={{ color: PRIMARY }}>hello@ovenly.io</a>. We commit to responding within 24 hours.</p></section>
+            </>
+          )}
         </div>
-      </main>
-      <footer className="border-t border-gray-100 py-6 mt-4">
-        <p className="text-xs text-gray-400 text-center">LÒ ĐỒ ĂN™ | Powered by Ovenly™</p>
-      </footer>
+      </div>
     </div>
   );
 }
