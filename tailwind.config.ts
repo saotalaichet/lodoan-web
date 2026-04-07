@@ -7,16 +7,7 @@ const config: Config = {
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
-    extend: {
-      fontFamily: {
-        heading: ['Plus Jakarta Sans', 'sans-serif'],
-        sans: ['Inter', 'sans-serif'],
-      },
-      colors: {
-        primary: 'hsl(var(--color-primary) / <alpha-value>)',
-        accent: 'hsl(var(--color-accent) / <alpha-value>)',
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };
