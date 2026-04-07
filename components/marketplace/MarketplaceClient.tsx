@@ -7,8 +7,6 @@ import FilterBar from './FilterBar';
 import AddressInput from './AddressInput';
 import { customerAuth } from '@/lib/customerAuth';
 
-const BASE44_APP_ID = process.env.NEXT_PUBLIC_BASE44_APP_ID || '69c130c9110a89987aae7fb0';
-const BASE44_API_KEY = process.env.NEXT_PUBLIC_BASE44_API_KEY || '1552c0075c5e4229b7c5a76cbbb9a457';
 const CURRENT_YEAR = new Date().getFullYear();
 
 const fmt = (v: number) =>
@@ -76,6 +74,15 @@ const CUISINE_DISPLAY: Record<string, any> = {
   Other: { en: 'Other', vi: 'Khác' },
   vietnamese: { en: 'Vietnamese', vi: 'Việt Nam' },
   japanese: { en: 'Japanese', vi: 'Nhật Bản' },
+  korean: { en: 'Korean', vi: 'Hàn Quốc' },
+  chinese: { en: 'Chinese', vi: 'Trung Hoa' },
+  thai: { en: 'Thai', vi: 'Thái Lan' },
+  italian: { en: 'Italian', vi: 'Ý' },
+  american: { en: 'American', vi: 'Mỹ' },
+  fusion: { en: 'Fusion', vi: 'Đa Phong Cách' },
+  cafe: { en: 'Cafe', vi: 'Cafe' },
+  dessert: { en: 'Dessert', vi: 'Tráng Miệng' },
+  other: { en: 'Other', vi: 'Khác' },
 };
 
 function HighlightText({ text, query }: { text: string; query: string }) {
@@ -109,14 +116,12 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
   const hasSlug = !!restaurant.slug;
 
   const handleClick = () => {
-    window.location.href = `/order/${restaurant.slug}`;
+    if (hasSlug) window.location.href = `/order/${restaurant.slug}`;
   };
 
   const handleOrderNow = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (hasSlug && !isOrderingDisabled) {
-      window.location.href = `/order/${restaurant.slug}`;
-    }
+    if (hasSlug && !isOrderingDisabled) window.location.href = `/order/${restaurant.slug}`;
   };
 
   return (
@@ -139,7 +144,6 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             </svg>
           </div>
         )}
-
         {isPremium && (
           <span className="absolute top-2 left-2 z-20 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
             <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Ưu Tiên' : 'Priority'}
@@ -150,15 +154,13 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Nổi Bật' : 'Featured'}
           </span>
         )}
-
         <div className="absolute top-2 right-2 z-20">
           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badgeClass}`}>
             {statusText}
           </span>
         </div>
-
         <div
-          className="absolute flex items-center justify-center overflow-hidden flex-shrink-0"
+          className="absolute flex items-center justify-center overflow-hidden"
           style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}
         >
           {restaurant.logo ? (
@@ -175,14 +177,12 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         <h3 className="font-bold leading-tight mb-1.5" style={{ fontSize: '15px', color: '#1A1A1A' }}>
           <HighlightText text={restaurant.name} query={search} />
         </h3>
-
         {cuisineLabel && (
           <span className="inline-block self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2"
             style={{ background: '#FFF0ED', color: '#8B1A1A' }}>
             {cuisineLabel}
           </span>
         )}
-
         {totalRatings >= 3 && (
           <div className="flex items-center gap-1 mb-2">
             <div className="flex items-center gap-0.5">
@@ -197,7 +197,6 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             <span style={{ fontSize: '11px', color: '#888888' }}>({totalRatings} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
           </div>
         )}
-
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
           {restaurant.delivery_fee !== undefined && (
             <span>{restaurant.delivery_fee === 0
@@ -209,7 +208,6 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             <span>{lang === 'vi' ? 'Tối thiểu' : 'Min'}: {fmt(restaurant.min_order_amount)}</span>
           )}
         </div>
-
         <button
           onClick={handleOrderNow}
           disabled={!hasSlug || isOrderingDisabled}
@@ -256,13 +254,10 @@ export default function MarketplaceClient() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load language
   useEffect(() => {
     const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
     setLang(stored);
     customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
-
-    // Restore saved delivery address
     const savedAddr = localStorage.getItem('marketplace_delivery_address');
     const savedCoords = localStorage.getItem('marketplace_delivery_coords');
     if (savedAddr) setDeliveryAddress(savedAddr);
@@ -274,19 +269,18 @@ export default function MarketplaceClient() {
     localStorage.setItem('ovenly_language', lang);
   }, [lang]);
 
-  // Fetch restaurants CLIENT-SIDE (matching Base44's approach)
+  // Fetch via server-side proxy (avoids CORS, handles any response format)
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const res = await fetch(
-          `https://api.base44.app/api/apps/${BASE44_APP_ID}/entities/Restaurant?_limit=500`,
-          { headers: { 'api-key': BASE44_API_KEY, 'Content-Type': 'application/json' } }
-        );
+        const res = await fetch('/api/restaurants');
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data)) setRestaurants(data);
         }
-      } catch {}
+      } catch (err) {
+        console.error('Failed to fetch restaurants:', err);
+      }
       setLoading(false);
     };
     fetchRestaurants();
@@ -294,16 +288,18 @@ export default function MarketplaceClient() {
     return () => clearInterval(interval);
   }, []);
 
-  // Fetch menu items for search
   useEffect(() => {
+    const BASE44_APP_ID = '69c130c9110a89987aae7fb0';
+    const BASE44_API_KEY = '1552c0075c5e4229b7c5a76cbbb9a457';
     const fetchItems = async () => {
       try {
         const res = await fetch(
           `https://api.base44.app/api/apps/${BASE44_APP_ID}/entities/MenuItem?_limit=2000`,
-          { headers: { 'api-key': BASE44_API_KEY, 'Content-Type': 'application/json' } }
+          { headers: { 'api-key': BASE44_API_KEY } }
         );
         if (res.ok) {
-          const data = await res.json();
+          const body = await res.json();
+          const data = Array.isArray(body) ? body : (body.items || body.data || []);
           if (Array.isArray(data)) setAllMenuItems(data);
         }
       } catch {}
@@ -335,11 +331,12 @@ export default function MarketplaceClient() {
   };
 
   const filteredRestaurants = useMemo(() => {
-    let list = restaurants.filter(r => r.is_active === true && r.show_on_marketplace === true);
+    // Use truthy check (not strict ===) to handle "1", true, etc.
+    let list = restaurants.filter(r => r.is_active && r.show_on_marketplace);
 
     if (search.trim()) {
       const q = normalize(search);
-      const matchingRestaurantIds = new Set(
+      const matchingIds = new Set(
         allMenuItems.filter(item => normalize(item.name).includes(q)).map(item => item.restaurant_id)
       );
       list = list.filter(r =>
@@ -349,7 +346,7 @@ export default function MarketplaceClient() {
         normalize(r.address || '').includes(q) ||
         normalize(r.district || '').includes(q) ||
         normalize(r.city || '').includes(q) ||
-        matchingRestaurantIds.has(r.id)
+        matchingIds.has(r.id)
       );
     }
 
@@ -363,7 +360,9 @@ export default function MarketplaceClient() {
     if (selectedCity) list = list.filter(r => r.city === selectedCity);
 
     if (selectedDietary.length > 0) {
-      list = list.filter(r => Array.isArray(r.dietary_options) && selectedDietary.every(opt => r.dietary_options.includes(opt)));
+      list = list.filter(r =>
+        Array.isArray(r.dietary_options) && selectedDietary.every(opt => r.dietary_options.includes(opt))
+      );
     }
 
     const activeCoords = deliveryCoords || (nearMe && userCoords ? userCoords : null);
@@ -390,7 +389,7 @@ export default function MarketplaceClient() {
   }, [restaurants, allMenuItems, search, selectedCuisines, selectedDietary, selectedCity, nearMe, userCoords, deliveryCoords]);
 
   const featuredRestaurants = useMemo(() =>
-    restaurants.filter(r => r.featured && r.is_active === true && r.show_on_marketplace === true)
+    restaurants.filter(r => r.featured && r.is_active && r.show_on_marketplace)
       .sort((a, b) => (a.featured_display_order || 0) - (b.featured_display_order || 0)),
     [restaurants]
   );
@@ -407,7 +406,7 @@ export default function MarketplaceClient() {
         <div className="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center gap-4">
           <Link href="/" className="flex items-center flex-shrink-0" style={{ gap: '10px' }}>
             <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly"
-              className="w-auto object-contain" style={{ height: '36px' }} />
+              className="object-contain" style={{ height: '36px', width: 'auto' }} />
             <div className="leading-none">
               <div className="font-heading font-black text-primary text-xl tracking-tight leading-none">LÒ ĐỒ ĂN</div>
               <div className="text-[10px] font-normal text-gray-400 leading-tight tracking-normal">by Ovenly</div>
@@ -545,7 +544,9 @@ export default function MarketplaceClient() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                {nearMe ? (lang === 'vi' ? '✓ Đang dùng vị trí hiện tại' : '✓ Using current location') : (lang === 'vi' ? 'Dùng vị trí hiện tại' : 'Use my current location')}
+                {nearMe
+                  ? (lang === 'vi' ? '✓ Đang dùng vị trí hiện tại' : '✓ Using current location')
+                  : (lang === 'vi' ? 'Dùng vị trí hiện tại' : 'Use my current location')}
               </button>
               {!customer && (
                 <>
@@ -573,7 +574,11 @@ export default function MarketplaceClient() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
               <span className="text-sm font-medium text-gray-800 truncate">{deliveryAddress}</span>
-              {deliveryCoords && <span className="text-xs text-green-600 font-medium flex-shrink-0">✓ {lang === 'vi' ? 'Đang lọc nhà hàng gần bạn' : 'Filtering nearby restaurants'}</span>}
+              {deliveryCoords && (
+                <span className="text-xs text-green-600 font-medium flex-shrink-0">
+                  ✓ {lang === 'vi' ? 'Đang lọc nhà hàng gần bạn' : 'Filtering nearby restaurants'}
+                </span>
+              )}
             </div>
             <button
               onClick={() => {
@@ -598,7 +603,6 @@ export default function MarketplaceClient() {
           onClearAll={clearAllFilters} selectedCity={selectedCity} onCityChange={setSelectedCity}
         />
 
-        {/* Featured */}
         {featuredRestaurants.length > 0 && (
           <div className="mb-10">
             <h2 className="font-bold text-gray-900 text-xl mb-4 flex items-center gap-2">
@@ -612,7 +616,9 @@ export default function MarketplaceClient() {
         )}
 
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-bold text-gray-900 text-xl">{lang === 'vi' ? 'Tất Cả Nhà Hàng' : 'All Restaurants'}</h2>
+          <h2 className="font-bold text-gray-900 text-xl">
+            {lang === 'vi' ? 'Tất Cả Nhà Hàng' : 'All Restaurants'}
+          </h2>
           <span className="text-sm text-gray-500">
             {loading ? '...' : `${filteredRestaurants.length} ${lang === 'vi' ? 'nhà hàng' : 'restaurants'}`}
           </span>
@@ -662,7 +668,8 @@ export default function MarketplaceClient() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center mb-3" style={{ gap: '10px' }}>
-                <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" style={{ height: '44px', width: 'auto' }} />
+                <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly"
+                  style={{ height: '44px', width: 'auto' }} />
                 <div className="leading-none">
                   <div className="font-heading font-black text-primary text-2xl leading-none">LÒ ĐỒ ĂN</div>
                   <div className="text-xs text-gray-400 font-normal">by Ovenly</div>
@@ -674,17 +681,30 @@ export default function MarketplaceClient() {
                   : 'The food discovery platform connecting diners with amazing restaurants across Vietnam.'}
               </p>
               <div className="flex gap-3">
-                {[
-                  { href: 'https://facebook.com', color: '#1877F2', icon: <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/> },
-                  { href: 'https://instagram.com', color: '#E1306C', icon: <><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2"/><rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></> },
-                  { href: 'https://tiktok.com', color: '#000000', icon: <path d="M19.321 5.562a5.122 5.122 0 01-2.756-3.106V2h-3.686v13.67a2.4 2.4 0 11-2.4-2.4c.293 0 .575.022.856.065V9.237c-.307-.05-.596-.065-.88-.065a6.3 6.3 0 105.894 6.3v-3.27a8.23 8.23 0 004.822 1.533V5.562z"/> },
-                ].map((s, i) => (
-                  <a key={i} href={s.href} target="_blank" rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-                    style={{ background: '#EEEEEE', color: s.color }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">{s.icon}</svg>
-                  </a>
-                ))}
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  style={{ background: '#EEEEEE', color: '#1877F2' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  style={{ background: '#EEEEEE', color: '#E1306C' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2"/>
+                    <rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+                  </svg>
+                </a>
+                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  style={{ background: '#EEEEEE', color: '#000000' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.321 5.562a5.122 5.122 0 01-2.756-3.106V2h-3.686v13.67a2.4 2.4 0 11-2.4-2.4c.293 0 .575.022.856.065V9.237c-.307-.05-.596-.065-.88-.065a6.3 6.3 0 105.894 6.3v-3.27a8.23 8.23 0 004.822 1.533V5.562z"/>
+                  </svg>
+                </a>
               </div>
             </div>
 

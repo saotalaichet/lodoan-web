@@ -7,26 +7,11 @@
   --color-accent-foreground: hsl(10 20% 8%);
   --color-background: hsl(30 20% 97%);
   --color-foreground: hsl(10 20% 8%);
-  --color-card: #ffffff;
-  --color-card-foreground: hsl(10 20% 8%);
   --color-muted: hsl(25 12% 91%);
   --color-muted-foreground: hsl(10 10% 45%);
   --color-border: hsl(20 15% 86%);
-  --color-input: hsl(20 15% 86%);
-  --color-ring: hsl(0 72% 35%);
-  --color-destructive: hsl(0 72% 45%);
-  --color-destructive-foreground: #ffffff;
-  --color-secondary: hsl(25 15% 92%);
-  --color-secondary-foreground: hsl(10 20% 18%);
   --font-family-heading: var(--font-jakarta), 'Plus Jakarta Sans', sans-serif;
   --font-family-body: var(--font-inter), 'Inter', sans-serif;
-  --radius: 0.75rem;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
 }
 
 body {
