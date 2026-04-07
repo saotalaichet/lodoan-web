@@ -1,28 +1,27 @@
 'use client';
 
-import { useState, useMemo, useRef, useEffect, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
   ShoppingBag, Plus, Minus, Trash2, Flame, Star, Leaf, X,
-  ChevronLeft, MapPin, Phone, Mail, FileText, Bike, Clock,
+  ChevronLeft, MapPin, Phone, FileText, Bike, Clock,
 } from 'lucide-react';
 import {
   getRestaurantBySlug, getMenuCategories, getMenuItems,
-  createOrder, createPayment, validateOrderAcceptance,
+  createPayment, validateOrderAcceptance,
   Restaurant, MenuCategory, MenuItem,
 } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 
-const PRIMARY = '#8B1A1A';
 const BASE44_URL = `https://api.base44.app/api/apps/${process.env.NEXT_PUBLIC_BASE44_APP_ID}`;
 const BASE44_HEADERS = { 'api-key': process.env.NEXT_PUBLIC_BASE44_API_KEY!, 'Content-Type': 'application/json' };
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
-// ── Restaurant status ─────────────────────────────────────────────────────────
+// ── Status ────────────────────────────────────────────────────────────────────
 
 function getRestaurantStatus(restaurant: Restaurant | null): 'OPEN' | 'CLOSED' | 'PAUSED' {
   if (!restaurant) return 'CLOSED';
@@ -53,9 +52,9 @@ function getStatusDisplay(status: string, lang: string) {
   return m[status]?.[lang === 'vi' ? 'vi' : 'en'] || '';
 }
 
-function getStatusStyle(status: string) {
-  if (status === 'OPEN') return 'bg-green-50 text-green-700 border-green-200';
-  if (status === 'PAUSED') return 'bg-orange-50 text-orange-700 border-orange-200';
+function getStatusBadgeClass(status: string) {
+  if (status === 'OPEN') return 'bg-green-50 text-green-600 border-green-200';
+  if (status === 'PAUSED') return 'bg-orange-50 text-orange-600 border-orange-200';
   return 'bg-gray-100 text-gray-500 border-gray-200';
 }
 
@@ -129,7 +128,6 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
         return o && o.price > 0 ? { name: o.name, price: o.price } : null;
       })
     ).filter(Boolean) as { name: string; price: number }[];
-
     onAdd({ id: item.id + Date.now(), name: item.name, price: item.price + extra, basePrice: item.price, addons, qty, notes });
   };
 
@@ -154,13 +152,13 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
         <div className="p-5">
           <h2 className="font-heading font-bold text-xl text-gray-900 mb-1">{item.name}</h2>
           {item.description && <p className="text-sm text-gray-400 mb-3">{item.description}</p>}
-          <p className="text-lg font-bold mb-4" style={{ color: PRIMARY }}>{fmt(item.price)}</p>
+          <p className="text-lg font-bold text-primary mb-4">{fmt(item.price)}</p>
 
           {groups.map((g: any) => (
             <div key={g.id} className="mb-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="font-bold text-sm text-gray-900">{g.name}</p>
-                <span className={`text-xs px-2 py-0.5 rounded-full ${g.required ? 'text-red-800 bg-red-50' : 'bg-gray-100 text-gray-500'}`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${g.required ? 'bg-primary/10 text-primary' : 'bg-gray-100 text-gray-500'}`}>
                   {g.required ? (lang === 'vi' ? 'Bắt buộc' : 'Required') : (lang === 'vi' ? 'Tùy chọn' : 'Optional')}
                 </span>
               </div>
@@ -169,14 +167,14 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
                   const sel = (selections[g.id] || []).includes(o.id);
                   return (
                     <button key={o.id} type="button" onClick={() => toggle(g.id, o.id, g.max_select || 1)}
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${sel ? 'border-red-800 bg-red-50' : 'border-gray-100 hover:border-gray-200'}`}>
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all ${sel ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'}`}>
                       <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${sel ? 'bg-red-800 border-red-800' : 'border-gray-300'}`}>
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${sel ? 'border-primary bg-primary' : 'border-gray-300'}`}>
                           {sel && <div className="w-2 h-2 bg-white rounded-full" />}
                         </div>
                         <span className="text-sm font-medium">{o.name}</span>
                       </div>
-                      {o.price > 0 && <span className="text-sm font-bold" style={{ color: PRIMARY }}>+{fmt(o.price)}</span>}
+                      {o.price > 0 && <span className="text-sm font-bold text-primary">+{fmt(o.price)}</span>}
                     </button>
                   );
                 })}
@@ -188,7 +186,7 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
             <label className="block text-sm font-bold text-gray-900 mb-2">{lang === 'vi' ? 'Ghi chú' : 'Notes'}</label>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
               placeholder={lang === 'vi' ? 'Ít đá, không hành...' : 'Less ice, no onion...'}
-              rows={2} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 resize-none" />
+              rows={2} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none" />
           </div>
 
           {error && <p className="text-red-500 text-sm mb-3">⚠️ {error}</p>}
@@ -202,15 +200,14 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
               </button>
               <span className="font-bold text-lg w-6 text-center">{qty}</span>
               <button type="button" onClick={() => setQty(q => q + 1)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: PRIMARY }}>
+                className="w-9 h-9 rounded-full bg-primary text-white flex items-center justify-center">
                 <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           <button onClick={handleAdd}
-            className="w-full text-white font-bold py-4 rounded-xl text-sm hover:opacity-90"
-            style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+            className="w-full bg-primary text-white font-bold py-4 rounded-xl text-sm hover:opacity-90 shadow-lg shadow-primary/20">
             {lang === 'vi' ? `Thêm vào giỏ — ${fmt(total)}` : `Add to cart — ${fmt(total)}`}
           </button>
         </div>
@@ -222,7 +219,8 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
 // ── Menu Item Card ─────────────────────────────────────────────────────────────
 
 function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock, lang }: {
-  item: MenuItem; qty: number; onAdd: (item: any) => void;
+  item: MenuItem; qty: number;
+  onAdd: (item: any) => void;
   onSet: (id: string, qty: number) => void;
   onOpen: (item: MenuItem, groups: any[]) => void;
   isClosed: boolean; isOutOfStock: boolean; lang: string;
@@ -237,7 +235,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
 
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col relative ${isClosed ? 'cursor-default' : 'cursor-pointer hover:border-red-200 hover:shadow-sm'} transition-all group`}
+      className={`bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col relative ${isClosed ? 'cursor-default' : 'cursor-pointer hover:border-primary/30 hover:shadow-sm'} transition-all group`}
       onClick={handleClick}
     >
       {isOutOfStock && (
@@ -245,7 +243,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
           {lang === 'vi' ? 'Hết hàng' : 'Out of stock'}
         </div>
       )}
-      <div className="relative w-full aspect-[4/3] overflow-hidden" style={{ background: '#FFF0ED' }}>
+      <div className="relative w-full aspect-[4/3] bg-primary/5 overflow-hidden">
         {item.image_url ? (
           <Image src={item.image_url} alt={item.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
         ) : (
@@ -275,11 +273,10 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
         {item.description && <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>}
 
         <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-sm" style={{ color: PRIMARY }}>{fmt(item.price)}</span>
+          <span className="font-bold text-primary text-sm">{fmt(item.price)}</span>
           {!isClosed && (
             qty > 0 ? (
-              <div className="flex items-center gap-2 rounded-full px-2 py-1"
-                style={{ backgroundColor: PRIMARY }}
+              <div className="flex items-center gap-2 bg-primary rounded-full px-2 py-1"
                 onClick={e => e.stopPropagation()}>
                 <button onClick={() => onSet(item.id, qty - 1)} className="w-5 h-5 flex items-center justify-center text-white">
                   <Minus className="w-3 h-3" strokeWidth={2.5} />
@@ -292,8 +289,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
             ) : (
               <button
                 onClick={e => { e.stopPropagation(); handleClick(); }}
-                className="w-7 h-7 text-white rounded-full flex items-center justify-center hover:opacity-90 transition-colors"
-                style={{ backgroundColor: PRIMARY }}>
+                className="w-7 h-7 bg-primary hover:opacity-90 text-white rounded-full flex items-center justify-center transition-colors">
                 <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
               </button>
             )
@@ -319,8 +315,8 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {cart.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: '#FFF0ED' }}>
-              <ShoppingBag className="w-6 h-6" style={{ color: `${PRIMARY}66` }} strokeWidth={1.5} />
+            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+              <ShoppingBag className="w-6 h-6 text-primary/40" strokeWidth={1.5} />
             </div>
             <p className="text-sm text-gray-400 font-medium">{lang === 'vi' ? 'Thêm món vào giỏ hàng' : 'Add items to cart'}</p>
             <p className="text-xs text-gray-300 mt-1">{lang === 'vi' ? 'Chọn món từ thực đơn bên trái' : 'Select items from the menu'}</p>
@@ -331,12 +327,12 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
               <div key={item.id} className="flex items-center gap-3">
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <button onClick={() => onSet(item.id, item.qty - 1)}
-                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 transition-colors">
+                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors">
                     {item.qty === 1 ? <Trash2 className="w-3 h-3 text-red-400" /> : <Minus className="w-3 h-3 text-gray-500" />}
                   </button>
                   <span className="text-sm font-bold text-gray-900 w-4 text-center">{item.qty}</span>
                   <button onClick={() => onSet(item.id, item.qty + 1)}
-                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors">
+                    className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-primary/5 hover:border-primary/30 transition-colors">
                     <Plus className="w-3 h-3 text-gray-500" />
                   </button>
                 </div>
@@ -364,7 +360,7 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
           </div>
           <div className="flex justify-between font-bold text-sm text-gray-900 border-t border-gray-100 pt-2">
             <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
-            <span style={{ color: PRIMARY }}>{fmt(subtotal)}</span>
+            <span className="text-primary">{fmt(subtotal)}</span>
           </div>
           {totalQty >= 16 ? (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
@@ -373,8 +369,7 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
             </div>
           ) : (
             <button onClick={onCheckout}
-              className="w-full font-bold py-3 rounded-xl text-sm text-white mt-1 hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+              className="w-full bg-primary hover:opacity-90 text-white font-bold py-3 rounded-xl text-sm mt-1 shadow-lg shadow-primary/30">
               {lang === 'vi' ? 'Đặt hàng ngay' : 'Place Order Now'}
             </button>
           )}
@@ -406,7 +401,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
           <h2 className="font-heading font-bold text-gray-900 text-lg flex items-center gap-2">
             🛵 {lang === 'vi' ? 'Chi tiết đặt hàng' : 'Order Details'}
           </h2>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
             <X className="w-4 h-4 text-gray-500" />
           </button>
         </div>
@@ -419,8 +414,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
             <div className="grid grid-cols-2 gap-3">
               {(['pickup', 'delivery'] as const).map(type => (
                 <button key={type} onClick={() => setOrderType(type)}
-                  className={`py-3 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-2 transition-all ${orderType === type ? 'text-white' : 'border-gray-200 text-gray-500 hover:border-red-200'}`}
-                  style={orderType === type ? { borderColor: PRIMARY, backgroundColor: PRIMARY } : {}}>
+                  className={`py-3 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-2 transition-all ${orderType === type ? 'bg-primary border-primary text-white' : 'border-gray-200 text-gray-500 hover:border-primary/30'}`}>
                   {type === 'delivery' ? <Bike className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
                   {type === 'delivery' ? (lang === 'vi' ? 'Giao hàng' : 'Delivery') : (lang === 'vi' ? 'Mang về' : 'Pickup')}
                 </button>
@@ -443,15 +437,13 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
                 <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase">
                   {lang === 'vi' ? 'Địa chỉ giao hàng' : 'Delivery Address'}
                 </label>
-                <p className="text-xs mb-3" style={{ color: PRIMARY }}>
+                <p className="text-xs text-primary mb-3">
                   {lang === 'vi' ? 'Chúng tôi chỉ giao hàng trong phạm vi 5km.' : 'We only deliver within 5km.'}
                 </p>
-                <textarea
-                  value={address} onChange={e => setAddress(e.target.value)}
+                <textarea value={address} onChange={e => setAddress(e.target.value)}
                   placeholder={lang === 'vi' ? 'Ví dụ: 123 Nguyễn Huệ, Quận 1, TP. Hồ Chí Minh' : 'e.g. 123 Nguyen Hue, District 1, HCMC'}
                   rows={3}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 resize-none transition-all"
-                />
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 resize-none transition-all" />
               </div>
             </>
           )}
@@ -463,8 +455,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
               onConfirm({ orderType, address: orderType === 'delivery' ? address : undefined, fee: deliveryFee });
             }}
             disabled={orderType === 'delivery' && (!address.trim() || belowMin)}
-            className="w-full text-white font-bold py-4 rounded-xl text-sm transition-colors disabled:opacity-50"
-            style={{ backgroundColor: PRIMARY }}>
+            className="w-full bg-primary hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl text-sm transition-colors">
             {lang === 'vi' ? 'Tiếp tục đặt hàng' : 'Continue'}
           </button>
         </div>
@@ -509,7 +500,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   const effectiveDelivery = totalQty >= 10 && orderType === 'delivery' ? 100000 : deliveryFee;
   const tipAmount = Math.round(subtotal * tipPct / 100);
   const total = subtotal + serviceFee + (orderType === 'delivery' ? effectiveDelivery : 0) + tipAmount;
-
   const validMethods = PAYMENT_METHODS.filter(m => m.for.includes(orderType));
 
   const handlePlace = async () => {
@@ -521,13 +511,11 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         alert(lang === 'vi' ? 'Vui lòng điền đầy đủ thông tin' : 'Please fill in all required fields');
         return;
       }
-
       const validation = await validateOrderAcceptance(restaurant.id);
       if (!validation.accepting) {
         alert(lang === 'vi' ? (validation.message_vi || 'Nhà hàng không nhận đơn lúc này.') : (validation.message || 'Restaurant is currently closed.'));
         return;
       }
-
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
       const order = await fetch(`${BASE44_URL}/entities/Order`, {
         method: 'POST', headers: BASE44_HEADERS,
@@ -553,7 +541,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         alert(lang === 'vi' ? 'Lỗi kết nối thanh toán.' : 'Payment connection error.');
         return;
       }
-
       onSuccess(order.id, orderType, paymentMethod);
     } finally {
       setPlacing(false);
@@ -561,12 +548,12 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
     }
   };
 
-  // Mode selection screen
+  // Mode selection
   if (!checkoutMode) {
     return (
-      <div className="min-h-screen flex flex-col" style={{ background: 'hsl(30,20%,97%)' }}>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
         <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
-          <button onClick={onBack} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+          <button onClick={onBack} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
             <ChevronLeft className="w-4 h-4 text-gray-600" />
           </button>
           <span className="font-bold text-gray-900 text-sm">{restaurant.name}</span>
@@ -574,23 +561,18 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-sm">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: '#FFF0ED' }}>
-                <ShoppingBag className="w-8 h-8" style={{ color: PRIMARY }} strokeWidth={1.5} />
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ShoppingBag className="w-8 h-8 text-primary" strokeWidth={1.5} />
               </div>
               <h2 className="font-heading font-black text-2xl text-gray-900 mb-2">
                 {lang === 'vi' ? 'Xác nhận đặt hàng' : 'Confirm your order'}
               </h2>
-              <p className="text-sm text-gray-500">
-                {lang === 'vi' ? 'Chọn hình thức tiếp tục' : 'Choose how to continue'}
-              </p>
+              <p className="text-sm text-gray-500">{lang === 'vi' ? 'Chọn hình thức tiếp tục' : 'Choose how to continue'}</p>
             </div>
 
-            {/* Order summary */}
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-4">
               <div className="p-4">
-                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">
-                  {lang === 'vi' ? 'Tóm tắt đơn hàng' : 'Order summary'}
-                </p>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{lang === 'vi' ? 'Tóm tắt đơn hàng' : 'Order summary'}</p>
                 <div className="space-y-1.5">
                   {cart.slice(0, 3).map(item => (
                     <div key={item.id} className="flex justify-between text-sm">
@@ -602,7 +584,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                 </div>
                 <div className="flex justify-between font-bold text-sm pt-2 border-t border-gray-100 mt-2">
                   <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
-                  <span style={{ color: PRIMARY }}>{fmt(subtotal)}</span>
+                  <span className="text-primary">{fmt(subtotal)}</span>
                 </div>
               </div>
             </div>
@@ -623,8 +605,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
 
             <div className="space-y-3">
               <button onClick={() => setCheckoutMode('checkout')}
-                className="w-full text-white rounded-2xl p-4 text-left transition-all shadow-lg hover:opacity-90"
-                style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+                className="w-full bg-primary text-white rounded-2xl p-4 text-left hover:opacity-90 transition-all shadow-lg shadow-primary/20">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -647,11 +628,11 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
 
               {!customer && (
                 <button onClick={() => { localStorage.setItem('checkout_redirect', window.location.pathname); window.location.href = '/login'; }}
-                  className="w-full bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-red-200 rounded-2xl p-4 text-left transition-all">
+                  className="w-full bg-white hover:bg-gray-50 border-2 border-gray-200 hover:border-primary/30 rounded-2xl p-4 text-left transition-all">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#FFF0ED' }}>
-                        <svg className="w-5 h-5" style={{ color: PRIMARY }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                       </div>
@@ -673,18 +654,16 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
 
   // Full checkout form
   return (
-    <div className="min-h-screen" style={{ background: 'hsl(30,20%,97%)' }}>
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
           <button onClick={onBack} className="text-gray-400 hover:text-gray-700 transition-colors">
             <ChevronLeft className="w-5 h-5" strokeWidth={1.5} />
           </button>
           <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-full p-1 text-xs font-semibold" style={{ background: '#FFF0ED' }}>
-              <button onClick={() => { onLangChange('vi'); }} className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'text-white' : 'text-gray-500'}`}
-                style={lang === 'vi' ? { backgroundColor: PRIMARY } : {}}>VI</button>
-              <button onClick={() => { onLangChange('en'); }} className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'text-white' : 'text-gray-500'}`}
-                style={lang === 'en' ? { backgroundColor: PRIMARY } : {}}>EN</button>
+            <div className="flex items-center bg-primary/10 rounded-full p-1 text-xs font-semibold">
+              <button onClick={() => onLangChange('vi')} className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>VI</button>
+              <button onClick={() => onLangChange('en')} className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>EN</button>
             </div>
             <span className="text-sm font-semibold text-gray-500">{lang === 'vi' ? 'Thanh toán' : 'Payment'}</span>
           </div>
@@ -693,15 +672,13 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
 
       <div className="max-w-5xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
         <div className="flex-1 space-y-6">
-          {/* Order type badge */}
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 bg-orange-50 text-orange-600 border border-orange-200 text-sm font-semibold px-3 py-1.5 rounded-full">
+            <span className={`flex items-center gap-1.5 bg-orange-50 text-orange-600 border border-orange-200 text-sm font-semibold px-3 py-1.5 rounded-full`}>
               {orderType === 'delivery' ? <Bike className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
               {orderType === 'delivery' ? (lang === 'vi' ? 'Giao hàng' : 'Delivery') : (lang === 'vi' ? 'Mang về' : 'Pickup')}
             </span>
           </div>
 
-          {/* Delivery info */}
           {orderType === 'delivery' && deliveryAddress && (
             <div className="bg-white border border-gray-200 rounded-2xl p-5">
               <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
@@ -721,7 +698,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
             </div>
           )}
 
-          {/* Contact info */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
               <Phone className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Thông tin liên hệ' : 'Contact Information'}
@@ -731,25 +707,25 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                 <p className="text-xs font-semibold text-gray-500 uppercase mb-3">{lang === 'vi' ? 'Thông tin khách hàng' : 'Customer details'}</p>
                 <p className="text-sm font-bold text-gray-900">{customer.full_name}</p>
                 <p className="text-sm text-gray-600">{customer.email}</p>
-                <p className="text-sm text-gray-600">{customer.phone_number}</p>
+                {customer.phone_number && <p className="text-sm text-gray-600">{customer.phone_number}</p>}
               </div>
             ) : (
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">{lang === 'vi' ? 'Họ và tên' : 'Full Name'} *</label>
                   <input value={name} onChange={e => setName(e.target.value)} placeholder={lang === 'vi' ? 'Nguyễn Văn A' : 'John Doe'}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all" />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">{lang === 'vi' ? 'Số điện thoại' : 'Phone'} *</label>
                     <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0912 345 678"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all" />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Email *</label>
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="email@example.com"
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:border-red-800 transition-all" />
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all" />
                   </div>
                 </div>
               </div>
@@ -762,7 +738,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
             )}
           </div>
 
-          {/* Payment */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
               <span className="text-orange-400">💳</span> {lang === 'vi' ? 'Phương thức thanh toán' : 'Payment Method'}
@@ -778,27 +753,26 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
             </div>
           </div>
 
-          {/* Notes */}
           <div className="bg-white border border-gray-200 rounded-2xl p-5">
             <h2 className="font-heading font-bold text-gray-900 text-base mb-4 flex items-center gap-2">
               <FileText className="w-4 h-4 text-orange-400" /> {lang === 'vi' ? 'Ghi chú đặc biệt' : 'Special Instructions'}
             </h2>
             <textarea value={notes} onChange={e => setNotes(e.target.value)}
               placeholder={lang === 'vi' ? 'Ít đường, không hành, dị ứng thực phẩm...' : 'Less sugar, no onions, food allergies...'}
-              rows={3} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-red-800 focus:ring-2 transition-all resize-none" />
+              rows={3} className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none" />
           </div>
         </div>
 
-        {/* Order summary sidebar */}
+        {/* Order summary */}
         <div className="w-full lg:w-80 flex-shrink-0">
           <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden sticky top-20">
-            <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between" style={{ background: '#FFF0ED' }}>
+            <div className="px-5 py-4 border-b border-gray-100 bg-primary/10 flex items-center justify-between">
               <div>
                 <h2 className="font-heading font-bold text-gray-900 text-base">{lang === 'vi' ? 'Đơn hàng của bạn' : 'Your Order'}</h2>
                 <p className="text-xs text-gray-500 mt-0.5">{restaurant.name}</p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-lg" style={{ color: PRIMARY }}>{fmt(subtotal)}</p>
+                <p className="font-bold text-primary text-lg">{fmt(subtotal)}</p>
                 <p className="text-xs text-gray-500">{lang === 'vi' ? 'Tạm tính' : 'Subtotal'}</p>
               </div>
             </div>
@@ -829,7 +803,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
               {orderType === 'delivery' && (
                 <div className="flex justify-between text-gray-500"><span>{lang === 'vi' ? 'Phí giao hàng' : 'Delivery fee'}</span><span>{fmt(effectiveDelivery)}</span></div>
               )}
-              {/* Tip */}
               <div className="border-t border-gray-100 pt-3">
                 <p className="text-xs font-semibold text-gray-600 mb-2">{lang === 'vi' ? 'Tip cho nhân viên' : 'Tip for Staff'}</p>
                 <div className="grid grid-cols-4 gap-1.5">
@@ -841,19 +814,16 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                   ))}
                 </div>
               </div>
-              {tipAmount > 0 && (
-                <div className="flex justify-between text-gray-500"><span>Tip</span><span className="font-semibold text-orange-500">{fmt(tipAmount)}</span></div>
-              )}
+              {tipAmount > 0 && <div className="flex justify-between text-gray-500"><span>Tip</span><span className="font-semibold text-orange-500">{fmt(tipAmount)}</span></div>}
               <div className="flex justify-between font-bold text-gray-900 text-base border-t border-gray-100 pt-2">
                 <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
-                <span style={{ color: PRIMARY }}>{fmt(total)}</span>
+                <span className="text-primary">{fmt(total)}</span>
               </div>
             </div>
 
             <div className="px-5 pb-5">
               <button onClick={handlePlace} disabled={placing || cart.length === 0}
-                className="w-full text-white font-bold py-4 rounded-xl text-sm transition-colors disabled:opacity-50 shadow-lg"
-                style={{ backgroundColor: PRIMARY, boxShadow: '0 4px 12px rgba(139,26,26,0.3)' }}>
+                className="w-full bg-primary hover:opacity-90 disabled:opacity-50 text-white font-bold py-4 rounded-xl text-sm transition-colors shadow-lg shadow-primary/30">
                 {placing ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
@@ -872,7 +842,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   );
 }
 
-// ── Success / Waiting Screens ─────────────────────────────────────────────────
+// ── Success Screen ────────────────────────────────────────────────────────────
 
 function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
   successOrder: any; restaurant: Restaurant; lang: string; onBack: () => void;
@@ -881,7 +851,6 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
   const isWaiting = !['accepted', 'preparing', 'ready', 'delivering', 'completed', 'declined', 'timed_out'].includes(status);
   const declineReason = notes?.match(/Reason: (.+)/)?.[1] || '';
   const estTime = notes?.match(/Est: ([^|]+)/)?.[1]?.trim() || '';
-
   const payLabel: Record<string, string> = {
     cash_or_transfer: lang === 'vi' ? 'Tiền mặt / Chuyển khoản' : 'Cash / Bank Transfer',
     cod: lang === 'vi' ? 'Tiền mặt khi giao' : 'Cash on Delivery',
@@ -892,39 +861,38 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
     ? <img src={restaurant.logo} alt={restaurant.name} className="h-14 object-contain mx-auto mb-8" />
     : <p className="font-heading font-bold text-xl text-gray-900 mb-8">{restaurant.name}</p>;
 
+  const BackBtn = () => (
+    <button onClick={onBack} className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-colors w-full">
+      {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
+    </button>
+  );
+
   if (status === 'timed_out') return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
-      <div className="max-w-sm w-full">
-        <Logo />
+      <div className="max-w-sm w-full"><Logo />
         <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-5xl">⏰</span></div>
         <h2 className="font-heading font-bold text-xl text-gray-900 mb-3">{lang === 'vi' ? 'Đơn hàng chưa được xác nhận.' : 'Order not confirmed.'}</h2>
         <p className="text-gray-500 text-sm mb-6">{lang === 'vi' ? 'Vui lòng liên hệ nhà hàng.' : 'Please contact the restaurant.'}</p>
-        <button onClick={onBack} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90 w-full" style={{ backgroundColor: PRIMARY }}>
-          {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
-        </button>
+        <BackBtn />
       </div>
     </div>
   );
 
   if (status === 'declined') return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
-      <div className="max-w-sm w-full">
-        <Logo />
+      <div className="max-w-sm w-full"><Logo />
         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-5xl">❌</span></div>
         <h2 className="font-heading font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đơn hàng bị từ chối' : 'Order Declined'}</h2>
         {declineReason && <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3 mb-4"><p className="text-red-700 text-sm">{lang === 'vi' ? 'Lý do:' : 'Reason:'} {declineReason}</p></div>}
         <p className="text-xs text-gray-400 font-mono mb-6">#{id?.slice(-8).toUpperCase()}</p>
-        <button onClick={onBack} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90 w-full" style={{ backgroundColor: PRIMARY }}>
-          {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
-        </button>
+        <BackBtn />
       </div>
     </div>
   );
 
   if (!isWaiting) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
-      <div className="max-w-sm w-full text-center">
-        <Logo />
+      <div className="max-w-sm w-full text-center"><Logo />
         <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg shadow-green-100"><span className="text-5xl">✅</span></div>
         <h2 className="font-heading font-bold text-2xl text-gray-900 mb-1">{lang === 'vi' ? 'Đơn hàng đã được xác nhận!' : 'Order confirmed!'}</h2>
         <p className="text-xs text-gray-400 font-mono mb-4">#{id?.slice(-8).toUpperCase()}</p>
@@ -947,67 +915,35 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
               {successOrder.total && (
                 <div className="flex justify-between font-bold text-sm pt-2 border-t border-gray-100">
                   <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
-                  <span style={{ color: PRIMARY }}>{fmt(successOrder.total)}</span>
+                  <span className="text-primary">{fmt(successOrder.total)}</span>
                 </div>
               )}
             </div>
           </div>
         )}
         <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-4 text-sm text-gray-700 flex items-center gap-2">
-          <span className="text-lg">💳</span>
-          <span>{payLabel[paymentMethod] || paymentMethod}</span>
+          <span className="text-lg">💳</span><span>{payLabel[paymentMethod] || paymentMethod}</span>
         </div>
         {orderType === 'delivery' && successOrder.delivery_address && (
           <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-5 text-sm text-gray-700 flex items-start gap-2 text-left">
-            <span className="text-lg flex-shrink-0">📍</span>
-            <span>{successOrder.delivery_address}</span>
+            <span className="text-lg flex-shrink-0">📍</span><span>{successOrder.delivery_address}</span>
           </div>
         )}
-        <button onClick={onBack} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90 w-full" style={{ backgroundColor: PRIMARY }}>
-          {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
-        </button>
+        <BackBtn />
       </div>
     </div>
   );
 
-  // Waiting screen
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
-      <div className="max-w-sm w-full">
-        <Logo />
+      <div className="max-w-sm w-full"><Logo />
         <div className="relative w-28 h-28 mx-auto mb-8">
-          <div className="absolute inset-0 rounded-full border-4 border-t-red-800 border-red-200 animate-spin" style={{ borderTopColor: PRIMARY }} />
-          <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{ background: '#FFF0ED' }}>
-            <span className="text-3xl">🍜</span>
-          </div>
+          <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><span className="text-3xl">🍜</span></div>
         </div>
-        <h2 className="font-heading font-bold text-xl text-gray-900 mb-2">
-          {lang === 'vi' ? 'Đang chờ quán xác nhận...' : 'Waiting for merchant to confirm...'}
-        </h2>
+        <h2 className="font-heading font-bold text-xl text-gray-900 mb-2">{lang === 'vi' ? 'Đang chờ quán xác nhận...' : 'Waiting for merchant to confirm...'}</h2>
         <p className="text-xs text-gray-400 mb-6">{lang === 'vi' ? 'Vui lòng không đóng trang này' : 'Please do not close this page'}</p>
         <p className="text-xs text-gray-400 font-mono">#{id?.slice(-8).toUpperCase()}</p>
-      </div>
-    </div>
-  );
-}
-
-// ── Maintenance Page ──────────────────────────────────────────────────────────
-
-function MaintenancePage({ lang }: { lang: string }) {
-  return (
-    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
-      <div className="max-w-md w-full text-center">
-        <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly"
-          style={{ height: '100px', width: 'auto' }} className="mx-auto mb-12 object-contain" />
-        <h1 className="font-heading text-3xl font-bold text-gray-800 mb-4 leading-tight">
-          {lang === 'vi' ? 'Chúng tôi đang tạm thời nâng cấp hệ thống.' : 'We are currently working on improvements.'}
-        </h1>
-        <p className="text-gray-600 text-base leading-relaxed mb-12">
-          {lang === 'vi' ? 'Cảm ơn bạn đã kiên nhẫn chờ đợi. Vui lòng quay lại sau!' : 'Thank you for your patience. Please check back soon!'}
-        </p>
-        <div className="pt-8 border-t border-gray-100 mt-12">
-          <p className="text-xs text-gray-400">Powered by Ovenly</p>
-        </div>
       </div>
     </div>
   );
@@ -1039,13 +975,11 @@ export default function RestaurantPage() {
 
   const { cart, add, set, clear, totalQty, subtotal } = useCart();
 
-  // Init
   useEffect(() => {
     const stored = localStorage.getItem('ovenly_language') || localStorage.getItem('marketplace_lang') || 'vi';
     setLang(stored);
     customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
 
-    // Check payment return
     const urlParams = new URLSearchParams(window.location.search);
     const payment = urlParams.get('payment');
     const returnOrderId = urlParams.get('orderId');
@@ -1065,11 +999,8 @@ export default function RestaurantPage() {
     }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('ovenly_language', lang);
-  }, [lang]);
+  useEffect(() => { localStorage.setItem('ovenly_language', lang); }, [lang]);
 
-  // Fetch restaurant
   useEffect(() => {
     if (!slug) return;
     const load = async () => {
@@ -1089,7 +1020,6 @@ export default function RestaurantPage() {
     return () => clearInterval(interval);
   }, [slug]);
 
-  // Poll payment return order
   useEffect(() => {
     if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
     const fetchOrder = async () => {
@@ -1110,7 +1040,6 @@ export default function RestaurantPage() {
     fetchOrder();
   }, [paymentReturnOrderId, paymentReturnStatus]);
 
-  // Poll order status
   useEffect(() => {
     if (!successOrder?.id) return;
     if (['accepted', 'preparing', 'ready', 'delivering', 'completed', 'declined', 'timed_out'].includes(successOrder.status)) return;
@@ -1138,19 +1067,14 @@ export default function RestaurantPage() {
   const status = getRestaurantStatus(restaurant);
   const isClosed = status !== 'OPEN';
 
-  const filteredMenu = useMemo(() => {
-    if (activeCategory === 'all') return allItems;
-    return allItems.filter(i => i.category_id === activeCategory);
-  }, [activeCategory, allItems]);
-
   const groupedItems = useMemo(() => {
     if (activeCategory !== 'all') {
       const cat = categories.find(c => c.id === activeCategory);
-      return cat ? [{ category: cat, items: filteredMenu }] : [];
+      return cat ? [{ category: cat, items: allItems.filter(i => i.category_id === activeCategory) }] : [];
     }
-    const sortedCats = [...categories].sort((a, b) => (a.sort_order || a.order || 0) - (b.sort_order || b.order || 0));
+    const sortedCats = [...categories].sort((a, b) => (a.sort_order || (a as any).order || 0) - (b.sort_order || (b as any).order || 0));
     return sortedCats.map(cat => ({ category: cat, items: allItems.filter(i => i.category_id === cat.id) })).filter(g => g.items.length > 0);
-  }, [activeCategory, allItems, categories, filteredMenu]);
+  }, [activeCategory, allItems, categories]);
 
   const getCatLabel = (name: string) => {
     if (!name) return '';
@@ -1171,8 +1095,7 @@ export default function RestaurantPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
       <div className="w-24 h-24 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-4xl">⏰</span></div>
       <h2 className="font-heading font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đã hết thời gian thanh toán' : 'Payment Time Expired'}</h2>
-      <p className="text-gray-500 mb-6">{lang === 'vi' ? 'Vui lòng đặt lại đơn hàng.' : 'Please reorder.'}</p>
-      <button onClick={() => setPaymentReturnStatus(null)} className="text-white font-bold px-8 py-3 rounded-full hover:opacity-90" style={{ backgroundColor: PRIMARY }}>
+      <button onClick={() => setPaymentReturnStatus(null)} className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:opacity-90">
         {lang === 'vi' ? 'Thử lại' : 'Try Again'}
       </button>
     </div>
@@ -1181,10 +1104,8 @@ export default function RestaurantPage() {
   if (paymentReturnStatus === 'success' && paymentReturnOrderId) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
       <div className="relative w-28 h-28 mx-auto mb-8">
-        <div className="absolute inset-0 rounded-full border-4 border-t-red-800 border-red-200 animate-spin" style={{ borderTopColor: PRIMARY }} />
-        <div className="absolute inset-4 rounded-full flex items-center justify-center" style={{ background: '#FFF0ED' }}>
-          <span className="text-3xl">🍜</span>
-        </div>
+        <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+        <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><span className="text-3xl">🍜</span></div>
       </div>
       <h2 className="font-heading font-bold text-xl text-gray-900">{lang === 'vi' ? 'Đang xử lý...' : 'Processing...'}</h2>
     </div>
@@ -1193,7 +1114,7 @@ export default function RestaurantPage() {
   if (loadingRestaurant) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
-        <div className="w-12 h-12 border-4 border-t-red-800 border-red-200 rounded-full animate-spin mx-auto mb-4" style={{ borderTopColor: PRIMARY }} />
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
         <p className="text-gray-500">{lang === 'vi' ? 'Đang tải...' : 'Loading...'}</p>
       </div>
     </div>
@@ -1204,12 +1125,19 @@ export default function RestaurantPage() {
       <div className="text-center">
         <p className="text-5xl mb-4">😕</p>
         <p className="font-heading font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
-        <Link href="/" className="text-sm font-semibold hover:underline" style={{ color: PRIMARY }}>← {lang === 'vi' ? 'Quay lại' : 'Go back'}</Link>
+        <Link href="/" className="text-sm font-semibold text-primary hover:underline">← {lang === 'vi' ? 'Quay lại' : 'Go back'}</Link>
       </div>
     </div>
   );
 
-  if (!restaurant.is_active) return <MaintenancePage lang={lang} />;
+  if (!restaurant.is_active) return (
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+      <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" style={{ height: '100px', width: 'auto' }} className="mx-auto mb-12 object-contain" />
+      <h1 className="font-heading text-3xl font-bold text-gray-800 mb-4 text-center">{lang === 'vi' ? 'Chúng tôi đang tạm thời nâng cấp hệ thống.' : 'We are currently working on improvements.'}</h1>
+      <p className="text-gray-600 text-base leading-relaxed mb-12 text-center">{lang === 'vi' ? 'Cảm ơn bạn đã kiên nhẫn chờ đợi. Vui lòng quay lại sau!' : 'Thank you for your patience. Please check back soon!'}</p>
+      <div className="pt-8 border-t border-gray-100 mt-12"><p className="text-xs text-gray-400">Powered by Ovenly</p></div>
+    </div>
+  );
 
   if (successOrder) return (
     <SuccessScreen successOrder={successOrder} restaurant={restaurant} lang={lang}
@@ -1217,18 +1145,15 @@ export default function RestaurantPage() {
   );
 
   if (checkoutOrderType) return (
-    <Checkout
-      cart={cart} restaurant={restaurant} orderType={checkoutOrderType}
+    <Checkout cart={cart} restaurant={restaurant} orderType={checkoutOrderType}
       deliveryAddress={deliveryDetails?.address}
       deliveryFee={deliveryDetails?.fee ?? restaurant.delivery_fee ?? 0}
       onBack={() => { setCheckoutOrderType(null); setDeliveryDetails(null); }}
-      onSuccess={handleSuccess}
-      onSetQty={set} lang={lang} onLangChange={setLang} customer={customer}
-    />
+      onSuccess={handleSuccess} onSetQty={set} lang={lang} onLangChange={setLang} customer={customer} />
   );
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'hsl(30,20%,97%)' }}>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
 
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -1241,31 +1166,28 @@ export default function RestaurantPage() {
             )}
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center rounded-full p-1 text-xs font-semibold" style={{ background: '#FFF0ED' }}>
-              <button onClick={() => setLang('vi')} className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'text-white' : 'text-gray-500'}`}
-                style={lang === 'vi' ? { backgroundColor: PRIMARY } : {}}>VI</button>
-              <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'text-white' : 'text-gray-500'}`}
-                style={lang === 'en' ? { backgroundColor: PRIMARY } : {}}>EN</button>
+            <div className="flex items-center bg-primary/10 rounded-full p-1 text-xs font-semibold">
+              <button onClick={() => setLang('vi')} className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>VI</button>
+              <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>EN</button>
             </div>
             {customer ? (
               <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: '#FFF0ED' }}>
-                  <svg className="w-3.5 h-3.5" style={{ color: PRIMARY }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
+                  <svg className="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                   </svg>
                 </div>
                 <span className="text-xs font-semibold text-gray-700 hidden sm:block max-w-24 truncate">{customer.full_name || customer.email}</span>
               </div>
             ) : (
-              <a href="/login" className="flex items-center gap-1.5 text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition-colors"
-                style={{ backgroundColor: PRIMARY }}>
+              <a href="/login" className="flex items-center gap-1.5 bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 transition-colors">
                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
                 {lang === 'vi' ? 'Đăng nhập' : 'Login'}
               </a>
             )}
-            <span className={`flex items-center gap-1 font-semibold px-2.5 py-1 rounded-full border text-xs ${getStatusStyle(status)}`}>
+            <span className={`flex items-center gap-1 font-semibold px-2.5 py-1 rounded-full border text-xs ${getStatusBadgeClass(status)}`}>
               {getStatusDisplay(status, lang)}
             </span>
           </div>
@@ -1277,16 +1199,16 @@ export default function RestaurantPage() {
         {restaurant.banner ? (
           <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${PRIMARY} 0%, hsl(0,60%,18%) 100%)` }} />
+          <div className="w-full h-full bg-gradient-to-br from-primary to-primary/75" />
         )}
       </div>
 
       {/* Closed banner */}
       {isClosed && (
-        <div style={{ background: '#FFF5F5', borderLeft: `4px solid ${PRIMARY}`, padding: '16px', width: '100%' }}>
+        <div className="bg-red-50 border-l-4 border-primary px-4 py-4 w-full">
           <div className="max-w-6xl mx-auto flex items-start gap-3">
             <span className="text-lg flex-shrink-0">🔴</span>
-            <p style={{ color: PRIMARY, fontWeight: 600, fontSize: '14px', lineHeight: '1.5' }}>
+            <p className="text-primary font-semibold text-sm leading-relaxed">
               {lang === 'vi' ? 'Nhà hàng hiện không nhận đơn trực tuyến. Vui lòng quay lại trong giờ mở cửa.' : 'Online ordering is currently unavailable. Please come back during opening hours.'}
             </p>
           </div>
@@ -1298,17 +1220,17 @@ export default function RestaurantPage() {
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h1 className="font-heading font-bold text-xl text-gray-900 mb-1">{restaurant.name}</h1>
           {restaurant.address && (
-            <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1">
-              <span style={{ color: PRIMARY }}>📍</span> {restaurant.address}
+            <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-1">
+              <span>📍</span> {restaurant.address}
             </div>
           )}
           {restaurant.phone && (
-            <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-1">
+            <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-1">
               <span>📞</span> {restaurant.phone}
             </div>
           )}
           <div className="flex items-center gap-2 mt-2 flex-wrap">
-            <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusStyle(status)}`}>
+            <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusBadgeClass(status)}`}>
               <span className="w-2 h-2 rounded-full inline-block" style={{ background: status === 'OPEN' ? '#22C55E' : status === 'PAUSED' ? '#F97316' : '#9CA3AF' }} />
               {status === 'OPEN' ? (lang === 'vi' ? 'Đang mở cửa' : 'Open') : status === 'PAUSED' ? (lang === 'vi' ? 'Tạm dừng' : 'Paused') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
             </span>
@@ -1322,7 +1244,7 @@ export default function RestaurantPage() {
                   ))}
                 </div>
                 <span style={{ fontSize: '13px', fontWeight: '600' }}>{(restaurant as any).average_rating?.toFixed(1)}</span>
-                <span style={{ fontSize: '12px', color: '#888' }}>({(restaurant as any).total_ratings} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
+                <span style={{ fontSize: '12px', color: '#888' }}>({(restaurant as any).total_ratings} {lang === 'vi' ? 'đánh giá từ LÒ ĐỒ ĂN' : 'reviews on LÒ ĐỒ ĂN'})</span>
               </div>
             )}
           </div>
@@ -1333,8 +1255,7 @@ export default function RestaurantPage() {
       <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
         <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
           <button onClick={() => setActiveCategory('all')}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === 'all' ? 'text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            style={activeCategory === 'all' ? { backgroundColor: PRIMARY } : {}}>
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === 'all' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
             {lang === 'vi' ? 'Tất cả' : 'All'}
           </button>
           {categories
@@ -1344,11 +1265,10 @@ export default function RestaurantPage() {
               if (cat.is_active === false) return false;
               return allItems.filter(i => i.category_id === cat.id).length > 0;
             })
-            .sort((a, b) => (a.sort_order || a.order || 0) - (b.sort_order || b.order || 0))
+            .sort((a, b) => (a.sort_order || (a as any).order || 0) - (b.sort_order || (b as any).order || 0))
             .map(cat => (
               <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                style={activeCategory === cat.id ? { backgroundColor: PRIMARY } : {}}>
+                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
                 {getCatLabel(cat.name)}
               </button>
             ))}
@@ -1361,7 +1281,7 @@ export default function RestaurantPage() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-6">
             <span className="font-heading text-2xl font-black text-gray-900 tracking-tight">Menu</span>
-            <div className="h-0.5 flex-1 rounded-full" style={{ background: PRIMARY }} />
+            <div className="h-0.5 flex-1 rounded-full bg-primary" />
           </div>
 
           {loadingItems ? (
@@ -1399,14 +1319,11 @@ export default function RestaurantPage() {
           )}
         </div>
 
-        {/* Cart sidebar (desktop) */}
+        {/* Cart sidebar desktop */}
         <div className="hidden md:block w-72 flex-shrink-0">
           <div className="sticky top-[112px]">
-            <CartSidebar
-              cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
-              onCheckout={() => setShowDeliveryModal(true)}
-              isClosed={isClosed} lang={lang}
-            />
+            <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
+              onCheckout={() => setShowDeliveryModal(true)} isClosed={isClosed} lang={lang} />
           </div>
         </div>
       </div>
@@ -1415,9 +1332,8 @@ export default function RestaurantPage() {
       {totalQty > 0 && !isClosed && (
         <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
           <button onClick={() => setShowMobileCart(true)}
-            className="w-full text-white rounded-2xl py-4 px-5 font-bold flex items-center justify-between"
-            style={{ backgroundColor: PRIMARY, boxShadow: '0 8px 24px rgba(139,26,26,0.35)' }}>
-            <span className="rounded-full text-xs font-bold px-2.5 py-0.5" style={{ background: 'rgba(255,255,255,0.2)' }}>{totalQty}</span>
+            className="w-full bg-primary hover:opacity-90 text-white rounded-2xl py-4 px-5 font-bold flex items-center justify-between shadow-2xl shadow-primary/30">
+            <span className="bg-white/20 px-2.5 py-0.5 rounded-full text-xs font-bold">{totalQty}</span>
             <span className="flex items-center gap-2 text-sm"><ShoppingBag className="w-4 h-4" /></span>
             <span className="text-sm font-semibold">{fmt(subtotal)}</span>
           </button>
@@ -1435,25 +1351,19 @@ export default function RestaurantPage() {
                 <X className="w-4 h-4 text-gray-500" />
               </button>
             </div>
-            <CartSidebar
-              cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
+            <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
               onCheckout={() => { setShowMobileCart(false); setShowDeliveryModal(true); }}
-              isClosed={isClosed} lang={lang}
-            />
+              isClosed={isClosed} lang={lang} />
           </div>
         </div>
       )}
 
-      {/* Item modal */}
       {selectedItem && (
-        <ItemModal
-          item={selectedItem.item} groups={selectedItem.groups} lang={lang}
+        <ItemModal item={selectedItem.item} groups={selectedItem.groups} lang={lang}
           onClose={() => setSelectedItem(null)}
-          onAdd={item => { add(item); setSelectedItem(null); }}
-        />
+          onAdd={item => { add(item); setSelectedItem(null); }} />
       )}
 
-      {/* Delivery options modal */}
       <DeliveryOptionsModal
         isOpen={showDeliveryModal}
         onClose={() => setShowDeliveryModal(false)}
@@ -1465,7 +1375,6 @@ export default function RestaurantPage() {
         restaurant={restaurant} subtotal={subtotal} lang={lang}
       />
 
-      {/* Footer */}
       {(restaurant as any).show_powered_by !== false && (
         <footer className="bg-white border-t border-gray-100 py-4 mt-4">
           <div className="max-w-6xl mx-auto px-4 text-center">

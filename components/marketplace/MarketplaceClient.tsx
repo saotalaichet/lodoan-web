@@ -8,7 +8,6 @@ import FilterBar from './FilterBar';
 import { Restaurant } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 
-const PRIMARY = '#8B1A1A';
 const CURRENT_YEAR = new Date().getFullYear();
 
 const fmt = (v: number) =>
@@ -30,41 +29,36 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 function getRestaurantStatus(restaurant: Restaurant): 'OPEN' | 'CLOSED' | 'PAUSED' {
   if (!restaurant) return 'CLOSED';
   if (restaurant.is_accepting_orders === false) return 'PAUSED';
-  if (!isWithinOpeningHours(restaurant.hours)) return 'CLOSED';
-  return 'OPEN';
-}
-
-function isWithinOpeningHours(hours: any): boolean {
-  if (!hours) return true;
+  const hours = restaurant.hours;
+  if (!hours) return 'OPEN';
   const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const now = new Date();
-  const vnTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
-  const dayKey = DAYS[vnTime.getDay()];
-  const todayHours = hours[dayKey];
-  if (!todayHours || !todayHours.trim()) return false;
-  const [openStr, closeStr] = todayHours.split('-').map((s: string) => s.trim());
-  if (!openStr || !closeStr) return false;
-  const [openH, openM] = openStr.split(':').map(Number);
-  const [closeH, closeM] = closeStr.split(':').map(Number);
-  let closeMins = closeH * 60 + closeM;
-  if ((closeH === 0 && closeM === 0) || (closeH === 24 && closeM === 0)) closeMins = 1440;
-  const currentMins = vnTime.getHours() * 60 + vnTime.getMinutes();
-  return currentMins >= openH * 60 + openM && currentMins < closeMins;
+  const vn = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' }));
+  const dayHours = (hours as any)[DAYS[vn.getDay()]];
+  if (!dayHours?.trim()) return 'CLOSED';
+  const [openStr, closeStr] = dayHours.split('-').map((s: string) => s.trim());
+  if (!openStr || !closeStr) return 'CLOSED';
+  const [oH, oM] = openStr.split(':').map(Number);
+  const [cH, cM] = closeStr.split(':').map(Number);
+  let closeMins = cH * 60 + cM;
+  if ((cH === 0 && cM === 0) || (cH === 24 && cM === 0)) closeMins = 1440;
+  const cur = vn.getHours() * 60 + vn.getMinutes();
+  return cur >= oH * 60 + oM && cur < closeMins ? 'OPEN' : 'CLOSED';
 }
 
 function getStatusText(status: string, lang: string) {
-  const labels: Record<string, { vi: string; en: string }> = {
+  const m: Record<string, { vi: string; en: string }> = {
     OPEN: { vi: '● Đang Mở', en: '● Open' },
     CLOSED: { vi: '● Đã Đóng Cửa', en: '● Closed' },
     PAUSED: { vi: '● Tạm Dừng', en: '● Paused' },
   };
-  return labels[status]?.[lang === 'vi' ? 'vi' : 'en'] || '';
+  return m[status]?.[lang === 'vi' ? 'vi' : 'en'] || '';
 }
 
-function getStatusStyle(status: string) {
-  if (status === 'OPEN') return { background: '#F0FDF4', color: '#166534', border: '1px solid #86EFAC' };
-  if (status === 'PAUSED') return { background: '#FFF7ED', color: '#C2410C', border: '1px solid #FED7AA' };
-  return { background: '#F9FAFB', color: '#6B7280', border: '1px solid #E5E7EB' };
+function getStatusBadgeClass(status: string) {
+  if (status === 'OPEN') return 'bg-green-50 text-green-600 border-green-200';
+  if (status === 'PAUSED') return 'bg-orange-50 text-orange-600 border-orange-200';
+  return 'bg-gray-100 text-gray-500 border-gray-200';
 }
 
 const CUISINE_DISPLAY: Record<string, { en: string; vi: string }> = {
@@ -91,7 +85,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   return (
     <>
       {text.slice(0, idx)}
-      <span style={{ color: PRIMARY, fontWeight: 700 }}>{text.slice(idx, idx + query.length)}</span>
+      <span className="text-primary font-bold">{text.slice(idx, idx + query.length)}</span>
       {text.slice(idx + query.length)}
     </>
   );
@@ -100,7 +94,7 @@ function HighlightText({ text, query }: { text: string; query: string }) {
 function RestaurantCard({ restaurant, lang, search }: { restaurant: Restaurant; lang: string; search: string }) {
   const status = getRestaurantStatus(restaurant);
   const isOrderingDisabled = status !== 'OPEN';
-  const statusStyle = getStatusStyle(status);
+  const badgeClass = getStatusBadgeClass(status);
   const statusText = getStatusText(status, lang);
   const isPremium = (restaurant as any).subscription_tier === 'Premium';
   const isFeatured = (restaurant as any).featured;
@@ -117,8 +111,14 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: Restaurant; 
       <div
         className="bg-white border border-gray-200 rounded-xl overflow-hidden cursor-pointer flex flex-col h-full"
         style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)', transition: 'box-shadow 0.2s ease, transform 0.2s ease' }}
-        onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.10)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; }}
-        onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; }}
+        onMouseEnter={e => {
+          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.10)';
+          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+        }}
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)';
+          (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+        }}
       >
         {/* Banner */}
         <div className="relative flex-shrink-0" style={{ height: '180px' }}>
@@ -146,18 +146,19 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: Restaurant; 
           )}
 
           <div className="absolute top-2 right-2 z-20">
-            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full border" style={statusStyle}>
+            <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badgeClass}`}>
               {statusText}
             </span>
           </div>
 
-          {/* Logo overlap */}
-          <div className="absolute flex items-center justify-center overflow-hidden"
-            style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}>
+          <div
+            className="absolute flex items-center justify-center overflow-hidden"
+            style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}
+          >
             {restaurant.logo ? (
               <Image src={restaurant.logo} alt="" width={40} height={40} className="object-cover rounded-full" />
             ) : (
-              <div className="w-full h-full rounded-full flex items-center justify-center font-heading font-bold" style={{ background: PRIMARY, color: 'white', fontSize: '14px' }}>
+              <div className="w-full h-full rounded-full bg-primary flex items-center justify-center font-heading font-bold" style={{ fontSize: '14px', color: 'white' }}>
                 {firstLetter}
               </div>
             )}
@@ -166,13 +167,12 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: Restaurant; 
 
         {/* Card body */}
         <div className="flex flex-col flex-1" style={{ padding: '24px 14px 14px 14px' }}>
-          <h3 className="font-heading font-bold leading-tight mb-1.5" style={{ fontSize: '15px', color: '#1A1A1A' }}>
+          <h3 className="font-bold leading-tight mb-1.5" style={{ fontSize: '15px', color: '#1A1A1A' }}>
             <HighlightText text={restaurant.name} query={search} />
           </h3>
 
           {cuisineLabel && (
-            <span className="inline-block self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2"
-              style={{ background: '#FFF0ED', color: PRIMARY }}>
+            <span className="inline-block self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2 bg-primary/10 text-primary">
               {cuisineLabel}
             </span>
           )}
@@ -205,11 +205,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: Restaurant; 
           </div>
 
           <button
-            className="w-full h-9 font-heading font-bold rounded-lg text-sm transition-opacity mt-auto"
-            style={isOrderingDisabled
-              ? { background: '#D3D3D3', color: '#666', cursor: 'not-allowed' }
-              : { background: PRIMARY, color: 'white' }
-            }
+            className={`w-full h-9 font-heading font-bold rounded-lg text-sm transition-opacity mt-auto ${isOrderingDisabled ? 'bg-gray-300 text-gray-600 cursor-not-allowed' : 'bg-primary text-white hover:opacity-90'}`}
           >
             {isOrderingDisabled
               ? (lang === 'vi' ? 'Đang Đóng Cửa' : 'Currently Closed')
@@ -278,7 +274,6 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
 
   const filtered = useMemo(() => {
     let list = restaurants.filter(r => r.slug && r.is_active === true && (r as any).show_on_marketplace === true);
-
     if (search.trim()) {
       const q = normalize(search);
       list = list.filter(r =>
@@ -290,22 +285,9 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
         normalize((r as any).city || '').includes(q)
       );
     }
-
-    if (selectedCuisines.length > 0) {
-      list = list.filter(r => selectedCuisines.includes(r.cuisine_type || ''));
-    }
-
-    if (selectedCity) {
-      list = list.filter(r => (r as any).city === selectedCity);
-    }
-
-    if (selectedDietary.length > 0) {
-      list = list.filter(r =>
-        Array.isArray((r as any).dietary_options) &&
-        selectedDietary.every(opt => (r as any).dietary_options.includes(opt))
-      );
-    }
-
+    if (selectedCuisines.length > 0) list = list.filter(r => selectedCuisines.includes(r.cuisine_type || ''));
+    if (selectedCity) list = list.filter(r => (r as any).city === selectedCity);
+    if (selectedDietary.length > 0) list = list.filter(r => Array.isArray((r as any).dietary_options) && selectedDietary.every(opt => (r as any).dietary_options.includes(opt)));
     if (nearMe && userCoords) {
       list = list.map(r => {
         if (!(r as any).latitude || !(r as any).longitude) return { ...r, _distance: 9999 };
@@ -313,7 +295,6 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
         return { ...r, _distance: d };
       }).filter(r => (r as any)._distance <= 5);
     }
-
     const tierOrder: Record<string, number> = { Premium: 0, Standard: 1, Basic: 2 };
     list.sort((a, b) => {
       if (nearMe && userCoords) {
@@ -324,13 +305,11 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
       if (tierDiff !== 0) return tierDiff;
       return ((b as any).average_rating || 0) - ((a as any).average_rating || 0);
     });
-
     return list;
   }, [restaurants, search, selectedCuisines, selectedCity, selectedDietary, nearMe, userCoords]);
 
   const featured = useMemo(() =>
-    restaurants
-      .filter(r => (r as any).featured && r.is_active === true && (r as any).show_on_marketplace === true)
+    restaurants.filter(r => (r as any).featured && r.is_active === true && (r as any).show_on_marketplace === true)
       .sort((a, b) => ((a as any).featured_display_order || 0) - ((b as any).featured_display_order || 0)),
     [restaurants]
   );
@@ -341,42 +320,40 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
   const popular = lang === 'vi' ? POPULAR_VI : POPULAR_EN;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: 'hsl(30, 20%, 97%)' }}>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
 
       {/* HEADER */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 lg:px-8 h-16 flex items-center gap-4">
           <Link href="/" className="flex items-center flex-shrink-0" style={{ gap: '10px' }}>
             <Image src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" width={44} height={44}
-              className="object-contain" style={{ height: '44px', width: 'auto' }} />
+              className="w-auto h-9 md:h-11 object-contain" />
             <div className="leading-none">
-              <div className="font-heading font-black text-xl tracking-tight leading-none" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</div>
-              <div className="text-[10px] font-normal text-gray-400 leading-tight">by Ovenly</div>
+              <div className="font-heading font-black text-primary text-xl tracking-tight leading-none">LÒ ĐỒ ĂN</div>
+              <div className="text-[10px] font-normal text-gray-400 leading-tight tracking-normal">by Ovenly</div>
             </div>
           </Link>
 
           <nav className="hidden md:flex items-center gap-6 ml-6 flex-1">
             {NAV_LINKS.map(l => (
-              <Link key={l.href} href={l.href} className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
+              <Link key={l.href} href={l.href} className="text-sm font-medium text-gray-600 hover:text-primary transition-colors">
                 {lang === 'vi' ? l.vi : l.en}
               </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-3 ml-auto">
-            {/* Language toggle */}
             <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-bold">
-              <button onClick={() => setLang('vi')} className="px-3 py-1 rounded-full transition-all"
-                style={lang === 'vi' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>VI</button>
-              <button onClick={() => setLang('en')} className="px-3 py-1 rounded-full transition-all"
-                style={lang === 'en' ? { backgroundColor: PRIMARY, color: 'white' } : { color: '#6B7280' }}>EN</button>
+              <button onClick={() => setLang('vi')}
+                className={`px-3 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>VI</button>
+              <button onClick={() => setLang('en')}
+                className={`px-3 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-primary text-white' : 'text-gray-500 hover:text-gray-700'}`}>EN</button>
             </div>
 
-            {/* Auth */}
             {customer ? (
               <div className="relative" ref={dropdownRef}>
                 <button onClick={() => setShowDropdown(!showDropdown)}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                  className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                   <User className="w-4 h-4" />
                   <span className="hidden sm:inline">{customer.full_name?.split(' ')[0] || customer.email}</span>
                   <ChevronDown className="w-3 h-3" />
@@ -403,17 +380,15 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
               </div>
             ) : (
               <div className="hidden sm:flex items-center gap-2">
-                <Link href="/login" className="text-sm font-semibold text-gray-700 hover:text-gray-900 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                <Link href="/login" className="text-sm font-semibold text-gray-700 hover:text-primary px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                   {lang === 'vi' ? 'Đăng Nhập' : 'Login'}
                 </Link>
-                <Link href="/signup" className="text-white text-sm font-heading font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: PRIMARY }}>
+                <Link href="/signup" className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-lg hover:opacity-90 transition-opacity">
                   {lang === 'vi' ? 'Đăng Ký' : 'Sign Up'}
                 </Link>
               </div>
             )}
 
-            {/* Mobile hamburger */}
             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 transition-colors">
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -421,24 +396,22 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
           </div>
         </div>
 
-        {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-1">
             {NAV_LINKS.map(l => (
               <Link key={l.href} href={l.href} onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg">
+                className="block px-3 py-2.5 text-sm font-medium text-gray-700 hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">
                 {lang === 'vi' ? l.vi : l.en}
               </Link>
             ))}
             {!customer ? (
               <div className="flex gap-2 pt-2 border-t border-gray-100 mt-2">
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-2.5 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg">
+                  className="flex-1 text-center py-2.5 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50">
                   {lang === 'vi' ? 'Đăng Nhập' : 'Login'}
                 </Link>
                 <Link href="/signup" onClick={() => setMobileMenuOpen(false)}
-                  className="flex-1 text-center py-2.5 text-sm font-bold text-white rounded-lg"
-                  style={{ backgroundColor: PRIMARY }}>
+                  className="flex-1 text-center py-2.5 text-sm font-bold text-white bg-primary rounded-lg hover:opacity-90">
                   {lang === 'vi' ? 'Đăng Ký' : 'Sign Up'}
                 </Link>
               </div>
@@ -460,11 +433,10 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
         )}
       </header>
 
-      {/* HERO */}
-      <div className="text-white py-14 px-4"
-        style={{ background: `linear-gradient(135deg, ${PRIMARY} 0%, hsl(0,75%,28%) 50%, hsl(0,60%,18%) 100%)` }}>
+      {/* HERO — exact match to Base44: bg-gradient-to-br from-primary via-primary/90 to-primary/75 */}
+      <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-14 px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="font-heading font-black mb-3 leading-tight" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>
+          <h1 className="font-heading text-3xl md:text-5xl font-black mb-3 leading-tight">
             {lang === 'vi' ? 'Khám Phá Nhà Hàng Tuyệt Vời' : 'Discover Amazing Restaurants'}
           </h1>
           <p className="text-white/80 mb-8 text-base md:text-lg">
@@ -480,21 +452,19 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
                   onFocus={() => setSearchFocused(true)}
                   onBlur={() => setTimeout(() => setSearchFocused(false), 150)}
                   placeholder={lang === 'vi' ? 'Tìm nhà hàng hoặc món ăn...' : 'Search restaurants or dishes...'}
-                  className="flex-1 text-sm text-gray-700 outline-none py-2 bg-transparent" />
+                  className="flex-1 text-sm text-gray-900 outline-none py-2 bg-transparent" />
                 {search && (
                   <button onClick={() => setSearch('')} className="text-gray-400 hover:text-gray-600">
                     <X className="w-4 h-4" />
                   </button>
                 )}
-                <button className="text-white px-5 py-3 rounded-xl font-bold text-sm flex-shrink-0"
-                  style={{ backgroundColor: PRIMARY }}>
+                <button className="bg-primary text-white px-5 py-3 rounded-xl font-bold text-sm flex-shrink-0 hover:opacity-90">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                   </svg>
                 </button>
               </div>
 
-              {/* Popular searches dropdown */}
               {searchFocused && !search.trim() && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl p-4 z-50"
                   style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.12)', border: '1px solid #F0F0F0' }}>
@@ -504,7 +474,7 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
                   <div className="flex flex-wrap gap-2">
                     {popular.map(term => (
                       <button key={term} onClick={() => { setSearch(term); setSearchFocused(false); }}
-                        className="px-3 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-gray-700 hover:border-red-800 hover:text-red-800 hover:bg-red-50 transition-all">
+                        className="px-3 py-1.5 rounded-full text-sm font-medium border border-gray-200 text-gray-700 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all">
                         {term}
                       </button>
                     ))}
@@ -520,9 +490,7 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
-                {nearMe
-                  ? (lang === 'vi' ? '✓ Đang dùng vị trí hiện tại' : '✓ Using current location')
-                  : (lang === 'vi' ? 'Dùng vị trí hiện tại' : 'Use my current location')}
+                {nearMe ? (lang === 'vi' ? '✓ Đang dùng vị trí hiện tại' : '✓ Using current location') : (lang === 'vi' ? 'Dùng vị trí hiện tại' : 'Use my current location')}
               </button>
               {!customer && (
                 <>
@@ -549,7 +517,6 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
           onClearAll={clearAll} selectedCity={selectedCity} onCityChange={setSelectedCity}
         />
 
-        {/* Featured section */}
         {featured.length > 0 && !search && selectedCuisines.length === 0 && !selectedCity && (
           <div className="mb-10">
             <h2 className="font-heading font-bold text-gray-900 text-xl mb-4 flex items-center gap-2">
@@ -562,7 +529,6 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
           </div>
         )}
 
-        {/* All restaurants */}
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-heading font-bold text-gray-900 text-xl">
             {lang === 'vi' ? 'Tất Cả Nhà Hàng' : 'All Restaurants'}
@@ -575,13 +541,12 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
         {filtered.length === 0 ? (
           <div className="text-center py-20">
             <p className="text-5xl mb-4">🍜</p>
-            <p className="font-heading font-bold text-gray-700 text-lg">
+            <p className="font-heading font-bold text-gray-700 text-lg mb-2">
               {search ? (lang === 'vi' ? `Không tìm thấy kết quả cho "${search}"` : `No results for "${search}"`) : (lang === 'vi' ? 'Chưa có nhà hàng nào.' : 'No restaurants found.')}
             </p>
             {search && (
               <button onClick={() => setSearch('')}
-                className="mt-4 px-5 py-2 rounded-lg border text-sm font-semibold hover:bg-red-50 transition-colors"
-                style={{ borderColor: PRIMARY, color: PRIMARY }}>
+                className="mt-3 px-5 py-2 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-red-50 transition-colors">
                 {lang === 'vi' ? 'Xóa tìm kiếm' : 'Clear search'}
               </button>
             )}
@@ -600,9 +565,9 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
             <div>
               <div className="flex items-center mb-3" style={{ gap: '10px' }}>
                 <Image src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" width={44} height={44}
-                  className="object-contain" style={{ height: '44px', width: 'auto' }} />
+                  className="w-auto h-11 object-contain" />
                 <div className="leading-none">
-                  <div className="font-heading font-black text-2xl leading-none" style={{ color: PRIMARY }}>LÒ ĐỒ ĂN</div>
+                  <div className="font-heading font-black text-primary text-2xl leading-none">LÒ ĐỒ ĂN</div>
                   <div className="text-xs text-gray-400 font-normal">by Ovenly</div>
                 </div>
               </div>
@@ -612,35 +577,50 @@ export default function MarketplaceClient({ restaurants }: { restaurants: Restau
                   : 'The food discovery platform connecting diners with amazing restaurants across Vietnam.'}
               </p>
               <div className="flex gap-3">
-                {[
-                  { href: 'https://facebook.com', color: '#1877F2', icon: <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/> },
-                ].map((s, i) => (
-                  <a key={i} href={s.href} target="_blank" rel="noopener noreferrer"
-                    className="w-9 h-9 rounded-full flex items-center justify-center"
-                    style={{ background: '#EEEEEE', color: s.color }}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">{s.icon}</svg>
-                  </a>
-                ))}
+                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  style={{ background: '#EEEEEE', color: '#1877F2' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                  </svg>
+                </a>
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  style={{ background: '#EEEEEE', color: '#E1306C' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2"/>
+                    <rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                    <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+                  </svg>
+                </a>
+                <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  style={{ background: '#EEEEEE', color: '#000000' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.321 5.562a5.122 5.122 0 01-2.756-3.106V2h-3.686v13.67a2.4 2.4 0 11-2.4-2.4c.293 0 .575.022.856.065V9.237c-.307-.05-.596-.065-.88-.065a6.3 6.3 0 105.894 6.3v-3.27a8.23 8.23 0 004.822 1.533V5.562z"/>
+                  </svg>
+                </a>
               </div>
             </div>
 
             <div>
               <h4 className="font-bold text-gray-900 text-sm mb-3 uppercase tracking-wide">
-                {lang === 'vi' ? 'ĐIỀU HƯỚNG' : 'NAVIGATION'}
+                {lang === 'vi' ? 'Điều Hướng' : 'Navigation'}
               </h4>
               <ul className="space-y-2">
-                <li><Link href="/about" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">{lang === 'vi' ? 'Giới Thiệu' : 'About'}</Link></li>
-                <li><Link href="/contact" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">{lang === 'vi' ? 'Liên Hệ' : 'Contact'}</Link></li>
+                <li><Link href="/about" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Giới Thiệu' : 'About'}</Link></li>
+                <li><Link href="/contact" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Liên Hệ' : 'Contact'}</Link></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-bold text-gray-900 text-sm mb-3 uppercase tracking-wide">
-                {lang === 'vi' ? 'DÀNH CHO NHÀ HÀNG' : 'FOR MERCHANTS'}
+                {lang === 'vi' ? 'Dành Cho Nhà Hàng' : 'For Merchants'}
               </h4>
               <ul className="space-y-2">
-                <li><Link href="/contact" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">{lang === 'vi' ? 'Mở quán trên LÒ ĐỒ ĂN' : 'Become a Merchant'}</Link></li>
-                <li><a href="mailto:hello@ovenly.io" className="text-sm text-gray-500 hover:text-gray-900 transition-colors">hello@ovenly.io</a></li>
+                <li><Link href="/contact" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Mở quán trên LÒ ĐỒ ĂN' : 'Become a Merchant'}</Link></li>
+                <li><a href="mailto:hello@ovenly.io" className="text-sm text-gray-500 hover:text-primary transition-colors">hello@ovenly.io</a></li>
               </ul>
             </div>
           </div>
