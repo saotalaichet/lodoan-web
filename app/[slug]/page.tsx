@@ -7,7 +7,7 @@ import {
   ShoppingBag, Plus, Minus, Trash2, Flame, Star, Leaf, X,
   ChevronLeft, MapPin, Phone, FileText, Bike, Clock,
 } from 'lucide-react';
-import { createPayment, validateOrderAcceptance } from '@/lib/api';
+import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 
 const BASE44_APP_ID = '69c130c9110a89987aae7fb0';
@@ -472,11 +472,10 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         alert(lang === 'vi' ? 'Vui lòng điền đầy đủ thông tin' : 'Please fill in all required fields');
         return;
       }
-      const validation = await validateOrderAcceptance(restaurant.id);
-      if (!validation.accepting) {
-        alert(lang === 'vi' ? (validation.message_vi || 'Nhà hàng không nhận đơn lúc này.') : (validation.message || 'Restaurant is currently closed.'));
-        return;
-      }
+
+      // No validateOrderAcceptance call — removed to eliminate checkout delay
+      // Restaurant open/closed is already enforced by isClosed check on the menu page
+
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
       const orderRes = await fetch(`${BASE44_URL}/entities/Order`, {
         method: 'POST', headers: BASE44_HEADERS,
@@ -903,7 +902,6 @@ export default function RestaurantPage() {
     const stored = localStorage.getItem('ovenly_language') || 'vi';
     setLang(stored);
     customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
-
     const urlParams = new URLSearchParams(window.location.search);
     const payment = urlParams.get('payment');
     const returnOrderId = urlParams.get('orderId');
@@ -928,16 +926,16 @@ export default function RestaurantPage() {
     if (!slug || slug === 'undefined') return;
     const load = async () => {
       try {
-        // Step 1: get restaurant via proxy
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
         const data = await res.json();
         if (!data) { setLoadingRestaurant(false); setLoadingItems(false); return; }
         setRestaurant(data);
         document.title = `${data.name} | Menu & Đặt Hàng Online`;
 
-        // Step 2: try server-side proxy first
         let cats: any[] = [];
         let items: any[] = [];
+
+        // Step 1: server-side proxy (uses getStorefront + category strategies)
         try {
           const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}&slug=${encodeURIComponent(slug)}`);
           const menuData = await menuRes.json();
@@ -945,8 +943,7 @@ export default function RestaurantPage() {
           items = menuData.items || [];
         } catch {}
 
-        // Step 3: if proxy returned nothing, try direct client-side fetch
-        // Base44's own SDK does this from the browser on lodoan.vn — CORS allows it
+        // Step 2: direct client-side fetch if proxy returned nothing
         if (items.length === 0) {
           try {
             const B44 = `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities`;
@@ -964,36 +961,11 @@ export default function RestaurantPage() {
               const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
               if (d.length > 0) items = d;
             }
-          } catch (e) {
-            console.error('Direct Base44 fetch failed:', e);
-          }
-        }
-
-        // Step 4: if still nothing, try with api-key header from client
-        if (items.length === 0) {
-          try {
-            const B44 = `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities`;
-            const headers = { 'api-key': '1552c0075c5e4229b7c5a76cbbb9a457' };
-            const [catsRes, itemsRes] = await Promise.all([
-              fetch(`${B44}/MenuCategory?restaurant_id=${data.id}&_limit=500`, { headers }),
-              fetch(`${B44}/MenuItem?restaurant_id=${data.id}&_limit=500`, { headers }),
-            ]);
-            if (catsRes.ok) {
-              const b = await catsRes.json();
-              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
-              if (d.length > 0) cats = d;
-            }
-            if (itemsRes.ok) {
-              const b = await itemsRes.json();
-              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
-              if (d.length > 0) items = d;
-            }
           } catch {}
         }
 
         setCategories(cats);
         setAllItems(items);
-        console.log(`Loaded: ${cats.length} categories, ${items.length} items for ${data.name}`);
       } catch (err) {
         console.error('Failed to load restaurant:', err);
       }
@@ -1031,13 +1003,20 @@ export default function RestaurantPage() {
     if (!pollStartRef.current) pollStartRef.current = Date.now();
     const interval = setInterval(async () => {
       try {
-        if (Date.now() - pollStartRef.current! > 10 * 60 * 1000) { setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' })); return; }
+        if (Date.now() - pollStartRef.current! > 10 * 60 * 1000) {
+          setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' }));
+          return;
+        }
         const res = await fetch(`${BASE44_URL}/functions/getOrderStatus`, {
           method: 'POST', headers: BASE44_HEADERS, body: JSON.stringify({ orderId: successOrder.id }),
         });
         const data = await res.json();
         const order = data?.data || data;
-        if (order?.status) setSuccessOrder((prev: any) => ({ ...prev, status: order.status, notes: order.notes || prev.notes, items: order.items || prev.items, total: order.total ?? prev.total, delivery_address: order.delivery_address || prev.delivery_address }));
+        if (order?.status) setSuccessOrder((prev: any) => ({
+          ...prev, status: order.status, notes: order.notes || prev.notes,
+          items: order.items || prev.items, total: order.total ?? prev.total,
+          delivery_address: order.delivery_address || prev.delivery_address,
+        }));
       } catch {}
     }, 3000);
     return () => clearInterval(interval);
@@ -1047,31 +1026,26 @@ export default function RestaurantPage() {
   const isClosed = status !== 'OPEN';
   const todayHours = getTodayHours(restaurant);
 
-  // Group items by category — with fallback for empty/missing categories
   const groupedItems = useMemo(() => {
     if (allItems.length === 0) return [];
-
     if (activeCategory !== 'all') {
       const cat = categories.find((c: any) => c.id === activeCategory);
       return cat ? [{ category: cat, items: allItems.filter((i: any) => i.category_id === activeCategory) }] : [];
     }
-
     if (categories.length > 0) {
-      const sortedCats = [...categories].sort((a: any, b: any) => (a.order || a.sort_order || 0) - (b.order || b.sort_order || 0));
+      const sortedCats = [...categories].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
       const grouped = sortedCats
         .map((cat: any) => ({ category: cat, items: allItems.filter((i: any) => i.category_id === cat.id) }))
         .filter(g => g.items.length > 0);
       const categorizedIds = new Set(categories.map((c: any) => c.id));
       const uncategorized = allItems.filter((i: any) => !categorizedIds.has(i.category_id));
       if (uncategorized.length > 0) {
-        grouped.push({ category: { id: '__uncategorized', name: lang === 'vi' ? 'Khác / Other' : 'Other / Khác', order: 9999 }, items: uncategorized });
+        grouped.push({ category: { id: '__uncategorized', name: 'Khác / Other', order: 9999 }, items: uncategorized });
       }
       return grouped;
     }
-
-    // Fallback: no categories at all — show all items in one group
-    return [{ category: { id: '__all', name: lang === 'vi' ? 'Thực Đơn / Menu' : 'Menu / Thực Đơn', order: 0 }, items: allItems }];
-  }, [activeCategory, allItems, categories, lang]);
+    return [{ category: { id: '__all', name: 'Thực Đơn / Menu', order: 0 }, items: allItems }];
+  }, [activeCategory, allItems, categories]);
 
   const getCatLabel = (name: string) => {
     if (!name) return '';
@@ -1277,11 +1251,11 @@ export default function RestaurantPage() {
           {categories
             .filter((cat: any) => {
               if (!cat.name || typeof cat.name !== 'string') return false;
-              if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase().includes('all')) return false;
+              if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase() === 'all') return false;
               if (cat.is_active === false) return false;
               return allItems.filter((i: any) => i.category_id === cat.id).length > 0;
             })
-            .sort((a: any, b: any) => (a.order || a.sort_order || 0) - (b.order || b.sort_order || 0))
+            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
             .map((cat: any) => (
               <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
                 className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -1332,7 +1306,6 @@ export default function RestaurantPage() {
           )}
         </div>
 
-        {/* Cart Sidebar Desktop */}
         <div className="hidden md:block w-72 flex-shrink-0">
           <div className="sticky top-[112px]">
             <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
@@ -1389,20 +1362,19 @@ export default function RestaurantPage() {
       />
 
       {/* Cuisine & dietary info */}
-      {(restaurant.cuisine_type || (restaurant.dietary_options && restaurant.dietary_options.length > 0)) && (
+      {(restaurant.cuisine_type || (Array.isArray(restaurant.dietary_options) && restaurant.dietary_options.length > 0)) && (
         <div className="max-w-6xl mx-auto w-full px-4 mt-4 mb-2">
           <div className="border-t border-gray-200 pt-4 flex flex-wrap items-center gap-2">
             {restaurant.cuisine_type && (
               <span className="text-sm font-semibold text-gray-500">
-                {lang === 'vi' ? 'Ẩm thực:' : 'Cuisine:'}
-                {' '}
+                {lang === 'vi' ? 'Ẩm thực:' : 'Cuisine:'}{' '}
                 <span className="text-primary">
                   {lang === 'vi' ? (restaurant.cuisine_type_vietnamese || restaurant.cuisine_type) : restaurant.cuisine_type}
                 </span>
               </span>
             )}
             {Array.isArray(restaurant.dietary_options) && restaurant.dietary_options.map((opt: string) => {
-              const dietaryLabels: Record<string, { vi: string; emoji: string }> = {
+              const labels: Record<string, { vi: string; emoji: string }> = {
                 'Vegetarian Friendly': { vi: 'Thân Thiện Với Người Ăn Chay', emoji: '🥗' },
                 'Vegan Friendly': { vi: 'Thuần Chay', emoji: '🌱' },
                 'Gluten Free': { vi: 'Không Chứa Gluten', emoji: '🌾' },
@@ -1411,7 +1383,7 @@ export default function RestaurantPage() {
                 'Dairy Free': { vi: 'Không Có Sữa', emoji: '🥛' },
                 'Seafood Free': { vi: 'Không Có Hải Sản', emoji: '🦐' },
               };
-              const info = dietaryLabels[opt] || { vi: opt, emoji: '✓' };
+              const info = labels[opt] || { vi: opt, emoji: '✓' };
               return (
                 <span key={opt} className="inline-flex items-center gap-1 text-xs font-semibold bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-full">
                   {info.emoji} {lang === 'vi' ? info.vi : opt}
