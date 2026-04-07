@@ -8,8 +8,9 @@ import { customerAuth } from '@/lib/customerAuth';
 
 const APP_ID = '69c130c9110a89987aae7fb0';
 const API_KEY = '1552c0075c5e4229b7c5a76cbbb9a457';
-const BASE44 = `https://api.base44.app/api/apps/${APP_ID}`;
-const HEADERS = { 'api-key': API_KEY, 'Content-Type': 'application/json' };
+const BASE44_URL = `https://api.base44.app/api/apps/${APP_ID}`;
+const BASE44_HEADERS = { 'api-key': API_KEY, 'Content-Type': 'application/json' };
+const BASE44_ENTITY = `https://api.base44.app/api/apps/${APP_ID}`;
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
@@ -57,7 +58,6 @@ const T = {
   },
 };
 
-// Inner component that uses useSearchParams — must be inside Suspense
 function ProfileInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -97,59 +97,48 @@ function ProfileInner() {
     });
   }, [router]);
 
+  // Fetch orders
   useEffect(() => {
     if (activeTab === 'orders' && customer?.email) {
       setLoadingOrders(true);
       const fetchOrders = async () => {
         try {
-          // Primary: read orders saved to localStorage when placed from this device
-          const local: any[] = JSON.parse(localStorage.getItem('lo_do_an_order_history') || '[]');
-          const mine = local.filter((o: any) =>
-            !o.customer_email || o.customer_email === customer.email
-          );
+          const token = customerAuth.getToken() || '';
+          if (!token) { setLoadingOrders(false); return; }
 
-          // For each local order, refresh its status from Base44
+          // Primary: customerAuth get_orders (service role — returns full history)
+          const res = await fetch(`/api/orders?token=${encodeURIComponent(token)}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              setOrders(data);
+              setLoadingOrders(false);
+              return;
+            }
+          }
+
+          // Fallback: localStorage orders placed on this device
+          const local: any[] = JSON.parse(localStorage.getItem('lo_do_an_order_history') || '[]');
+          const mine = local.filter((o: any) => !o.customer_email || o.customer_email === customer.email);
+
+          // Refresh live status for each local order
           const refreshed = await Promise.all(
             mine.map(async (o: any) => {
               try {
-                const res = await fetch(
-                  `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/functions/getOrderStatus`,
-                  {
-                    method: 'POST',
-                    headers: { 'api-key': '1552c0075c5e4229b7c5a76cbbb9a457', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ orderId: o.id }),
-                  }
-                );
-                if (res.ok) {
-                  const d = await res.json();
-                  const latest = d?.data || d;
-                  if (latest?.status) return { ...o, status: latest.status };
+                const r = await fetch(`${BASE44_URL}/functions/getOrderStatus`, {
+                  method: 'POST',
+                  headers: BASE44_HEADERS,
+                  body: JSON.stringify({ orderId: o.id }),
+                });
+                if (r.ok) {
+                  const d = await r.json();
+                  if (d?.status) return { ...o, status: d.status };
                 }
               } catch {}
               return o;
             })
           );
-
-          // Also try server proxy for any orders placed on other devices
-          let serverOrders: any[] = [];
-          try {
-            const token = customerAuth.getToken() || '';
-            const res = await fetch(
-              `/api/orders?email=${encodeURIComponent(customer.email)}&token=${encodeURIComponent(token)}`
-            );
-            if (res.ok) serverOrders = await res.json();
-          } catch {}
-
-          // Merge: server orders that aren't already in local
-          const localIds = new Set(refreshed.map((o: any) => o.id));
-          const merged = [
-            ...refreshed,
-            ...serverOrders.filter((o: any) => !localIds.has(o.id)),
-          ].sort((a: any, b: any) =>
-            new Date(b.created_date).getTime() - new Date(a.created_date).getTime()
-          );
-
-          setOrders(merged);
+          setOrders(refreshed);
         } catch {}
         setLoadingOrders(false);
       };
@@ -157,14 +146,15 @@ function ProfileInner() {
     }
   }, [activeTab, customer?.email]);
 
+  // Fetch payment methods
   useEffect(() => {
     if (activeTab === 'payments' && customer?.id) {
       const fetchPayments = async () => {
         try {
           const token = customerAuth.getToken() || '';
           const res = await fetch(
-            `${BASE44}/entities/PaymentMethod?customer_id=${customer.id}&_limit=50`,
-            { headers: { ...HEADERS, 'Authorization': `Bearer ${token}` } }
+            `${BASE44_ENTITY}/entities/PaymentMethod?customer_id=${customer.id}&_limit=50`,
+            { headers: { ...BASE44_HEADERS, 'Authorization': `Bearer ${token}` } }
           );
           if (res.ok) {
             const body = await res.json();
@@ -213,7 +203,7 @@ function ProfileInner() {
   const handleDeletePayment = async (pmId: string) => {
     if (!window.confirm(t.deleteConfirm)) return;
     try {
-      await fetch(`${BASE44}/entities/PaymentMethod/${pmId}`, { method: 'DELETE', headers: HEADERS });
+      await fetch(`${BASE44_ENTITY}/entities/PaymentMethod/${pmId}`, { method: 'DELETE', headers: BASE44_HEADERS });
       setPaymentMethods(prev => prev.filter((pm: any) => pm.id !== pmId));
     } catch {}
   };
@@ -222,13 +212,13 @@ function ProfileInner() {
     try {
       for (const pm of paymentMethods) {
         if (pm.is_default) {
-          await fetch(`${BASE44}/entities/PaymentMethod/${pm.id}`, {
-            method: 'PUT', headers: HEADERS, body: JSON.stringify({ is_default: false }),
+          await fetch(`${BASE44_ENTITY}/entities/PaymentMethod/${pm.id}`, {
+            method: 'PUT', headers: BASE44_HEADERS, body: JSON.stringify({ is_default: false }),
           });
         }
       }
-      await fetch(`${BASE44}/entities/PaymentMethod/${pmId}`, {
-        method: 'PUT', headers: HEADERS, body: JSON.stringify({ is_default: true }),
+      await fetch(`${BASE44_ENTITY}/entities/PaymentMethod/${pmId}`, {
+        method: 'PUT', headers: BASE44_HEADERS, body: JSON.stringify({ is_default: true }),
       });
       setPaymentMethods(prev => prev.map((pm: any) => ({ ...pm, is_default: pm.id === pmId })));
     } catch {}
@@ -267,6 +257,7 @@ function ProfileInner() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Customer card */}
         <div className="bg-white rounded-2xl p-6 mb-6 flex items-center gap-4" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-2xl font-bold text-primary flex-shrink-0">
             {customer?.full_name?.[0]?.toUpperCase() || '?'}
@@ -277,6 +268,7 @@ function ProfileInner() {
           </div>
         </div>
 
+        {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 rounded-xl p-1 mb-6">
           {TABS.map(tab => (
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
@@ -446,7 +438,6 @@ function ProfileInner() {
   );
 }
 
-// Outer component wraps inner in Suspense (required for useSearchParams in Next.js)
 export default function ProfilePage() {
   return (
     <Suspense fallback={
