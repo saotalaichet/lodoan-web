@@ -923,21 +923,77 @@ export default function RestaurantPage() {
 
   useEffect(() => { localStorage.setItem('ovenly_language', lang); }, [lang]);
 
-  // Fetch restaurant + menu via server-side proxies
+  // Fetch restaurant + menu — proxy first, then direct client-side fallback
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
     const load = async () => {
       try {
+        // Step 1: get restaurant via proxy
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
         const data = await res.json();
-        if (data) {
-          setRestaurant(data);
-          document.title = `${data.name} | Menu & Đặt Hàng Online`;
+        if (!data) { setLoadingRestaurant(false); setLoadingItems(false); return; }
+        setRestaurant(data);
+        document.title = `${data.name} | Menu & Đặt Hàng Online`;
+
+        // Step 2: try server-side proxy first
+        let cats: any[] = [];
+        let items: any[] = [];
+        try {
           const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}`);
           const menuData = await menuRes.json();
-          setCategories(menuData.categories || []);
-          setAllItems(menuData.items || []);
+          cats = menuData.categories || [];
+          items = menuData.items || [];
+        } catch {}
+
+        // Step 3: if proxy returned nothing, try direct client-side fetch
+        // Base44's own SDK does this from the browser on lodoan.vn — CORS allows it
+        if (items.length === 0) {
+          try {
+            const B44 = `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities`;
+            const [catsRes, itemsRes] = await Promise.all([
+              fetch(`${B44}/MenuCategory?restaurant_id=${data.id}&_limit=500`),
+              fetch(`${B44}/MenuItem?restaurant_id=${data.id}&_limit=500`),
+            ]);
+            if (catsRes.ok) {
+              const b = await catsRes.json();
+              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
+              if (d.length > 0) cats = d;
+            }
+            if (itemsRes.ok) {
+              const b = await itemsRes.json();
+              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
+              if (d.length > 0) items = d;
+            }
+          } catch (e) {
+            console.error('Direct Base44 fetch failed:', e);
+          }
         }
+
+        // Step 4: if still nothing, try with api-key header from client
+        if (items.length === 0) {
+          try {
+            const B44 = `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities`;
+            const headers = { 'api-key': '1552c0075c5e4229b7c5a76cbbb9a457' };
+            const [catsRes, itemsRes] = await Promise.all([
+              fetch(`${B44}/MenuCategory?restaurant_id=${data.id}&_limit=500`, { headers }),
+              fetch(`${B44}/MenuItem?restaurant_id=${data.id}&_limit=500`, { headers }),
+            ]);
+            if (catsRes.ok) {
+              const b = await catsRes.json();
+              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
+              if (d.length > 0) cats = d;
+            }
+            if (itemsRes.ok) {
+              const b = await itemsRes.json();
+              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
+              if (d.length > 0) items = d;
+            }
+          } catch {}
+        }
+
+        setCategories(cats);
+        setAllItems(items);
+        console.log(`Loaded: ${cats.length} categories, ${items.length} items for ${data.name}`);
       } catch (err) {
         console.error('Failed to load restaurant:', err);
       }
@@ -1005,7 +1061,6 @@ export default function RestaurantPage() {
       const grouped = sortedCats
         .map((cat: any) => ({ category: cat, items: allItems.filter((i: any) => i.category_id === cat.id) }))
         .filter(g => g.items.length > 0);
-      // Add any uncategorized items at end
       const categorizedIds = new Set(categories.map((c: any) => c.id));
       const uncategorized = allItems.filter((i: any) => !categorizedIds.has(i.category_id));
       if (uncategorized.length > 0) {
@@ -1014,7 +1069,7 @@ export default function RestaurantPage() {
       return grouped;
     }
 
-    // Fallback: no categories, show all items in one group
+    // Fallback: no categories at all — show all items in one group
     return [{ category: { id: '__all', name: lang === 'vi' ? 'Thực Đơn / Menu' : 'Menu / Thực Đơn', order: 0 }, items: allItems }];
   }, [activeCategory, allItems, categories, lang]);
 
@@ -1168,7 +1223,7 @@ export default function RestaurantPage() {
         </div>
       )}
 
-      {/* Restaurant Info Bar */}
+      {/* Restaurant Info */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">{restaurant.name}</h1>
