@@ -6,6 +6,19 @@ const config: Config = {
     './components/**/*.{js,ts,jsx,tsx,mdx}',
     './app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  theme: {
+    extend: {
+      fontFamily: {
+        heading: ['Plus Jakarta Sans', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+      },
+      colors: {
+        primary: 'hsl(var(--color-primary) / <alpha-value>)',
+        accent: 'hsl(var(--color-accent) / <alpha-value>)',
+      },
+    },
+  },
+  plugins: [],
 };
 
 export default config;

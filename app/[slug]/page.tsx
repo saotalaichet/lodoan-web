@@ -520,6 +520,24 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         alert(lang === 'vi' ? 'Lỗi kết nối thanh toán.' : 'Payment connection error.');
         return;
       }
+      // Save to local order history so profile page can display it
+      try {
+        const saved = JSON.parse(localStorage.getItem('lo_do_an_order_history') || '[]');
+        saved.unshift({
+          id: order.id,
+          restaurant_name: restaurant.name,
+          created_date: new Date().toISOString(),
+          items: cart.map(i => ({ name: i.name, quantity: i.qty, price: i.price })),
+          total,
+          status: 'confirmed',
+          order_type: orderType,
+          payment_method: paymentMethod,
+          delivery_address: orderType === 'delivery' ? deliveryAddress : '',
+          customer_email: email,
+        });
+        localStorage.setItem('lo_do_an_order_history', JSON.stringify(saved.slice(0, 100)));
+      } catch {}
+
       onSuccess(order.id, orderType, paymentMethod);
     } finally { setPlacing(false); placingRef.current = false; }
   };

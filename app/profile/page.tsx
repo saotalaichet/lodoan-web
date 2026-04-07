@@ -102,17 +102,54 @@ function ProfileInner() {
       setLoadingOrders(true);
       const fetchOrders = async () => {
         try {
-          const token = customerAuth.getToken() || '';
-          const res = await fetch(
-            `/api/orders?email=${encodeURIComponent(customer.email)}&token=${encodeURIComponent(token)}`
+          // Primary: read orders saved to localStorage when placed from this device
+          const local: any[] = JSON.parse(localStorage.getItem('lo_do_an_order_history') || '[]');
+          const mine = local.filter((o: any) =>
+            !o.customer_email || o.customer_email === customer.email
           );
-          if (res.ok) {
-            const data = await res.json();
-            const sorted = [...data].sort((a: any, b: any) =>
-              new Date(b.created_date).getTime() - new Date(a.created_date).getTime()
+
+          // For each local order, refresh its status from Base44
+          const refreshed = await Promise.all(
+            mine.map(async (o: any) => {
+              try {
+                const res = await fetch(
+                  `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/functions/getOrderStatus`,
+                  {
+                    method: 'POST',
+                    headers: { 'api-key': '1552c0075c5e4229b7c5a76cbbb9a457', 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId: o.id }),
+                  }
+                );
+                if (res.ok) {
+                  const d = await res.json();
+                  const latest = d?.data || d;
+                  if (latest?.status) return { ...o, status: latest.status };
+                }
+              } catch {}
+              return o;
+            })
+          );
+
+          // Also try server proxy for any orders placed on other devices
+          let serverOrders: any[] = [];
+          try {
+            const token = customerAuth.getToken() || '';
+            const res = await fetch(
+              `/api/orders?email=${encodeURIComponent(customer.email)}&token=${encodeURIComponent(token)}`
             );
-            setOrders(sorted);
-          }
+            if (res.ok) serverOrders = await res.json();
+          } catch {}
+
+          // Merge: server orders that aren't already in local
+          const localIds = new Set(refreshed.map((o: any) => o.id));
+          const merged = [
+            ...refreshed,
+            ...serverOrders.filter((o: any) => !localIds.has(o.id)),
+          ].sort((a: any, b: any) =>
+            new Date(b.created_date).getTime() - new Date(a.created_date).getTime()
+          );
+
+          setOrders(merged);
         } catch {}
         setLoadingOrders(false);
       };
