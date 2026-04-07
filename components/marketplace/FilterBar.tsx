@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 
+const PRIMARY = '#8B1A1A';
+
 const CUISINE_OPTIONS = [
   { key: 'Vietnamese', vi: 'Việt Nam', en: 'Vietnamese' },
   { key: 'Chinese', vi: 'Trung Quốc', en: 'Chinese' },
@@ -54,7 +56,7 @@ const DIETARY_OPTIONS = [
 ];
 
 const BASE_BTN = 'flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium transition-all select-none whitespace-nowrap';
-const activeStyle = { border: '1px solid #8B1A1A', color: '#8B1A1A', background: '#fff' };
+const activeStyle = { border: `1px solid ${PRIMARY}`, color: PRIMARY, background: '#fff' };
 const inactiveStyle = { border: '1px solid #E0E0E0', color: '#333333', background: '#fff' };
 
 function useClickOutside(ref: React.RefObject<HTMLDivElement | null>, handler: () => void) {
@@ -101,6 +103,11 @@ export default function FilterBar({
   const cuisineActive = selectedCuisines.length > 0;
   const dietaryActive = selectedDietary.length > 0;
   const cityActive = !!selectedCity;
+  const anyActive = nearMe || cuisineActive || dietaryActive || cityActive;
+
+  const pillStyle = (active: boolean) => active
+    ? { background: PRIMARY, color: 'white', border: `1px solid ${PRIMARY}` }
+    : { background: '#F7F7F7', color: '#444', border: '1px solid #E8E8E8' };
 
   return (
     <div className="mb-6">
@@ -120,21 +127,28 @@ export default function FilterBar({
           >
             <span>🏙️</span>
             {lang === 'vi' ? 'Thành Phố' : 'City'}
-            {cityActive && <span className="ml-0.5 text-xs font-bold">({CITY_OPTIONS.find(c => c.key === selectedCity)?.[lang === 'vi' ? 'vi' : 'en']})</span>}
-            <ChevronDown className="w-3.5 h-3.5 ml-0.5 transition-transform duration-200" style={{ transform: cityOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            {cityActive && (
+              <span className="ml-0.5 text-xs font-bold">
+                ({CITY_OPTIONS.find(c => c.key === selectedCity)?.[lang === 'vi' ? 'vi' : 'en']})
+              </span>
+            )}
+            <ChevronDown className="w-3.5 h-3.5 ml-0.5 transition-transform duration-200"
+              style={{ transform: cityOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
           </button>
           {cityOpen && (
-            <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl p-4" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.10)', border: '1px solid #F0F0F0', minWidth: '280px' }}>
+            <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl p-4"
+              style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.10)', border: '1px solid #F0F0F0', minWidth: '280px' }}>
               <div className="flex flex-wrap gap-2">
                 <button onClick={() => { onCityChange(null); setCityOpen(false); }}
                   className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                  style={!selectedCity ? { background: '#8B1A1A', color: 'white', border: '1px solid #8B1A1A' } : { background: '#F7F7F7', color: '#444', border: '1px solid #E8E8E8' }}>
+                  style={!selectedCity ? { background: PRIMARY, color: 'white', border: `1px solid ${PRIMARY}` } : { background: '#F7F7F7', color: '#444', border: '1px solid #E8E8E8' }}>
                   {lang === 'vi' ? 'Tất cả' : 'All'}
                 </button>
                 {CITY_OPTIONS.map(city => (
-                  <button key={city.key} onClick={() => { onCityChange(selectedCity === city.key ? null : city.key); setCityOpen(false); }}
+                  <button key={city.key}
+                    onClick={() => { onCityChange(selectedCity === city.key ? null : city.key); setCityOpen(false); }}
                     className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                    style={selectedCity === city.key ? { background: '#8B1A1A', color: 'white', border: '1px solid #8B1A1A' } : { background: '#F7F7F7', color: '#444', border: '1px solid #E8E8E8' }}>
+                    style={pillStyle(selectedCity === city.key)}>
                     {lang === 'vi' ? city.vi : city.en}
                   </button>
                 ))}
@@ -146,27 +160,26 @@ export default function FilterBar({
         {/* Cuisine */}
         <div className="relative" ref={cuisineRef}>
           <button
-            onClick={() => { setCuisineOpen(o => !o); setDietaryOpen(false); }}
+            onClick={() => { setCuisineOpen(o => !o); setDietaryOpen(false); setCityOpen(false); }}
             className={BASE_BTN} style={cuisineActive ? activeStyle : inactiveStyle}
           >
             <span>🍽️</span>
             {lang === 'vi' ? 'Ẩm Thực' : 'Cuisine'}
             {cuisineActive && <span className="ml-0.5 text-xs font-bold">({selectedCuisines.length})</span>}
-            <ChevronDown className="w-3.5 h-3.5 ml-0.5 transition-transform duration-200" style={{ transform: cuisineOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            <ChevronDown className="w-3.5 h-3.5 ml-0.5 transition-transform duration-200"
+              style={{ transform: cuisineOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
           </button>
           {cuisineOpen && (
-            <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl p-4" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.10)', border: '1px solid #F0F0F0', minWidth: '340px' }}>
+            <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl p-4"
+              style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.10)', border: '1px solid #F0F0F0', minWidth: '340px' }}>
               <div className="grid grid-cols-3 gap-2 mb-3">
-                {CUISINE_OPTIONS.map(opt => {
-                  const active = selectedCuisines.includes(opt.key);
-                  return (
-                    <button key={opt.key} onClick={() => onToggleCuisine(opt.key)}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all text-center"
-                      style={active ? { background: '#8B1A1A', color: 'white', border: '1px solid #8B1A1A' } : { background: '#F7F7F7', color: '#444', border: '1px solid #E8E8E8' }}>
-                      {lang === 'vi' ? opt.vi : opt.en}
-                    </button>
-                  );
-                })}
+                {CUISINE_OPTIONS.map(opt => (
+                  <button key={opt.key} onClick={() => onToggleCuisine(opt.key)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all text-center"
+                    style={pillStyle(selectedCuisines.includes(opt.key))}>
+                    {lang === 'vi' ? opt.vi : opt.en}
+                  </button>
+                ))}
               </div>
               {cuisineActive && (
                 <button onClick={() => selectedCuisines.forEach(c => onToggleCuisine(c))}
@@ -181,27 +194,26 @@ export default function FilterBar({
         {/* Dietary */}
         <div className="relative" ref={dietaryRef}>
           <button
-            onClick={() => { setDietaryOpen(o => !o); setCuisineOpen(false); }}
+            onClick={() => { setDietaryOpen(o => !o); setCuisineOpen(false); setCityOpen(false); }}
             className={BASE_BTN} style={dietaryActive ? activeStyle : inactiveStyle}
           >
             <span>🥗</span>
             {lang === 'vi' ? 'Ăn Kiêng' : 'Dietary'}
             {dietaryActive && <span className="ml-0.5 text-xs font-bold">({selectedDietary.length})</span>}
-            <ChevronDown className="w-3.5 h-3.5 ml-0.5 transition-transform duration-200" style={{ transform: dietaryOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            <ChevronDown className="w-3.5 h-3.5 ml-0.5 transition-transform duration-200"
+              style={{ transform: dietaryOpen ? 'rotate(180deg)' : 'rotate(0deg)' }} />
           </button>
           {dietaryOpen && (
-            <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl p-4" style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.10)', border: '1px solid #F0F0F0', minWidth: '280px' }}>
+            <div className="absolute top-full left-0 mt-2 z-50 bg-white rounded-xl p-4"
+              style={{ boxShadow: '0 4px 12px rgba(0,0,0,0.10)', border: '1px solid #F0F0F0', minWidth: '280px' }}>
               <div className="flex flex-wrap gap-2 mb-3">
-                {DIETARY_OPTIONS.map(opt => {
-                  const active = selectedDietary.includes(opt.key);
-                  return (
-                    <button key={opt.key} onClick={() => onToggleDietary(opt.key)}
-                      className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
-                      style={active ? { background: '#8B1A1A', color: 'white', border: '1px solid #8B1A1A' } : { background: '#F7F7F7', color: '#444', border: '1px solid #E8E8E8' }}>
-                      {lang === 'vi' ? opt.vi : opt.en}
-                    </button>
-                  );
-                })}
+                {DIETARY_OPTIONS.map(opt => (
+                  <button key={opt.key} onClick={() => onToggleDietary(opt.key)}
+                    className="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                    style={pillStyle(selectedDietary.includes(opt.key))}>
+                    {lang === 'vi' ? opt.vi : opt.en}
+                  </button>
+                ))}
               </div>
               {dietaryActive && (
                 <button onClick={() => selectedDietary.forEach(d => onToggleDietary(d))}
@@ -214,7 +226,7 @@ export default function FilterBar({
         </div>
 
         {/* Clear all */}
-        {(nearMe || cuisineActive || dietaryActive || cityActive) && (
+        {anyActive && (
           <button onClick={onClearAll} className={BASE_BTN} style={inactiveStyle}>
             <X className="w-3.5 h-3.5" />
             {lang === 'vi' ? 'Xóa Bộ Lọc' : 'Clear All'}
