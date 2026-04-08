@@ -10,8 +10,8 @@ import {
 import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 
-const BASE44_URL = 'https://ovenly-backend-production-ce50.up.railway.app';
-const BASE44_HEADERS = { 'Content-Type': 'application/json' };
+const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
+const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
@@ -951,7 +951,7 @@ export default function RestaurantPage() {
     if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`${BASE44_URL}/api/orders/${successOrder.id}/status`, {
+        const res = await fetch(`${RAILWAY}/api/orders/${successOrder.id}/status`, {
   method: 'GET', headers: JSON_HEADERS,
         });
         const data = await res.json();
@@ -976,7 +976,7 @@ export default function RestaurantPage() {
           setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' }));
           return;
         }
-        const res = await fetch(`${BASE44_URL}/api/orders/${successOrder.id}/status`, {
+        const res = await fetch(`${RAILWAY}/api/orders/${successOrder.id}/status`, {
   method: 'GET', headers: JSON_HEADERS,
         });
         const data = await res.json();
