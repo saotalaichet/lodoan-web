@@ -471,8 +471,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         return;
       }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
-      const orderRes = await fetch(`${BASE44_URL}/api/orders`, {
-        method: 'POST', headers: BASE44_HEADERS,
+      const orderRes = await fetch(`${RAILWAY}/api/orders`, {
+        method: 'POST', headers: JSON_HEADERS,
         body: JSON.stringify({
           restaurant_id: restaurant.id, restaurant_name: restaurant.name,
           customer_email: email, customer_name: name, customer_phone: phone,
@@ -934,26 +934,6 @@ export default function RestaurantPage() {
           items = menuData.items || [];
         } catch {}
 
-        if (items.length === 0) {
-          try {
-            const B44 = `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities`;
-            const [catsRes, itemsRes] = await Promise.all([
-              fetch(`${B44}/MenuCategory?restaurant_id=${data.id}&_limit=500`),
-              fetch(`${B44}/MenuItem?restaurant_id=${data.id}&_limit=500`),
-            ]);
-            if (catsRes.ok) {
-              const b = await catsRes.json();
-              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
-              if (d.length > 0) cats = d;
-            }
-            if (itemsRes.ok) {
-              const b = await itemsRes.json();
-              const d = Array.isArray(b) ? b : (b?.items ?? b?.data ?? []);
-              if (d.length > 0) items = d;
-            }
-          } catch {}
-        }
-
         setCategories(cats);
         setAllItems(items);
       } catch (err) {
@@ -972,7 +952,7 @@ export default function RestaurantPage() {
     const fetchOrder = async () => {
       try {
         const res = await fetch(`${BASE44_URL}/api/orders/${successOrder.id}/status`, {
-  method: 'GET', headers: BASE44_HEADERS,
+  method: 'GET', headers: JSON_HEADERS,
         });
         const data = await res.json();
         const order = data?.data || data;
@@ -996,8 +976,8 @@ export default function RestaurantPage() {
           setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' }));
           return;
         }
-        const res = await fetch(`${BASE44_URL}/functions/getOrderStatus`, {
-          method: 'POST', headers: BASE44_HEADERS, body: JSON.stringify({ orderId: successOrder.id }),
+        const res = await fetch(`${BASE44_URL}/api/orders/${successOrder.id}/status`, {
+  method: 'GET', headers: JSON_HEADERS,
         });
         const data = await res.json();
         const order = data?.data || data;
