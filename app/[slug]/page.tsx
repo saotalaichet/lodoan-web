@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   ShoppingBag, Plus, Minus, Trash2, Flame, Star, Leaf, X,
-  ChevronLeft, MapPin, Phone, FileText, Bike, Clock,
+  ChevronLeft, MapPin, Phone, FileText, Bike, Clock, Menu,
 } from 'lucide-react';
 import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
@@ -472,7 +472,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
       }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
       const orderRes = await fetch(`${RAILWAY}/api/orders`, {
-        method: 'POST', headers: JSON_HEADERS,
+        method: 'POST',
+        headers: JSON_HEADERS,
         body: JSON.stringify({
           restaurant_id: restaurant.id, restaurant_name: restaurant.name,
           customer_email: email, customer_name: name, customer_phone: phone,
@@ -878,9 +879,6 @@ export default function RestaurantPage() {
   const [loadingRestaurant, setLoadingRestaurant] = useState(true);
   const [loadingItems, setLoadingItems] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [activeTab, setActiveTab] = useState<'menu'|'location'|'reviews'>('menu');
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [loadingReviews, setLoadingReviews] = useState(false);
   const [lang, setLang] = useState('vi');
   const [customer, setCustomer] = useState<any>(null);
   const [selectedItem, setSelectedItem] = useState<{ item: any; groups: any[] } | null>(null);
@@ -893,7 +891,20 @@ export default function RestaurantPage() {
   const [paymentReturnStatus, setPaymentReturnStatus] = useState<string | null>(null);
   const pollStartRef = useRef<number | null>(null);
 
+  const [navOpen, setNavOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'menu' | 'location' | 'reviews'>('menu');
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+
   const { cart, add, set, clear, totalQty, subtotal } = useCart();
+
+  const loadReviews = (id: string) => {
+    if (reviews.length > 0) return;
+    setLoadingReviews(true);
+    fetch(`${RAILWAY}/api/restaurant-reviews?restaurantId=${id}`)
+      .then(r => r.json()).then(d => setReviews(Array.isArray(d) ? d : [])).catch(() => {})
+      .finally(() => setLoadingReviews(false));
+  };
 
   useEffect(() => {
     const stored = localStorage.getItem('ovenly_language') || 'vi';
@@ -927,18 +938,10 @@ export default function RestaurantPage() {
         if (!data) { setLoadingRestaurant(false); setLoadingItems(false); return; }
         setRestaurant(data);
         document.title = `${data.name} | Menu & Đặt Hàng Online`;
-
-        let cats: any[] = [];
-        let items: any[] = [];
-        try {
-          const menuRes = await fetch(`/api/menu?restaurantId=${encodeURIComponent(data.id)}&slug=${encodeURIComponent(slug)}`);
-          const menuData = await menuRes.json();
-          cats = menuData.categories || [];
-          items = menuData.items || [];
-        } catch {}
-
-        setCategories(cats);
-        setAllItems(items);
+        const menuRes = await fetch(`/api/menu?slug=${encodeURIComponent(slug)}`);
+        const menuData = await menuRes.json();
+        setCategories(menuData.categories || []);
+        setAllItems(menuData.items || []);
       } catch (err) {
         console.error('Failed to load restaurant:', err);
       }
@@ -954,13 +957,19 @@ export default function RestaurantPage() {
     if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`${RAILWAY}/api/orders/${successOrder.id}/status`, {
-  method: 'GET', headers: JSON_HEADERS,
-        });
-        const data = await res.json();
-        const order = data?.data || data;
-        if (order) {
-          setSuccessOrder({ id: paymentReturnOrderId, status: order.status || 'pending', notes: order.notes || '', orderType: order.order_type || 'delivery', paymentMethod: order.payment_method || '', items: order.items || [], total: order.total, delivery_address: order.delivery_address || '' });
+        const res = await fetch(`${RAILWAY}/api/orders/${paymentReturnOrderId}/status`);
+        const order = await res.json();
+        if (order?.id) {
+          setSuccessOrder({
+            id: paymentReturnOrderId,
+            status: order.status || 'pending',
+            notes: order.notes || '',
+            orderType: order.order_type || 'delivery',
+            paymentMethod: order.payment_method || '',
+            items: order.items || [],
+            total: order.total,
+            delivery_address: order.delivery_address || '',
+          });
           setPaymentReturnStatus(null);
           setPaymentReturnOrderId(null);
         }
@@ -979,14 +988,14 @@ export default function RestaurantPage() {
           setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' }));
           return;
         }
-        const res = await fetch(`${RAILWAY}/api/orders/${successOrder.id}/status`, {
-  method: 'GET', headers: JSON_HEADERS,
-        });
-        const data = await res.json();
-        const order = data?.data || data;
+        const res = await fetch(`${RAILWAY}/api/orders/${successOrder.id}/status`);
+        const order = await res.json();
         if (order?.status) setSuccessOrder((prev: any) => ({
-          ...prev, status: order.status, notes: order.notes || prev.notes,
-          items: order.items || prev.items, total: order.total ?? prev.total,
+          ...prev,
+          status: order.status,
+          notes: order.notes || prev.notes,
+          items: order.items || prev.items,
+          total: order.total ?? prev.total,
           delivery_address: order.delivery_address || prev.delivery_address,
         }));
       } catch {}
@@ -1005,18 +1014,18 @@ export default function RestaurantPage() {
       return cat ? [{ category: cat, items: allItems.filter((i: any) => i.category_id === activeCategory) }] : [];
     }
     if (categories.length > 0) {
-      const sortedCats = [...categories].sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
+      const sortedCats = [...categories].sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
       const grouped = sortedCats
         .map((cat: any) => ({ category: cat, items: allItems.filter((i: any) => i.category_id === cat.id) }))
         .filter(g => g.items.length > 0);
       const categorizedIds = new Set(categories.map((c: any) => c.id));
       const uncategorized = allItems.filter((i: any) => !categorizedIds.has(i.category_id));
       if (uncategorized.length > 0) {
-        grouped.push({ category: { id: '__uncategorized', name: 'Khác / Other', order: 9999 }, items: uncategorized });
+        grouped.push({ category: { id: '__uncategorized', name: 'Khác / Other', sort_order: 9999 }, items: uncategorized });
       }
       return grouped;
     }
-    return [{ category: { id: '__all', name: 'Thực Đơn / Menu', order: 0 }, items: allItems }];
+    return [{ category: { id: '__all', name: 'Thực Đơn / Menu', sort_order: 0 }, items: allItems }];
   }, [activeCategory, allItems, categories]);
 
   const getCatLabel = (name: string) => {
@@ -1104,6 +1113,11 @@ export default function RestaurantPage() {
       onSuccess={handleSuccess} onSetQty={set} lang={lang} onLangChange={setLang} customer={customer} />
   );
 
+  const DAYS_VI = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const DAYS_KEY = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+  const todayIdx = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })).getDay();
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -1143,6 +1157,9 @@ export default function RestaurantPage() {
             <span className={`flex items-center gap-1 font-semibold px-2.5 py-1 rounded-full border text-xs ${getStatusBadgeClass(status)}`}>
               {getStatusDisplay(status, lang)}
             </span>
+            <button onClick={() => setNavOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Navigation">
+              <Menu className="w-5 h-5 text-gray-600" />
+            </button>
           </div>
         </div>
       </header>
@@ -1209,88 +1226,34 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-      {/* Page Tabs */}
-<div className="bg-white border-b border-gray-200 sticky top-16 z-30">
-  <div className="max-w-6xl mx-auto px-4">
-    <div className="flex gap-0">
-      {[
-        { id:'menu', label: lang==='vi' ? '🍽️ Menu' : '🍽️ Menu' },
-        { id:'location', label: lang==='vi' ? '📍 Vị Trí' : '📍 Location' },
-        { id:'reviews', label: lang==='vi' ? '⭐ Đánh Giá' : '⭐ Reviews' },
-      ].map(tab => (
-        <button key={tab.id}
-          onClick={() => {
-            setActiveTab(tab.id as any);
-            if (tab.id === 'reviews' && reviews.length === 0) {
-              setLoadingReviews(true);
-              fetch(`${RAILWAY}/api/restaurant-reviews?restaurantId=${restaurant.id}`)
-                .then(r => r.json()).then(d => setReviews(d || [])).catch(() => {}).finally(() => setLoadingReviews(false));
-            }
-          }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${activeTab===tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  </div>
-</div>
-
-{/* Page Tabs */}
-<div className="bg-white border-b border-gray-200 sticky top-16 z-30">
-  <div className="max-w-6xl mx-auto px-4">
-    <div className="flex gap-0">
-      {[
-        { id:'menu', label: lang==='vi' ? 'Menu' : 'Menu' },
-        { id:'location', label: lang==='vi' ? 'Vị Trí' : 'Location' },
-        { id:'reviews', label: lang==='vi' ? 'Đánh Giá' : 'Reviews' },
-      ].map(tab => (
-        <button key={tab.id}
-          onClick={() => {
-            setActiveTab(tab.id as any);
-            if (tab.id === 'reviews' && reviews.length === 0) {
-              setLoadingReviews(true);
-              fetch(`${RAILWAY}/api/restaurant-reviews?restaurantId=${restaurant.id}`)
-                .then(r => r.json()).then(d => setReviews(d || [])).catch(() => {}).finally(() => setLoadingReviews(false));
-            }
-          }}
-          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${activeTab===tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  </div>
-</div>
-
-{/* Category bar — only show on menu tab */}
-{activeTab === 'menu' && (
-  <div className="bg-white border-b border-gray-200 sticky top-16 z-20" style={{top:'112px'}}>
-    <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
-      <button onClick={() => setActiveCategory('all')}
-        className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === 'all' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-        {lang === 'vi' ? 'Tất cả' : 'All'}
-      </button>
-      {categories
-        .filter((cat: any) => {
-          if (!cat.name || typeof cat.name !== 'string') return false;
-          if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase() === 'all') return false;
-          if (cat.is_active === false) return false;
-          return allItems.filter((i: any) => i.category_id === cat.id).length > 0;
-        })
-        .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
-        .map((cat: any) => (
-          <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-            {getCatLabel(cat.name)}
-          </button>
-        ))}
-    </div>
-  </div>
-)}
+      {activeTab === 'menu' && (
+        <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+          <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
+            <button onClick={() => setActiveCategory('all')}
+              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === 'all' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+              {lang === 'vi' ? 'Tất cả' : 'All'}
+            </button>
+            {categories
+              .filter((cat: any) => {
+                if (!cat.name || typeof cat.name !== 'string') return false;
+                if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase() === 'all') return false;
+                if (cat.is_active === false) return false;
+                return allItems.filter((i: any) => i.category_id === cat.id).length > 0;
+              })
+              .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+              .map((cat: any) => (
+                <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  {getCatLabel(cat.name)}
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
         <div className="flex-1 min-w-0">
 
-          {/* MENU TAB */}
           {activeTab === 'menu' && (
             <>
               <div className="flex items-center gap-3 mb-6">
@@ -1332,26 +1295,15 @@ export default function RestaurantPage() {
             </>
           )}
 
-          {/* LOCATION TAB */}
           {activeTab === 'location' && (
-            <div className="space-y-6">
+            <div className="space-y-6 max-w-2xl">
               <h2 className="text-2xl font-black text-gray-900">{lang === 'vi' ? 'Vị Trí & Giờ Mở Cửa' : 'Location & Hours'}</h2>
-
-              {/* Map embed */}
               {restaurant.address && (
                 <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-                  <iframe
-                    title="map"
-                    width="100%" height="320"
-                    style={{ border: 0 }}
-                    loading="lazy"
-                    allowFullScreen
-                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=${encodeURIComponent(restaurant.address)}&zoom=16`}
-                  />
+                  <iframe title="map" width="100%" height="300" style={{ border: 0 }} loading="lazy" allowFullScreen
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=${encodeURIComponent(restaurant.address)}&zoom=16`} />
                 </div>
               )}
-
-              {/* Address & Phone */}
               <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
                 {restaurant.address && (
                   <div className="flex items-start gap-3">
@@ -1362,8 +1314,7 @@ export default function RestaurantPage() {
                       <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{lang === 'vi' ? 'Địa chỉ' : 'Address'}</p>
                       <p className="text-sm font-medium text-gray-900">{restaurant.address}</p>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="text-xs text-primary font-semibold hover:underline mt-1 inline-block">
+                        target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-semibold hover:underline mt-1 inline-block">
                         {lang === 'vi' ? 'Mở trong Google Maps →' : 'Open in Google Maps →'}
                       </a>
                     </div>
@@ -1381,77 +1332,61 @@ export default function RestaurantPage() {
                   </div>
                 )}
               </div>
-
-              {/* Hours */}
               {restaurant.hours && (
                 <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
                   <div className="flex items-center gap-2 mb-4">
                     <Clock className="w-5 h-5 text-primary" />
                     <h3 className="font-bold text-gray-900">{lang === 'vi' ? 'Giờ Mở Cửa' : 'Opening Hours'}</h3>
                   </div>
-                  {(() => {
-                    const DAYS_VI = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
-                    const DAYS_EN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-                    const DAYS_KEY = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-                    const today = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh'})).getDay();
-                    return DAYS_KEY.map((key, i) => {
-                      const hours = restaurant.hours[key];
-                      const isToday = i === today;
-                      return (
-                        <div key={key} className={`flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 ${isToday ? 'bg-primary/5 -mx-2 px-2 rounded-xl' : ''}`}>
-                          <span className={`text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700'}`}>
-                            {lang === 'vi' ? DAYS_VI[i] : DAYS_EN[i]}
-                            {isToday && <span className="ml-2 text-xs bg-primary text-white px-1.5 py-0.5 rounded-full">{lang === 'vi' ? 'Hôm nay' : 'Today'}</span>}
-                          </span>
-                          <span className={`text-sm font-semibold ${hours ? (isToday ? 'text-primary' : 'text-gray-900') : 'text-gray-400'}`}>
-                            {hours || (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
-                          </span>
-                        </div>
-                      );
-                    });
-                  })()}
+                  {DAYS_KEY.map((key, i) => {
+                    const h = restaurant.hours[key];
+                    const isToday = i === todayIdx;
+                    return (
+                      <div key={key} className={`flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 px-2 rounded-lg ${isToday ? 'bg-primary/5' : ''}`}>
+                        <span className={`text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700'}`}>
+                          {lang === 'vi' ? DAYS_VI[i] : DAYS_EN[i]}
+                          {isToday && <span className="ml-2 text-xs bg-primary text-white px-1.5 py-0.5 rounded-full">{lang === 'vi' ? 'Hôm nay' : 'Today'}</span>}
+                        </span>
+                        <span className={`text-sm font-semibold ${h ? (isToday ? 'text-primary' : 'text-gray-900') : 'text-gray-400'}`}>
+                          {h || (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
-          {/* REVIEWS TAB */}
           {activeTab === 'reviews' && (
-            <div className="space-y-4">
+            <div className="space-y-4 max-w-2xl">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-black text-gray-900">{lang === 'vi' ? 'Đánh Giá' : 'Reviews'}</h2>
                 {restaurant.total_ratings >= 3 && (
                   <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                    <span className="text-2xl font-black text-amber-600">{parseFloat(restaurant.average_rating).toFixed(1)}</span>
-                    <div>
-                      <div className="flex gap-0.5">
-                        {[1,2,3,4,5].map(s => (
-                          <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={s <= Math.round(restaurant.average_rating) ? '#F59E0B' : '#E5E7EB'}>
-                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                          </svg>
-                        ))}
-                      </div>
-                      <p className="text-xs text-gray-500">{restaurant.total_ratings} {lang === 'vi' ? 'đánh giá' : 'reviews'}</p>
+                    <span className="text-xl font-black text-amber-600">{parseFloat(restaurant.average_rating).toFixed(1)}</span>
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map(s => (
+                        <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= Math.round(restaurant.average_rating) ? '#F59E0B' : '#E5E7EB'}>
+                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                      ))}
                     </div>
                   </div>
                 )}
               </div>
-
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
-                <p className="text-xs text-blue-700 font-semibold">
-                  ✓ {lang === 'vi' ? 'Chỉ hiển thị đánh giá từ khách hàng đã đặt hàng thực sự qua LÒ ĐỒ ĂN' : 'Only showing reviews from verified orders placed through LÒ ĐỒ ĂN'}
+              <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+                <p className="text-xs text-gray-500 font-medium">
+                  {lang === 'vi' ? 'Chỉ hiển thị đánh giá từ khách đã đặt hàng qua LÒ ĐỒ ĂN' : 'Only verified reviews from orders placed through LÒ ĐỒ ĂN'}
                 </p>
               </div>
-
               {loadingReviews ? (
-                <div className="text-center py-12">
-                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
+                <div className="flex justify-center py-12">
+                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
                 </div>
               ) : reviews.length === 0 ? (
                 <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-                  <p className="text-4xl mb-3">⭐</p>
-                  <p className="text-gray-500 font-medium">{lang === 'vi' ? 'Chưa có đánh giá nào' : 'No reviews yet'}</p>
-                  <p className="text-sm text-gray-400 mt-1">{lang === 'vi' ? 'Hãy là người đầu tiên đánh giá!' : 'Be the first to review!'}</p>
+                  <p className="text-gray-400 font-medium">{lang === 'vi' ? 'Chưa có đánh giá nào' : 'No reviews yet'}</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -1459,8 +1394,8 @@ export default function RestaurantPage() {
                     <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-bold text-primary">{r.customer_name?.[0]?.toUpperCase() || '?'}</span>
+                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-bold text-gray-600">{r.customer_name?.[0]?.toUpperCase() || '?'}</span>
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-gray-900">{r.customer_name || 'Khách hàng'}</p>
@@ -1468,17 +1403,15 @@ export default function RestaurantPage() {
                           </div>
                         </div>
                         <div className="flex gap-0.5">
-                          {[1,2,3,4,5].map(s => (
-                            <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={s <= r.star_rating ? '#F59E0B' : '#E5E7EB'}>
+                          {[1, 2, 3, 4, 5].map(s => (
+                            <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= r.star_rating ? '#F59E0B' : '#E5E7EB'}>
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                             </svg>
                           ))}
                         </div>
                       </div>
                       {r.comment && <p className="text-sm text-gray-700 leading-relaxed">{r.comment}</p>}
-                      <div className="mt-2 flex items-center gap-1">
-                        <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">✓ {lang === 'vi' ? 'Đã đặt hàng' : 'Verified order'}</span>
-                      </div>
+                      <p className="text-xs text-green-600 font-medium mt-2">{lang === 'vi' ? '✓ Đã đặt hàng' : '✓ Verified order'}</p>
                     </div>
                   ))}
                 </div>
@@ -1487,15 +1420,17 @@ export default function RestaurantPage() {
           )}
         </div>
 
-        <div className="hidden md:block w-72 flex-shrink-0">
-          <div className="sticky top-[112px]">
-            <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
-              onCheckout={() => setShowDeliveryModal(true)} isClosed={isClosed} lang={lang} />
+        {activeTab === 'menu' && (
+          <div className="hidden md:block w-72 flex-shrink-0">
+            <div className="sticky top-[112px]">
+              <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
+                onCheckout={() => setShowDeliveryModal(true)} isClosed={isClosed} lang={lang} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {totalQty > 0 && !isClosed && (
+      {totalQty > 0 && !isClosed && activeTab === 'menu' && (
         <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
           <button onClick={() => setShowMobileCart(true)}
             className="w-full bg-primary hover:opacity-90 text-white rounded-2xl py-4 px-5 font-bold flex items-center justify-between shadow-2xl shadow-primary/30">
@@ -1519,6 +1454,51 @@ export default function RestaurantPage() {
             <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
               onCheckout={() => { setShowMobileCart(false); setShowDeliveryModal(true); }}
               isClosed={isClosed} lang={lang} />
+          </div>
+        </div>
+      )}
+
+      {navOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setNavOpen(false)} />
+          <div className="relative ml-auto w-64 bg-white h-full flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              {restaurant.logo
+                ? <img src={restaurant.logo} alt={restaurant.name} className="h-9 w-auto object-contain" />
+                : <span className="font-bold text-sm text-gray-900 truncate">{restaurant.name}</span>}
+              <button onClick={() => setNavOpen(false)} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 flex-shrink-0 ml-2">
+                <X className="w-4 h-4 text-gray-600" />
+              </button>
+            </div>
+            <nav className="flex-1 px-3 py-4 space-y-1">
+              {([
+                { id: 'menu' as const, label: lang === 'vi' ? 'Menu' : 'Menu', sub: lang === 'vi' ? 'Xem thực đơn & đặt hàng' : 'Browse menu & order' },
+                { id: 'location' as const, label: lang === 'vi' ? 'Vị Trí' : 'Location', sub: lang === 'vi' ? 'Địa chỉ & giờ mở cửa' : 'Address & hours' },
+                { id: 'reviews' as const, label: lang === 'vi' ? 'Đánh Giá' : 'Reviews', sub: lang === 'vi' ? 'Từ khách đã đặt hàng' : 'From verified orders' },
+              ]).map(item => (
+                <button key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setNavOpen(false);
+                    if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
+                  <div>
+                    <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
+                  </div>
+                  {activeTab === item.id && <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />}
+                </button>
+              ))}
+            </nav>
+            <div className="px-5 py-3 border-t border-gray-100">
+              <p className="text-xs text-gray-400">
+                {lang === 'vi' ? 'Đang xem: ' : 'Viewing: '}
+                <span className="text-primary font-semibold">
+                  {activeTab === 'menu' ? 'Menu' : activeTab === 'location' ? (lang === 'vi' ? 'Vị Trí' : 'Location') : (lang === 'vi' ? 'Đánh Giá' : 'Reviews')}
+                </span>
+              </p>
+            </div>
           </div>
         </div>
       )}
