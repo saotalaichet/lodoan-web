@@ -226,7 +226,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
     <div
       onClick={handleClick}
       className={`bg-white border border-gray-200 rounded-xl flex flex-row items-stretch gap-0 relative overflow-hidden ${isClosed ? 'cursor-default opacity-60' : 'cursor-pointer hover:border-primary/40 hover:shadow-sm'} transition-all`}
-      style={{ minHeight: '116px' }}
+      style={{ minHeight: '136px' }}
     >
       {/* Left: text */}
       <div className="flex-1 min-w-0 flex flex-col justify-between p-3">
@@ -258,7 +258,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
       </div>
 
       {/* Right: square image */}
-      <div className="relative flex-shrink-0 w-28 bg-gray-100">
+      <div className="relative flex-shrink-0 w-32 bg-gray-100">
         {item.image_url ? (
           <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
         ) : (
