@@ -258,7 +258,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
       </div>
 
       {/* Right: square image */}
-      <div className="relative flex-shrink-0 w-32 bg-gray-100">
+      <div className="relative flex-shrink-0 w-32 bg-gray-100 rounded-r-xl overflow-hidden">
         {item.image_url ? (
           <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
         ) : (
