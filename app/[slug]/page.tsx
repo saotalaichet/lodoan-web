@@ -226,10 +226,10 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
     <div
       onClick={handleClick}
       className={`bg-white border border-gray-200 rounded-xl flex flex-row items-stretch gap-0 relative overflow-hidden ${isClosed ? 'cursor-default opacity-60' : 'cursor-pointer hover:border-primary/40 hover:shadow-sm'} transition-all`}
-      style={{ minHeight: '96px' }}
+      style={{ minHeight: '116px' }}
     >
       {/* Left: text */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between p-2.5">
+      <div className="flex-1 min-w-0 flex flex-col justify-between p-3">
         <div>
           <div className="flex flex-wrap gap-1 mb-0.5">
             {item.is_chef_choice && <span className="text-[9px] font-bold text-amber-500 bg-amber-50 px-1 py-0.5 rounded-full">⭐</span>}
@@ -243,31 +243,22 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
         </div>
         <div className="flex items-center justify-between mt-1.5">
           <span className="font-bold text-primary text-sm">{fmt(price)}</span>
-          {!isClosed && !isOutOfStock && (
-            qty > 0 ? (
-              <div className="flex items-center gap-1 bg-primary rounded-full px-1.5 py-0.5" onClick={e => e.stopPropagation()}>
-                <button onClick={() => onSet(item.id, qty - 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
-                  <Minus className="w-2.5 h-2.5" strokeWidth={3} />
-                </button>
-                <span className="text-[10px] font-bold text-white min-w-[10px] text-center">{qty}</span>
-                <button onClick={() => onSet(item.id, qty + 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
-                  <Plus className="w-2.5 h-2.5" strokeWidth={3} />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={e => { e.stopPropagation(); handleClick(); }}
-                className="w-6 h-6 bg-primary hover:opacity-90 text-white rounded-full flex items-center justify-center shadow transition-colors"
-              >
-                <Plus className="w-3 h-3" strokeWidth={3} />
+          {!isClosed && !isOutOfStock && qty > 0 && (
+            <div className="flex items-center gap-1 bg-primary rounded-full px-1.5 py-0.5" onClick={e => e.stopPropagation()}>
+              <button onClick={() => onSet(item.id, qty - 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
+                <Minus className="w-2.5 h-2.5" strokeWidth={3} />
               </button>
-            )
+              <span className="text-[10px] font-bold text-white min-w-[10px] text-center">{qty}</span>
+              <button onClick={() => onSet(item.id, qty + 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
+                <Plus className="w-2.5 h-2.5" strokeWidth={3} />
+              </button>
+            </div>
           )}
         </div>
       </div>
 
       {/* Right: square image */}
-      <div className="relative flex-shrink-0 w-24 bg-gray-100">
+      <div className="relative flex-shrink-0 w-28 bg-gray-100">
         {item.image_url ? (
           <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
         ) : (
