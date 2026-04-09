@@ -260,7 +260,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
       {/* Right: square image */}
       <div className="relative flex-shrink-0 w-32 bg-gray-100">
         {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover rounded-lg" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-2xl">🍜</div>
         )}
