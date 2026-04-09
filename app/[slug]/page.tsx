@@ -45,20 +45,20 @@ function getTodayHours(restaurant: any): string | null {
   return h?.trim() || null;
 }
 
-function getStatusDisplay(status: string, lang: string) {
-  const m: Record<string, any> = {
-    OPEN: { vi: '● Đang Mở', en: '● Open' },
-    CLOSED: { vi: '● Đã Đóng Cửa', en: '● Closed' },
-    PAUSED: { vi: '● Tạm Dừng', en: '● Paused' },
-  };
-  return m[status]?.[lang === 'vi' ? 'vi' : 'en'] || '';
-}
-
 function getStatusBadgeClass(status: string) {
   if (status === 'OPEN') return 'bg-green-50 text-green-600 border-green-200';
   if (status === 'PAUSED') return 'bg-orange-50 text-orange-600 border-orange-200';
   return 'bg-red-50 text-red-600 border-red-200';
 }
+
+const CUISINE_VI: Record<string, string> = {
+  Vietnamese: 'Việt Nam', Japanese: 'Nhật Bản', Korean: 'Hàn Quốc', Chinese: 'Trung Hoa',
+  Thai: 'Thái Lan', Italian: 'Ý', American: 'Mỹ', Fusion: 'Đa Phong Cách', Cafe: 'Cà Phê',
+  Dessert: 'Tráng Miệng', Other: 'Khác', FastFood: 'Thức Ăn Nhanh', FriedChicken: 'Gà Rán',
+  Snacks: 'Đồ Ăn Nhẹ', Pizza: 'Pizza', BubbleTea: 'Trà Sữa', Noodles: 'Mì',
+  Seafood: 'Hải Sản', Hotpot: 'Lẩu', Banhmi: 'Bánh Mì', Rice: 'Cơm',
+  Vegetarian: 'Chay', BBQ: 'BBQ',
+};
 
 interface CartItem {
   id: string;
@@ -91,6 +91,7 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
   const [selections, setSelections] = useState<Record<string, string[]>>({});
   const [notes, setNotes] = useState('');
   const [error, setError] = useState('');
+  const basePrice = parseFloat(item.price) || 0;
 
   const toggle = (gId: string, oId: string, max: number) => {
     setError('');
@@ -104,9 +105,9 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
   const extra = groups.reduce((t, g) =>
     t + (selections[g.id] || []).reduce((s, oId) => {
       const o = g.options?.find((x: any) => x.id === oId);
-      return s + (o?.price || 0);
+      return s + (parseFloat(o?.price) || 0);
     }, 0), 0);
-  const total = (item.price + extra) * qty;
+  const total = (basePrice + extra) * qty;
 
   const handleAdd = () => {
     for (const g of groups) {
@@ -118,10 +119,10 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
     const addons = groups.flatMap(g =>
       (selections[g.id] || []).map(oId => {
         const o = g.options?.find((x: any) => x.id === oId);
-        return o && o.price > 0 ? { name: o.name, price: o.price } : null;
+        return o && parseFloat(o.price) > 0 ? { name: o.name, price: parseFloat(o.price) } : null;
       })
     ).filter(Boolean) as { name: string; price: number }[];
-    onAdd({ id: item.id + Date.now(), name: item.name, price: item.price + extra, basePrice: item.price, addons, qty, notes });
+    onAdd({ id: item.id + Date.now(), name: item.name, price: basePrice + extra, basePrice, addons, qty, notes });
   };
 
   return (
@@ -145,7 +146,7 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
         <div className="p-5">
           <h2 className="font-bold text-xl text-gray-900 mb-1">{item.name}</h2>
           {item.description && <p className="text-sm text-gray-400 mb-3">{item.description}</p>}
-          <p className="text-lg font-bold text-primary mb-4">{fmt(item.price)}</p>
+          <p className="text-lg font-bold text-primary mb-4">{fmt(basePrice)}</p>
           {groups.map((g: any) => (
             <div key={g.id} className="mb-4">
               <div className="flex items-center justify-between mb-2">
@@ -166,7 +167,7 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
                         </div>
                         <span className="text-sm font-medium">{o.name}</span>
                       </div>
-                      {o.price > 0 && <span className="text-sm font-bold text-primary">+{fmt(o.price)}</span>}
+                      {parseFloat(o.price) > 0 && <span className="text-sm font-bold text-primary">+{fmt(parseFloat(o.price))}</span>}
                     </button>
                   );
                 })}
@@ -209,12 +210,13 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
   onSet: (id: string, qty: number) => void; onOpen: (item: any, groups: any[]) => void;
   isClosed: boolean; isOutOfStock: boolean; lang: string;
 }) {
+  const price = parseFloat(item.price) || 0;
   const handleClick = () => {
     if (isClosed) return;
     let groups: any[] = [];
     try { if (item.customization_options) groups = JSON.parse(item.customization_options); } catch {}
     if (groups.length > 0) onOpen(item, groups);
-    else onAdd({ id: item.id, name: item.name, price: item.price, basePrice: item.price, qty: 1 });
+    else onAdd({ id: item.id, name: item.name, price, basePrice: price, qty: 1 });
   };
 
   return (
@@ -255,7 +257,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
         <p className="font-semibold text-gray-900 text-sm leading-snug flex-1">{item.name}</p>
         {item.description && <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>}
         <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-primary text-sm">{fmt(item.price)}</span>
+          <span className="font-bold text-primary text-sm">{fmt(price)}</span>
           {!isClosed && (
             qty > 0 ? (
               <div className="flex items-center gap-2 bg-primary rounded-full px-2 py-1" onClick={e => e.stopPropagation()}>
@@ -288,7 +290,7 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
   return (
     <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl overflow-hidden">
       <div className="p-4 border-b border-gray-100">
-        <p className="text-xs text-gray-500 font-medium">{lang === 'vi' ? 'Chọn loại đặt hàng' : 'Select order type'}</p>
+        <p className="text-xs text-gray-500 font-medium">{lang === 'vi' ? 'Giỏ hàng' : 'Your cart'}</p>
       </div>
       <div className="flex-1 overflow-y-auto p-4 min-h-0">
         {cart.length === 0 ? (
@@ -297,7 +299,6 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
               <ShoppingBag className="w-6 h-6 text-primary/40" strokeWidth={1.5} />
             </div>
             <p className="text-sm text-gray-400 font-medium">{lang === 'vi' ? 'Thêm món vào giỏ hàng' : 'Add items to cart'}</p>
-            <p className="text-xs text-gray-300 mt-1">{lang === 'vi' ? 'Chọn món từ thực đơn bên trái' : 'Select items from the menu'}</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -315,9 +316,7 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
                   </button>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-gray-800 leading-snug truncate">
-                    {item.name}{item.basePrice && item.basePrice !== item.price ? `: ${fmt(item.basePrice)}` : ''}
-                  </p>
+                  <p className="text-xs font-semibold text-gray-800 leading-snug truncate">{item.name}</p>
                   {item.addons?.map((a, i) => <p key={i} className="text-xs text-gray-400">+{a.name}: {fmt(a.price)}</p>)}
                   {item.notes && <p className="text-xs text-gray-400 italic">{item.notes}</p>}
                 </div>
@@ -361,17 +360,15 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
   const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('delivery');
   const [address, setAddress] = useState('');
   if (!isOpen) return null;
-  const minOrder = restaurant?.min_order_amount || 50000;
-  const deliveryFee = restaurant?.delivery_fee || 0;
+  const minOrder = parseFloat(restaurant?.min_order_amount) || 50000;
+  const deliveryFee = parseFloat(restaurant?.delivery_fee) || 0;
   const belowMin = orderType === 'delivery' && subtotal < minOrder;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-20">
       <div className="w-full bg-white rounded-3xl p-6 max-w-md shadow-xl max-h-[80vh] overflow-y-auto mx-4">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-bold text-gray-900 text-lg flex items-center gap-2">
-            🛵 {lang === 'vi' ? 'Chi tiết đặt hàng' : 'Order Details'}
-          </h2>
+          <h2 className="font-bold text-gray-900 text-lg">🛵 {lang === 'vi' ? 'Chi tiết đặt hàng' : 'Order Details'}</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors">
             <X className="w-4 h-4 text-gray-500" />
           </button>
@@ -379,7 +376,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
         <div className="space-y-5">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase">{lang === 'vi' ? 'Loại đặt hàng' : 'Order Type'}</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {(['pickup', 'delivery'] as const).map(type => (
                 <button key={type} onClick={() => setOrderType(type)}
                   className={`py-3 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-2 transition-all ${orderType === type ? 'bg-primary border-primary text-white' : 'border-gray-200 text-gray-500 hover:border-primary/30'}`}>
@@ -394,9 +391,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
               {belowMin && (
                 <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3">
                   <p className="text-xs text-red-700 font-semibold">
-                    ⚠️ {lang === 'vi'
-                      ? `Đơn tối thiểu cho giao hàng là ${fmt(minOrder)}. Còn thiếu ${fmt(minOrder - subtotal)}.`
-                      : `Minimum order for delivery is ${fmt(minOrder)}. Add ${fmt(minOrder - subtotal)} more.`}
+                    ⚠️ {lang === 'vi' ? `Đơn tối thiểu ${fmt(minOrder)}. Còn thiếu ${fmt(minOrder - subtotal)}.` : `Minimum order ${fmt(minOrder)}. Add ${fmt(minOrder - subtotal)} more.`}
                   </p>
                 </div>
               )}
@@ -472,16 +467,14 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
       }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
       const orderRes = await fetch(`${RAILWAY}/api/orders`, {
-        method: 'POST',
-        headers: JSON_HEADERS,
+        method: 'POST', headers: JSON_HEADERS,
         body: JSON.stringify({
           restaurant_id: restaurant.id, restaurant_name: restaurant.name,
           customer_email: email, customer_name: name, customer_phone: phone,
           items, subtotal, service_fee: serviceFee,
           delivery_fee: orderType === 'delivery' ? effectiveDelivery : 0,
           tip_amount: tipAmount, tip_percentage: tipPct, total,
-          order_type: orderType,
-          delivery_address: orderType === 'delivery' ? deliveryAddress : '',
+          order_type: orderType, delivery_address: orderType === 'delivery' ? deliveryAddress : '',
           payment_method: paymentMethod,
           payment_status: ONLINE.includes(paymentMethod) ? 'pending_payment' : 'waiting',
           cash_collected: false, notes, language: lang, status: 'confirmed',
@@ -489,7 +482,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         }),
       });
       const order = await orderRes.json();
-
       if (ONLINE.includes(paymentMethod)) {
         const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
         const result = await createPayment(paymentMethod as any, order.id, total, redirectUrl);
@@ -537,19 +529,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                 </div>
               </div>
             </div>
-            {customer && (
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 flex items-center gap-3">
-                <div className="w-9 h-9 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-green-800">{customer.full_name}</p>
-                  <p className="text-xs text-green-600">{customer.email}</p>
-                </div>
-              </div>
-            )}
             <div className="space-y-3">
               <button onClick={() => setCheckoutMode('checkout')}
                 className="w-full bg-primary text-white rounded-2xl p-4 text-left hover:opacity-90 transition-all shadow-lg shadow-primary/20">
@@ -562,7 +541,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                     </div>
                     <div>
                       <p className="font-bold text-sm text-white">{customer ? (lang === 'vi' ? 'Tiếp tục đặt hàng' : 'Continue to checkout') : (lang === 'vi' ? 'Tiếp tục không cần đăng nhập' : 'Continue without signing in')}</p>
-                      <p className="text-xs text-white/80">{customer ? (lang === 'vi' ? 'Thông tin đã được điền sẵn' : 'Your details are pre-filled') : (lang === 'vi' ? 'Không cần tạo tài khoản' : 'No account required')}</p>
+                      <p className="text-xs text-white/80">{lang === 'vi' ? 'Không cần tạo tài khoản' : 'No account required'}</p>
                     </div>
                   </div>
                   <ChevronLeft className="w-5 h-5 text-white/70 rotate-180" />
@@ -642,7 +621,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
             </h2>
             {customer ? (
               <div className="bg-gray-50 rounded-xl p-4">
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-3">{lang === 'vi' ? 'Thông tin khách hàng' : 'Customer details'}</p>
                 <p className="text-sm font-bold text-gray-900">{customer.full_name}</p>
                 <p className="text-sm text-gray-600">{customer.email}</p>
                 {customer.phone_number && <p className="text-sm text-gray-600">{customer.phone_number}</p>}
@@ -755,7 +733,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                 ) : `${lang === 'vi' ? 'Xác nhận đặt hàng' : 'Place Order'} · ${fmt(total)}`}
               </button>
               <p className="text-center text-xs text-gray-400 mt-2">
-                {lang === 'vi' ? 'Bằng cách đặt hàng, bạn đồng ý với điều khoản dịch vụ' : 'By ordering you agree to our terms of service'}
+                {lang === 'vi' ? 'Bằng cách đặt hàng, bạn đồng ý với ' : 'By ordering you agree to our '}
+                <Link href="/terms" className="underline hover:text-gray-600">{lang === 'vi' ? 'điều khoản dịch vụ' : 'terms of service'}</Link>
               </p>
             </div>
           </div>
@@ -779,7 +758,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
     creditcard: lang === 'vi' ? 'Thẻ tín dụng (9Pay)' : 'Credit Card (9Pay)',
   };
   const Logo = () => restaurant?.logo
-    ? <img src={restaurant.logo} alt={restaurant.name} className="h-14 object-contain mx-auto mb-8" />
+    ? <img src={restaurant.logo} alt={restaurant.name} className="h-14 object-contain mx-auto mb-8" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
     : <p className="font-bold text-xl text-gray-900 mb-8">{restaurant?.name}</p>;
   const BackBtn = () => (
     <button onClick={onBack} className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-colors w-full">
@@ -813,7 +792,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
   if (!isWaiting) return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6">
       <div className="max-w-sm w-full text-center"><Logo />
-        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5 shadow-lg shadow-green-100"><span className="text-5xl">✅</span></div>
+        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5"><span className="text-5xl">✅</span></div>
         <h2 className="font-bold text-2xl text-gray-900 mb-1">{lang === 'vi' ? 'Đơn hàng đã được xác nhận!' : 'Order confirmed!'}</h2>
         <p className="text-xs text-gray-400 font-mono mb-4">#{id?.slice(-8).toUpperCase()}</p>
         {estTime && (
@@ -890,7 +869,6 @@ export default function RestaurantPage() {
   const [paymentReturnOrderId, setPaymentReturnOrderId] = useState<string | null>(null);
   const [paymentReturnStatus, setPaymentReturnStatus] = useState<string | null>(null);
   const pollStartRef = useRef<number | null>(null);
-
   const [navOpen, setNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'menu' | 'location' | 'reviews'>('menu');
   const [reviews, setReviews] = useState<any[]>([]);
@@ -942,9 +920,7 @@ export default function RestaurantPage() {
         const menuData = await menuRes.json();
         setCategories(menuData.categories || []);
         setAllItems(menuData.items || []);
-      } catch (err) {
-        console.error('Failed to load restaurant:', err);
-      }
+      } catch (err) { console.error('Failed to load restaurant:', err); }
       setLoadingRestaurant(false);
       setLoadingItems(false);
     };
@@ -961,14 +937,9 @@ export default function RestaurantPage() {
         const order = await res.json();
         if (order?.id) {
           setSuccessOrder({
-            id: paymentReturnOrderId,
-            status: order.status || 'pending',
-            notes: order.notes || '',
-            orderType: order.order_type || 'delivery',
-            paymentMethod: order.payment_method || '',
-            items: order.items || [],
-            total: order.total,
-            delivery_address: order.delivery_address || '',
+            id: paymentReturnOrderId, status: order.status || 'pending', notes: order.notes || '',
+            orderType: order.order_type || 'delivery', paymentMethod: order.payment_method || '',
+            items: order.items || [], total: order.total, delivery_address: order.delivery_address || '',
           });
           setPaymentReturnStatus(null);
           setPaymentReturnOrderId(null);
@@ -985,17 +956,13 @@ export default function RestaurantPage() {
     const interval = setInterval(async () => {
       try {
         if (Date.now() - pollStartRef.current! > 10 * 60 * 1000) {
-          setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' }));
-          return;
+          setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' })); return;
         }
         const res = await fetch(`${RAILWAY}/api/orders/${successOrder.id}/status`);
         const order = await res.json();
         if (order?.status) setSuccessOrder((prev: any) => ({
-          ...prev,
-          status: order.status,
-          notes: order.notes || prev.notes,
-          items: order.items || prev.items,
-          total: order.total ?? prev.total,
+          ...prev, status: order.status, notes: order.notes || prev.notes,
+          items: order.items || prev.items, total: order.total ?? prev.total,
           delivery_address: order.delivery_address || prev.delivery_address,
         }));
       } catch {}
@@ -1020,9 +987,7 @@ export default function RestaurantPage() {
         .filter(g => g.items.length > 0);
       const categorizedIds = new Set(categories.map((c: any) => c.id));
       const uncategorized = allItems.filter((i: any) => !categorizedIds.has(i.category_id));
-      if (uncategorized.length > 0) {
-        grouped.push({ category: { id: '__uncategorized', name: 'Khác / Other', sort_order: 9999 }, items: uncategorized });
-      }
+      if (uncategorized.length > 0) grouped.push({ category: { id: '__uncategorized', name: 'Khác / Other', sort_order: 9999 }, items: uncategorized });
       return grouped;
     }
     return [{ category: { id: '__all', name: 'Thực Đơn / Menu', sort_order: 0 }, items: allItems }];
@@ -1036,16 +1001,13 @@ export default function RestaurantPage() {
   };
 
   const handleSuccess = (orderId: string, orderType: string, paymentMethod: string) => {
-    setCheckoutOrderType(null);
-    setDeliveryDetails(null);
-    clear();
+    setCheckoutOrderType(null); setDeliveryDetails(null); clear();
     setSuccessOrder({ id: orderId, status: 'pending', notes: '', orderType, paymentMethod, items: [], delivery_address: deliveryDetails?.address || '' });
   };
 
   if (!slug || slug === 'undefined') return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-5xl mb-4">😕</p>
+      <div className="text-center"><p className="text-5xl mb-4">😕</p>
         <p className="font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
         <Link href="/" className="text-sm font-semibold text-primary hover:underline">← {lang === 'vi' ? 'Quay lại' : 'Go back'}</Link>
       </div>
@@ -1083,8 +1045,7 @@ export default function RestaurantPage() {
 
   if (!restaurant) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-5xl mb-4">😕</p>
+      <div className="text-center"><p className="text-5xl mb-4">😕</p>
         <p className="font-bold text-gray-700 text-lg mb-4">{lang === 'vi' ? 'Không tìm thấy nhà hàng' : 'Restaurant not found'}</p>
         <Link href="/" className="text-sm font-semibold text-primary hover:underline">← {lang === 'vi' ? 'Quay lại' : 'Go back'}</Link>
       </div>
@@ -1100,15 +1061,12 @@ export default function RestaurantPage() {
     </div>
   );
 
-  if (successOrder) return (
-    <SuccessScreen successOrder={successOrder} restaurant={restaurant} lang={lang}
-      onBack={() => { setSuccessOrder(null); pollStartRef.current = null; }} />
-  );
+  if (successOrder) return <SuccessScreen successOrder={successOrder} restaurant={restaurant} lang={lang} onBack={() => { setSuccessOrder(null); pollStartRef.current = null; }} />;
 
   if (checkoutOrderType) return (
     <Checkout cart={cart} restaurant={restaurant} orderType={checkoutOrderType}
       deliveryAddress={deliveryDetails?.address}
-      deliveryFee={deliveryDetails?.fee ?? restaurant.delivery_fee ?? 0}
+      deliveryFee={deliveryDetails?.fee ?? parseFloat(restaurant.delivery_fee) ?? 0}
       onBack={() => { setCheckoutOrderType(null); setDeliveryDetails(null); }}
       onSuccess={handleSuccess} onSetQty={set} lang={lang} onLangChange={setLang} customer={customer} />
   );
@@ -1117,37 +1075,38 @@ export default function RestaurantPage() {
   const DAYS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const DAYS_KEY = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
   const todayIdx = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })).getDay();
+  const cuisineTypes = Array.isArray(restaurant.cuisine_type) ? restaurant.cuisine_type : restaurant.cuisine_type ? [restaurant.cuisine_type] : [];
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Logo */}
           <div className="flex items-center">
             {restaurant.logo ? (
-              <img src={restaurant.logo} alt={restaurant.name} className="object-contain" style={{ height: '60px', width: 'auto' }}
-  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              <img src={restaurant.logo} alt={restaurant.name} className="object-contain" style={{ height: '52px', width: 'auto' }}
+                onError={e => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.display = 'none';
+                  const span = document.createElement('span');
+                  span.textContent = restaurant.name;
+                  span.className = 'font-bold text-gray-900 text-base';
+                  img.parentNode?.insertBefore(span, img);
+                }} />
             ) : (
               <span className="font-bold text-gray-900 text-base">{restaurant.name}</span>
             )}
           </div>
-
-          {/* Right side actions */}
           <div className="flex items-center gap-2">
-            {/* Lang toggle */}
             <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-semibold">
               <button onClick={() => setLang('vi')} className={`px-2.5 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>VI</button>
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>EN</button>
             </div>
-
-            {/* Cart button — always visible, shows count */}
             {activeTab === 'menu' && (
               <button onClick={() => setShowMobileCart(true)}
                 className="relative flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition-all">
                 <ShoppingBag className="w-4 h-4" />
-                {totalQty > 0 && (
-                  <span className="text-sm font-bold">{fmt(subtotal)}</span>
-                )}
+                {totalQty > 0 && <span className="text-sm font-bold">{fmt(subtotal)}</span>}
                 {totalQty > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-primary text-[10px] font-black rounded-full flex items-center justify-center shadow">
                     {totalQty}
@@ -1155,8 +1114,6 @@ export default function RestaurantPage() {
                 )}
               </button>
             )}
-
-            {/* Hamburger nav */}
             <button onClick={() => setNavOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Navigation">
               <Menu className="w-5 h-5 text-gray-600" />
             </button>
@@ -1164,7 +1121,8 @@ export default function RestaurantPage() {
         </div>
       </header>
 
-      <div className="w-full overflow-hidden" style={{ height: 'clamp(200px, 25vw, 300px)' }}>
+      {/* Banner */}
+      <div className="w-full overflow-hidden" style={{ height: 'clamp(180px, 22vw, 280px)' }}>
         {restaurant.banner ? (
           <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" />
         ) : (
@@ -1172,43 +1130,39 @@ export default function RestaurantPage() {
         )}
       </div>
 
+      {/* Closed notice */}
       {isClosed && (
-        <div className="bg-red-50 border-l-4 border-primary px-4 py-4 w-full">
-          <div className="max-w-6xl mx-auto flex items-start gap-3">
-            <span className="text-lg flex-shrink-0">🔴</span>
-            <p className="text-primary font-semibold text-sm leading-relaxed">
-              {lang === 'vi' ? 'Nhà hàng hiện không nhận đơn trực tuyến. Vui lòng quay lại trong giờ mở cửa.' : 'Online ordering is currently unavailable. Please come back during opening hours.'}
+        <div className="bg-red-50 border-l-4 border-red-400 px-4 py-3 w-full">
+          <div className="max-w-6xl mx-auto">
+            <p className="text-red-600 font-semibold text-sm">
+              {lang === 'vi' ? '🔴 Nhà hàng hiện không nhận đơn trực tuyến. Vui lòng quay lại trong giờ mở cửa.' : '🔴 Online ordering is currently unavailable. Please come back during opening hours.'}
             </p>
           </div>
         </div>
       )}
 
+      {/* Restaurant info */}
       <div className="bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-4 py-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900 mb-2">{restaurant.name}</h1>
-              <div className="flex items-center gap-3 flex-wrap">
-                <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusBadgeClass(status)}`}>
-                  <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: status === 'OPEN' ? '#22C55E' : status === 'PAUSED' ? '#F97316' : '#9CA3AF' }} />
-                  {status === 'OPEN' ? (lang === 'vi' ? 'Đang mở' : 'Open now') : status === 'PAUSED' ? (lang === 'vi' ? 'Tạm dừng' : 'Paused') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
-                </span>
-                {todayHours && (
-                  <span className="text-xs text-gray-500 font-medium">{todayHours}</span>
-                )}
-                {restaurant.total_ratings >= 3 && (
-                  <div className="flex items-center gap-1">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    <span className="text-xs font-bold text-gray-700">{parseFloat(restaurant.average_rating).toFixed(1)}</span>
-                    <span className="text-xs text-gray-400">({restaurant.total_ratings})</span>
-                  </div>
-                )}
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">{restaurant.name}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusBadgeClass(status)}`}>
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: status === 'OPEN' ? '#22C55E' : status === 'PAUSED' ? '#F97316' : '#9CA3AF' }} />
+              {status === 'OPEN' ? (lang === 'vi' ? 'Đang mở' : 'Open now') : status === 'PAUSED' ? (lang === 'vi' ? 'Tạm dừng' : 'Paused') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
+            </span>
+            {todayHours && <span className="text-xs text-gray-500 font-medium">{todayHours}</span>}
+            {restaurant.total_ratings >= 3 && (
+              <div className="flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span className="text-xs font-bold text-gray-700">{parseFloat(restaurant.average_rating).toFixed(1)}</span>
+                <span className="text-xs text-gray-400">({restaurant.total_ratings})</span>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
+      {/* Category bar */}
       {activeTab === 'menu' && (
         <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
           <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
@@ -1234,9 +1188,11 @@ export default function RestaurantPage() {
         </div>
       )}
 
+      {/* Main content */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
         <div className="flex-1 min-w-0">
 
+          {/* MENU TAB */}
           {activeTab === 'menu' && (
             <>
               <div className="flex items-center gap-3 mb-6">
@@ -1255,7 +1211,7 @@ export default function RestaurantPage() {
                         <div className="mb-4 pb-3 border-b border-gray-200">
                           <h2 className="text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {items.map((item: any) => (
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
@@ -1278,6 +1234,7 @@ export default function RestaurantPage() {
             </>
           )}
 
+          {/* LOCATION TAB */}
           {activeTab === 'location' && (
             <div className="space-y-6 max-w-2xl">
               <h2 className="text-2xl font-black text-gray-900">{lang === 'vi' ? 'Vị Trí & Giờ Mở Cửa' : 'Location & Hours'}</h2>
@@ -1287,11 +1244,10 @@ export default function RestaurantPage() {
                     <iframe title="map" width="100%" height="300" style={{ border: 0 }} loading="lazy"
                       src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(restaurant.longitude)-0.005},${parseFloat(restaurant.latitude)-0.005},${parseFloat(restaurant.longitude)+0.005},${parseFloat(restaurant.latitude)+0.005}&layer=mapnik&marker=${restaurant.latitude},${restaurant.longitude}`} />
                   ) : (
-                    <div className="h-48 bg-gray-100 rounded-2xl flex flex-col items-center justify-center gap-3">
-                      <p className="text-sm text-gray-500">{lang === 'vi' ? 'Chưa có bản đồ' : 'Map not available'}</p>
+                    <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-3">
+                      <p className="text-sm text-gray-500">{lang === 'vi' ? 'Chưa có tọa độ bản đồ' : 'Map coordinates not set'}</p>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`}
-                        target="_blank" rel="noopener noreferrer"
-                        className="text-xs font-semibold text-primary hover:underline">
+                        target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-primary hover:underline">
                         {lang === 'vi' ? 'Xem trên Google Maps →' : 'View on Google Maps →'}
                       </a>
                     </div>
@@ -1349,9 +1305,13 @@ export default function RestaurantPage() {
                   })}
                 </div>
               )}
+              {restaurant.latitude && restaurant.longitude && (
+                <p className="text-xs text-gray-400">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline">OpenStreetMap</a> contributors</p>
+              )}
             </div>
           )}
 
+          {/* REVIEWS TAB */}
           {activeTab === 'reviews' && (
             <div className="space-y-4 max-w-2xl">
               <div className="flex items-center justify-between">
@@ -1360,7 +1320,7 @@ export default function RestaurantPage() {
                   <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
                     <span className="text-xl font-black text-amber-600">{parseFloat(restaurant.average_rating).toFixed(1)}</span>
                     <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map(s => (
+                      {[1,2,3,4,5].map(s => (
                         <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= Math.round(restaurant.average_rating) ? '#F59E0B' : '#E5E7EB'}>
                           <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                         </svg>
@@ -1397,7 +1357,7 @@ export default function RestaurantPage() {
                           </div>
                         </div>
                         <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map(s => (
+                          {[1,2,3,4,5].map(s => (
                             <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= r.star_rating ? '#F59E0B' : '#E5E7EB'}>
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                             </svg>
@@ -1414,6 +1374,7 @@ export default function RestaurantPage() {
           )}
         </div>
 
+        {/* Desktop cart */}
         {activeTab === 'menu' && (
           <div className="hidden md:block w-72 flex-shrink-0">
             <div className="sticky top-[112px]">
@@ -1424,6 +1385,7 @@ export default function RestaurantPage() {
         )}
       </div>
 
+      {/* Mobile cart bar */}
       {totalQty > 0 && !isClosed && activeTab === 'menu' && (
         <div className="md:hidden fixed bottom-4 inset-x-4 z-40">
           <button onClick={() => setShowMobileCart(true)}
@@ -1435,8 +1397,9 @@ export default function RestaurantPage() {
         </div>
       )}
 
+      {/* Mobile cart drawer */}
       {showMobileCart && (
-        <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
           <div className="relative bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
@@ -1452,14 +1415,25 @@ export default function RestaurantPage() {
         </div>
       )}
 
+      {/* Nav drawer */}
       {navOpen && (
         <div className="fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/40" onClick={() => setNavOpen(false)} />
           <div className="relative ml-auto w-64 bg-white h-full flex flex-col shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-              {restaurant.logo
-                ? <img src={restaurant.logo} alt={restaurant.name} className="h-9 w-auto object-contain" onError={e => { (e.target as HTMLImageElement).style.display="none"; }} />
-                : <span className="font-bold text-sm text-gray-900 truncate">{restaurant.name}</span>}
+              {restaurant.logo ? (
+                <img src={restaurant.logo} alt={restaurant.name} className="h-9 w-auto object-contain"
+                  onError={e => {
+                    const img = e.target as HTMLImageElement;
+                    img.style.display = 'none';
+                    const span = document.createElement('span');
+                    span.textContent = restaurant.name;
+                    span.className = 'font-bold text-sm text-gray-900 truncate';
+                    img.parentNode?.insertBefore(span, img);
+                  }} />
+              ) : (
+                <span className="font-bold text-sm text-gray-900 truncate">{restaurant.name}</span>
+              )}
               <button onClick={() => setNavOpen(false)} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 flex-shrink-0 ml-2">
                 <X className="w-4 h-4 text-gray-600" />
               </button>
@@ -1471,11 +1445,7 @@ export default function RestaurantPage() {
                 { id: 'reviews' as const, label: lang === 'vi' ? 'Đánh Giá' : 'Reviews', sub: lang === 'vi' ? 'Từ khách đã đặt hàng' : 'From verified orders' },
               ]).map(item => (
                 <button key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setNavOpen(false);
-                    if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
-                  }}
+                  onClick={() => { setActiveTab(item.id); setNavOpen(false); if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id); }}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
                   <div>
                     <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
@@ -1497,46 +1467,39 @@ export default function RestaurantPage() {
         </div>
       )}
 
+      {/* Item modal */}
       {selectedItem && (
         <ItemModal item={selectedItem.item} groups={selectedItem.groups} lang={lang}
           onClose={() => setSelectedItem(null)}
           onAdd={item => { add(item); setSelectedItem(null); }} />
       )}
 
+      {/* Delivery modal */}
       <DeliveryOptionsModal
         isOpen={showDeliveryModal}
         onClose={() => setShowDeliveryModal(false)}
         onConfirm={details => {
-          setDeliveryDetails({ address: details.address, fee: details.fee || restaurant.delivery_fee || 0 });
+          setDeliveryDetails({ address: details.address, fee: details.fee || parseFloat(restaurant.delivery_fee) || 0 });
           setShowDeliveryModal(false);
           setCheckoutOrderType(details.orderType);
         }}
         restaurant={restaurant} subtotal={subtotal} lang={lang}
       />
 
-      {(restaurant.cuisine_type || (Array.isArray(restaurant.dietary_options) && restaurant.dietary_options.length > 0)) && (
+      {/* Cuisine & dietary */}
+      {(cuisineTypes.length > 0 || (Array.isArray(restaurant.dietary_options) && restaurant.dietary_options.length > 0)) && (
         <div className="max-w-6xl mx-auto w-full px-4 mt-4 mb-2">
           <div className="border-t border-gray-200 pt-4 flex flex-wrap items-center gap-2">
-            {restaurant.cuisine_type && (Array.isArray(restaurant.cuisine_type) ? restaurant.cuisine_type.length > 0 : true) && (() => {
-              const CUISINE_VI: Record<string,string> = {
-                Vietnamese:'Việt Nam', Japanese:'Nhật Bản', Korean:'Hàn Quốc', Chinese:'Trung Hoa',
-                Thai:'Thái Lan', Italian:'Ý', American:'Mỹ', Fusion:'Đa Phong Cách', Cafe:'Cà Phê',
-                Dessert:'Tráng Miệng', Other:'Khác', FastFood:'Thức Ăn Nhanh', FriedChicken:'Gà Rán',
-                Snacks:'Đồ Ăn Nhẹ', Pizza:'Pizza', BubbleTea:'Trà Sữa', Noodles:'Mì',
-                Seafood:'Hải Sản', Hotpot:'Lẩu', Banhmi:'Bánh Mì', Rice:'Cơm',
-                Vegetarian:'Chay', BBQ:'BBQ',
-              };
-              const types = Array.isArray(restaurant.cuisine_type) ? restaurant.cuisine_type : [restaurant.cuisine_type];
-              const labels = types.map((c: string) => lang === 'vi' ? (CUISINE_VI[c] || c) : c);
-              return (
-                <div className="flex items-center gap-1 flex-wrap">
-                  <span className="text-sm font-semibold text-gray-500">{lang === 'vi' ? 'Ẩm thực:' : 'Cuisine:'}</span>
-                  {labels.map((label: string, i: number) => (
-                    <span key={i} className="text-xs font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded-full">{label}</span>
-                  ))}
-                </div>
-              );
-            })()}
+            {cuisineTypes.length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs font-semibold text-gray-500">{lang === 'vi' ? 'Ẩm thực:' : 'Cuisine:'}</span>
+                {cuisineTypes.map((c: string, i: number) => (
+                  <span key={i} className="text-xs font-semibold bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                    {lang === 'vi' ? (CUISINE_VI[c] || c) : c}
+                  </span>
+                ))}
+              </div>
+            )}
             {Array.isArray(restaurant.dietary_options) && restaurant.dietary_options.map((opt: string) => {
               const labels: Record<string, { vi: string; emoji: string }> = {
                 'Vegetarian Friendly': { vi: 'Thân Thiện Với Người Ăn Chay', emoji: '🥗' },
@@ -1558,16 +1521,31 @@ export default function RestaurantPage() {
         </div>
       )}
 
-      {restaurant?.show_powered_by !== false && (
-        <footer className="bg-white border-t border-gray-100 py-4 mt-4">
-          <div className="max-w-6xl mx-auto px-4 text-center">
-            <span className="text-xs text-gray-400">
-              LÒ ĐỒ ĂN™ | Powered by{' '}
-              <a href="https://ovenly.io" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">Ovenly™</a>
-            </span>
+      {/* Footer */}
+      <footer className="bg-white border-t border-gray-100 py-5 mt-4">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-3">
+            <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
+              {lang === 'vi' ? 'Điều khoản dịch vụ' : 'Terms of Service'}
+            </Link>
+            <span className="text-gray-300 text-xs">·</span>
+            <Link href="/privacy" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
+              {lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy'}
+            </Link>
+            <span className="text-gray-300 text-xs">·</span>
+            <Link href="/security" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
+              {lang === 'vi' ? 'An toàn thông tin' : 'Security Policy'}
+            </Link>
+            <span className="text-gray-300 text-xs">·</span>
+            <Link href="/claims" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
+              {lang === 'vi' ? 'Giải quyết khiếu nại' : 'Dispute Resolution'}
+            </Link>
           </div>
-        </footer>
-      )}
+          <p className="text-center text-xs text-gray-400">
+            LÒ ĐỒ ĂN™ {restaurant?.show_powered_by !== false && <>| Powered by <a href="https://ovenly.io" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">Ovenly™</a></>}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
