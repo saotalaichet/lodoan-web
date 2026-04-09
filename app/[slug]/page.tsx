@@ -224,62 +224,60 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
 
   return (
     <div
-      className={`bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col relative ${isClosed ? 'cursor-default' : 'cursor-pointer hover:border-primary/30 hover:shadow-sm'} transition-all group`}
       onClick={handleClick}
+      className={`bg-white border border-gray-200 rounded-xl flex flex-row items-center gap-3 px-3 py-3 relative ${isClosed ? 'cursor-default opacity-60' : 'cursor-pointer hover:border-primary/40 hover:shadow-sm'} transition-all`}
+      style={{ minHeight: '88px' }}
     >
-      {isOutOfStock && (
-        <div className="absolute top-2 right-2 z-10 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-          {lang === 'vi' ? 'Hết hàng' : 'Out of stock'}
+      {/* Left: text content */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
+        <div>
+          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+            {item.is_chef_choice && <span className="text-[10px] font-bold text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-full">⭐ Chef</span>}
+            {item.is_spicy && <span className="text-[10px] font-semibold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">🌶 {lang === 'en' ? 'Spicy' : 'Cay'}</span>}
+            {item.is_vegetarian && <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">🌿 {lang === 'en' ? 'Veg' : 'Chay'}</span>}
+          </div>
+          <p className="font-semibold text-gray-900 text-sm leading-snug">{item.name}</p>
+          {item.description && (
+            <p className="text-xs text-gray-400 mt-0.5 leading-relaxed line-clamp-2">{item.description}</p>
+          )}
         </div>
-      )}
-      <div className="relative w-full aspect-[4/3] bg-primary/5 overflow-hidden">
-        {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">🍜</div>
-        )}
-        {item.is_chef_choice && (
-          <span className="absolute top-2 left-2 bg-amber-400 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-            <Star className="w-2.5 h-2.5 fill-white" /> Chef
-          </span>
-        )}
+        <p className="font-bold text-primary text-sm mt-1.5">{fmt(price)}</p>
       </div>
-      <div className="p-3 flex flex-col flex-1">
-        <div className="flex gap-1 flex-wrap mb-1">
-          {item.is_spicy && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-red-500 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full">
-              <Flame className="w-2.5 h-2.5" />{lang === 'en' ? 'Spicy' : 'Cay'}
-            </span>
-          )}
-          {item.is_vegetarian && (
-            <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-green-600 bg-green-50 border border-green-100 px-1.5 py-0.5 rounded-full">
-              <Leaf className="w-2.5 h-2.5" />{lang === 'en' ? 'Veg' : 'Chay'}
-            </span>
+
+      {/* Right: image + button */}
+      <div className="relative flex-shrink-0">
+        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
+          {item.image_url ? (
+            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-2xl">🍜</div>
           )}
         </div>
-        <p className="font-semibold text-gray-900 text-sm leading-snug flex-1">{item.name}</p>
-        {item.description && <p className="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">{item.description}</p>}
-        <div className="flex items-center justify-between mt-3">
-          <span className="font-bold text-primary text-sm">{fmt(price)}</span>
-          {!isClosed && (
-            qty > 0 ? (
-              <div className="flex items-center gap-2 bg-primary rounded-full px-2 py-1" onClick={e => e.stopPropagation()}>
-                <button onClick={() => onSet(item.id, qty - 1)} className="w-5 h-5 flex items-center justify-center text-white">
-                  <Minus className="w-3 h-3" strokeWidth={2.5} />
-                </button>
-                <span className="text-xs font-bold text-white min-w-[14px] text-center">{qty}</span>
-                <button onClick={() => onSet(item.id, qty + 1)} className="w-5 h-5 flex items-center justify-center text-white">
-                  <Plus className="w-3 h-3" strokeWidth={2.5} />
-                </button>
-              </div>
-            ) : (
-              <button onClick={e => { e.stopPropagation(); handleClick(); }}
-                className="w-7 h-7 bg-primary hover:opacity-90 text-white rounded-full flex items-center justify-center transition-colors">
-                <Plus className="w-3.5 h-3.5" strokeWidth={2.5} />
+        {isOutOfStock && (
+          <div className="absolute inset-0 bg-white/70 rounded-lg flex items-center justify-center">
+            <span className="text-[10px] font-bold text-red-500">{lang === 'vi' ? 'Hết hàng' : 'Sold out'}</span>
+          </div>
+        )}
+        {!isClosed && !isOutOfStock && (
+          qty > 0 ? (
+            <div className="absolute -bottom-2 -right-2 flex items-center gap-1 bg-primary rounded-full px-1.5 py-0.5 shadow" onClick={e => e.stopPropagation()}>
+              <button onClick={() => onSet(item.id, qty - 1)} className="w-4 h-4 flex items-center justify-center text-white">
+                <Minus className="w-3 h-3" strokeWidth={3} />
               </button>
-            )
-          )}
-        </div>
+              <span className="text-[11px] font-bold text-white min-w-[12px] text-center">{qty}</span>
+              <button onClick={() => onSet(item.id, qty + 1)} className="w-4 h-4 flex items-center justify-center text-white">
+                <Plus className="w-3 h-3" strokeWidth={3} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={e => { e.stopPropagation(); handleClick(); }}
+              className="absolute -bottom-2 -right-2 w-7 h-7 bg-primary hover:opacity-90 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" strokeWidth={3} />
+            </button>
+          )
+        )}
       </div>
     </div>
   );
@@ -1243,7 +1241,7 @@ export default function RestaurantPage() {
                         <div className="mb-4 pb-3 border-b border-gray-200">
                           <h2 className="text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-2">
                           {items.map((item: any) => (
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
