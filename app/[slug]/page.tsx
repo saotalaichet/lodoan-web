@@ -672,7 +672,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                   <input value={name} onChange={e => setName(e.target.value)} placeholder={lang === 'vi' ? 'Nguyễn Văn A' : 'John Doe'}
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3 menu-grid">
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">{lang === 'vi' ? 'Số điện thoại' : 'Phone'} *</label>
                     <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0912 345 678"
