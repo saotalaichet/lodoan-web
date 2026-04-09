@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
+import TrackAsiaAddressInput from '@/components/TrackAsiaAddressInput';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
@@ -359,6 +360,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
 }) {
   const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('delivery');
   const [address, setAddress] = useState('');
+  const [addressValid, setAddressValid] = useState(false);
   if (!isOpen) return null;
   const minOrder = parseFloat(restaurant?.min_order_amount) || 50000;
   const deliveryFee = parseFloat(restaurant?.delivery_fee) || 0;
@@ -398,9 +400,15 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase">{lang === 'vi' ? 'Địa chỉ giao hàng' : 'Delivery Address'}</label>
                 <p className="text-xs text-primary mb-3">{lang === 'vi' ? 'Chúng tôi chỉ giao hàng trong phạm vi 5km.' : 'We only deliver within 5km.'}</p>
-                <textarea value={address} onChange={e => setAddress(e.target.value)}
-                  placeholder={lang === 'vi' ? 'Ví dụ: 123 Nguyễn Huệ, Quận 1, TP. HCM' : 'e.g. 123 Nguyen Hue, District 1, HCMC'}
-                  rows={3} className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none" />
+                <TrackAsiaAddressInput
+                  restaurantLat={restaurant?.latitude ? parseFloat(restaurant.latitude) : null}
+                  restaurantLon={restaurant?.longitude ? parseFloat(restaurant.longitude) : null}
+                  lang={lang}
+                  onAddressValidated={(isValid, addr) => {
+                    setAddressValid(isValid);
+                    setAddress(isValid ? addr : '');
+                  }}
+                />
               </div>
             </>
           )}
@@ -410,7 +418,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
               if (belowMin) return;
               onConfirm({ orderType, address: orderType === 'delivery' ? address : undefined, fee: deliveryFee });
             }}
-            disabled={orderType === 'delivery' && (!address.trim() || belowMin)}
+            disabled={orderType === 'delivery' && (!addressValid || belowMin)}
             className="w-full bg-primary hover:opacity-90 disabled:opacity-50 text-white font-bold py-4 rounded-xl text-sm transition-colors">
             {lang === 'vi' ? 'Tiếp tục đặt hàng' : 'Continue'}
           </button>
