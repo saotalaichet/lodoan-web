@@ -225,59 +225,57 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
   return (
     <div
       onClick={handleClick}
-      className={`bg-white border border-gray-200 rounded-xl flex flex-row items-center gap-3 px-3 py-3 relative ${isClosed ? 'cursor-default opacity-60' : 'cursor-pointer hover:border-primary/40 hover:shadow-sm'} transition-all`}
-      style={{ minHeight: '88px' }}
+      className={`bg-white border border-gray-200 rounded-xl overflow-visible flex flex-col relative ${isClosed ? 'cursor-default opacity-60' : 'cursor-pointer hover:border-primary/40 hover:shadow-sm'} transition-all`}
     >
-      {/* Left: text content */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between h-full py-0.5">
-        <div>
-          <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
-            {item.is_chef_choice && <span className="text-[10px] font-bold text-amber-500 bg-amber-50 px-1.5 py-0.5 rounded-full">⭐ Chef</span>}
-            {item.is_spicy && <span className="text-[10px] font-semibold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">🌶 {lang === 'en' ? 'Spicy' : 'Cay'}</span>}
-            {item.is_vegetarian && <span className="text-[10px] font-semibold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">🌿 {lang === 'en' ? 'Veg' : 'Chay'}</span>}
-          </div>
-          <p className="font-semibold text-gray-900 text-sm leading-snug">{item.name}</p>
-          {item.description && (
-            <p className="text-xs text-gray-400 mt-0.5 leading-relaxed line-clamp-2">{item.description}</p>
-          )}
-        </div>
-        <p className="font-bold text-primary text-sm mt-1.5">{fmt(price)}</p>
-      </div>
-
-      {/* Right: image + button */}
-      <div className="relative flex-shrink-0">
-        <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
-          {item.image_url ? (
-            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-2xl">🍜</div>
-          )}
+      {/* Image — square, full width, fixed height */}
+      <div className="relative w-full overflow-hidden rounded-t-xl bg-gray-100" style={{ height: '120px' }}>
+        {item.image_url ? (
+          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-3xl">🍜</div>
+        )}
+        {/* Badges top-left */}
+        <div className="absolute top-1.5 left-1.5 flex flex-col gap-1">
+          {item.is_chef_choice && <span className="text-[9px] font-bold text-amber-600 bg-white/90 px-1.5 py-0.5 rounded-full shadow-sm">⭐ Chef</span>}
+          {item.is_spicy && <span className="text-[9px] font-bold text-red-500 bg-white/90 px-1.5 py-0.5 rounded-full shadow-sm">🌶 {lang === 'en' ? 'Spicy' : 'Cay'}</span>}
+          {item.is_vegetarian && <span className="text-[9px] font-bold text-green-600 bg-white/90 px-1.5 py-0.5 rounded-full shadow-sm">🌿 {lang === 'en' ? 'Veg' : 'Chay'}</span>}
         </div>
         {isOutOfStock && (
-          <div className="absolute inset-0 bg-white/70 rounded-lg flex items-center justify-center">
-            <span className="text-[10px] font-bold text-red-500">{lang === 'vi' ? 'Hết hàng' : 'Sold out'}</span>
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
+            <span className="text-xs font-bold text-red-500 bg-white px-2 py-0.5 rounded-full">{lang === 'vi' ? 'Hết hàng' : 'Sold out'}</span>
           </div>
         )}
-        {!isClosed && !isOutOfStock && (
-          qty > 0 ? (
-            <div className="absolute -bottom-2 -right-2 flex items-center gap-1 bg-primary rounded-full px-1.5 py-0.5 shadow" onClick={e => e.stopPropagation()}>
-              <button onClick={() => onSet(item.id, qty - 1)} className="w-4 h-4 flex items-center justify-center text-white">
-                <Minus className="w-3 h-3" strokeWidth={3} />
-              </button>
-              <span className="text-[11px] font-bold text-white min-w-[12px] text-center">{qty}</span>
-              <button onClick={() => onSet(item.id, qty + 1)} className="w-4 h-4 flex items-center justify-center text-white">
+      </div>
+
+      {/* Content */}
+      <div className="p-2.5 flex flex-col flex-1">
+        <p className="font-semibold text-gray-900 text-xs leading-snug line-clamp-2 flex-1">{item.name}</p>
+        {item.description && (
+          <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-1 leading-relaxed">{item.description}</p>
+        )}
+        <div className="flex items-center justify-between mt-2">
+          <span className="font-bold text-primary text-sm">{fmt(price)}</span>
+          {!isClosed && !isOutOfStock && (
+            qty > 0 ? (
+              <div className="flex items-center gap-1 bg-primary rounded-full px-1.5 py-0.5" onClick={e => e.stopPropagation()}>
+                <button onClick={() => onSet(item.id, qty - 1)} className="w-4 h-4 flex items-center justify-center text-white">
+                  <Minus className="w-2.5 h-2.5" strokeWidth={3} />
+                </button>
+                <span className="text-[10px] font-bold text-white min-w-[10px] text-center">{qty}</span>
+                <button onClick={() => onSet(item.id, qty + 1)} className="w-4 h-4 flex items-center justify-center text-white">
+                  <Plus className="w-2.5 h-2.5" strokeWidth={3} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={e => { e.stopPropagation(); handleClick(); }}
+                className="w-6 h-6 bg-primary hover:opacity-90 text-white rounded-full flex items-center justify-center shadow transition-colors"
+              >
                 <Plus className="w-3 h-3" strokeWidth={3} />
               </button>
-            </div>
-          ) : (
-            <button
-              onClick={e => { e.stopPropagation(); handleClick(); }}
-              className="absolute -bottom-2 -right-2 w-7 h-7 bg-primary hover:opacity-90 text-white rounded-full flex items-center justify-center shadow-md transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" strokeWidth={3} />
-            </button>
-          )
-        )}
+            )
+          )}
+        </div>
       </div>
     </div>
   );
@@ -1241,7 +1239,7 @@ export default function RestaurantPage() {
                         <div className="mb-4 pb-3 border-b border-gray-200">
                           <h2 className="text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
                         </div>
-                        <div className="grid grid-cols-1 gap-2">
+                        <div className="grid grid-cols-2 gap-3">
                           {items.map((item: any) => (
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
