@@ -107,10 +107,12 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
   const statusText = getStatusText(status, lang);
   const isPremium = restaurant.subscription_tier === 'Premium';
   const firstLetter = restaurant.name?.charAt(0)?.toUpperCase() || '?';
-  const rawCuisine = restaurant.cuisine_type || '';
-  const cuisineLabel = rawCuisine
-    ? (CUISINE_DISPLAY[rawCuisine]?.[lang === 'vi' ? 'vi' : 'en'] ?? (lang === 'vi' ? (restaurant.cuisine_type_vietnamese || rawCuisine) : rawCuisine))
-    : '';
+  const cuisineTypes = Array.isArray(restaurant.cuisine_type)
+    ? restaurant.cuisine_type
+    : restaurant.cuisine_type ? [restaurant.cuisine_type] : [];
+  const cuisineLabels = cuisineTypes.map((c: string) =>
+    CUISINE_DISPLAY[c]?.[lang === 'vi' ? 'vi' : 'en'] ?? c
+  );
   const avgRating = restaurant.average_rating;
   const totalRatings = restaurant.total_ratings;
 
@@ -182,11 +184,15 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         <h3 className="font-bold leading-tight mb-1.5" style={{ fontSize: '15px', color: '#1A1A1A' }}>
           <HighlightText text={restaurant.name} query={search} />
         </h3>
-        {cuisineLabel && (
-          <span className="inline-block self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2"
-            style={{ background: '#FFF0ED', color: '#8B1A1A' }}>
-            {cuisineLabel}
-          </span>
+        {cuisineLabels.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {cuisineLabels.map((label: string, i: number) => (
+              <span key={i} className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                style={{ background: '#FFF0ED', color: '#8B1A1A' }}>
+                {label}
+              </span>
+            ))}
+          </div>
         )}
         {totalRatings >= 3 && (
           <div className="flex items-center gap-1 mb-2">
