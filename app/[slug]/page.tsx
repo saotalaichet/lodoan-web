@@ -74,7 +74,18 @@ interface CartItem {
 }
 
 function useCart() {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const saved = localStorage.getItem('ovenly_cart');
+      return saved ? JSON.parse(saved) : [];
+    } catch { return []; }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ovenly_cart', JSON.stringify(cart));
+  }, [cart]);
+
   const add = (item: CartItem) => setCart(prev => {
     const ex = prev.find(i => i.id === item.id);
     return ex ? prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i) : [...prev, { ...item, qty: 1 }];
@@ -914,6 +925,9 @@ export default function RestaurantPage() {
 
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
+    const lastSlug = localStorage.getItem('ovenly_cart_slug');
+    if (lastSlug && lastSlug !== slug) clear();
+    localStorage.setItem('ovenly_cart_slug', slug);
     const load = async () => {
       try {
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
