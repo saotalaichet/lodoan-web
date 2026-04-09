@@ -10,6 +10,8 @@ import {
 import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 import TrackAsiaAddressInput from '@/components/TrackAsiaAddressInput';
+import dynamic from 'next/dynamic';
+const TrackAsiaMap = dynamic(() => import('@/components/TrackAsiaMap'), { ssr: false });
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
@@ -1265,8 +1267,11 @@ export default function RestaurantPage() {
               {restaurant.address && (
                 <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                   {restaurant.latitude && restaurant.longitude ? (
-                    <iframe title="map" width="100%" height="300" style={{ border: 0 }} loading="lazy"
-                      src={`https://www.openstreetmap.org/export/embed.html?bbox=${parseFloat(restaurant.longitude)-0.005},${parseFloat(restaurant.latitude)-0.005},${parseFloat(restaurant.longitude)+0.005},${parseFloat(restaurant.latitude)+0.005}&layer=mapnik&marker=${restaurant.latitude},${restaurant.longitude}`} />
+                    <TrackAsiaMap
+                      latitude={parseFloat(restaurant.latitude)}
+                      longitude={parseFloat(restaurant.longitude)}
+                      name={restaurant.name}
+                    />
                   ) : (
                     <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-3">
                       <p className="text-sm text-gray-500">{lang === 'vi' ? 'Chưa có tọa độ bản đồ' : 'Map coordinates not set'}</p>
@@ -1329,9 +1334,7 @@ export default function RestaurantPage() {
                   })}
                 </div>
               )}
-              {restaurant.latitude && restaurant.longitude && (
-                <p className="text-xs text-gray-400">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="hover:underline">OpenStreetMap</a> contributors</p>
-              )}
+              
             </div>
           )}
 
