@@ -456,6 +456,11 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   const [placing, setPlacing] = useState(false);
   const placingRef = useRef(false);
   const [checkoutMode, setCheckoutMode] = useState<null | 'checkout'>(null);
+  const [promoCode, setPromoCode] = useState('');
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [promoApplied, setPromoApplied] = useState<{ code: string; discount_amount: number; description?: string } | null>(null);
+  const [promoError, setPromoError] = useState('');
+  const [promoLoading, setPromoLoading] = useState(false);
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const totalQty = cart.reduce((s, i) => s + i.qty, 0);
@@ -463,8 +468,31 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   const serviceFee = Math.round(subtotal * serviceFeePct);
   const effectiveDelivery = totalQty >= 10 && orderType === 'delivery' ? 100000 : deliveryFee;
   const tipAmount = Math.round(subtotal * tipPct / 100);
-  const total = subtotal + serviceFee + (orderType === 'delivery' ? effectiveDelivery : 0) + tipAmount;
+  const promoDiscount = promoApplied?.discount_amount ?? 0;
+  const total = subtotal + serviceFee + (orderType === 'delivery' ? effectiveDelivery : 0) + tipAmount - promoDiscount;
   const validMethods = PAYMENT_METHODS.filter(m => m.for.includes(orderType));
+  const applyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setPromoLoading(true);
+    setPromoError('');
+    try {
+      const res = await fetch(`${RAILWAY}/api/promotions/validate`, {
+        method: 'POST',
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ code: promoCode.trim(), restaurant_id: restaurant.id, subtotal }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.valid) {
+        setPromoError(data.error || 'Mã không hợp lệ.');
+        setPromoApplied(null);
+      } else {
+        setPromoApplied({ code: data.code, discount_amount: data.discount_amount, description: data.description });
+        setPromoError('');
+        setPromoOpen(false);
+      }
+    } catch { setPromoError('Lỗi kết nối. Thử lại.'); }
+    finally { setPromoLoading(false); }
+  };
 
   const handlePlace = async () => {
     if (placingRef.current) return;
@@ -484,6 +512,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
           items, subtotal, service_fee: serviceFee,
           delivery_fee: orderType === 'delivery' ? effectiveDelivery : 0,
           tip_amount: tipAmount, tip_percentage: tipPct, total,
+          promo_code: promoApplied?.code ?? null,
+          promo_discount: promoDiscount,
           order_type: orderType, delivery_address: orderType === 'delivery' ? deliveryAddress : '',
           payment_method: paymentMethod,
           payment_status: ONLINE.includes(paymentMethod) ? 'pending_payment' : 'waiting',
@@ -727,6 +757,49 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                 </div>
               </div>
               {tipAmount > 0 && <div className="flex justify-between text-gray-500"><span>Tip</span><span className="font-semibold text-orange-500">{fmt(tipAmount)}</span></div>}
+              {!customer ? (
+                <div className="border-t border-gray-100 pt-3">
+                  <button onClick={() => { localStorage.setItem('checkout_redirect', window.location.pathname); window.location.href = '/login'; }}
+                    className="w-full text-left text-xs text-primary font-semibold flex items-center gap-1 hover:opacity-80">
+                    🎟️ {lang === 'vi' ? 'Đăng nhập để dùng mã giảm giá' : 'Log in to use a promo code'}
+                  </button>
+                </div>
+              ) : promoApplied ? (
+                <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+                  <span className="text-xs text-green-600 font-semibold">🎟️ {promoApplied.code}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-green-600">-{fmt(promoApplied.discount_amount)}</span>
+                    <button onClick={() => { setPromoApplied(null); setPromoCode(''); }} className="text-[10px] text-gray-400 hover:text-red-500">✕</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="border-t border-gray-100 pt-3">
+                  {!promoOpen ? (
+                    <button onClick={() => setPromoOpen(true)} className="text-xs text-primary font-semibold flex items-center gap-1 hover:opacity-80">
+                      🎟️ {lang === 'vi' ? 'Thêm mã giảm giá' : 'Add promo code'}
+                    </button>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <div className="flex gap-2">
+                        <input
+                          value={promoCode}
+                          onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); }}
+                          onKeyDown={e => { if (e.key === 'Enter') applyPromo(); }}
+                          placeholder={lang === 'vi' ? 'Nhập mã...' : 'Enter code...'}
+                          className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-primary/20 uppercase"
+                          autoFocus
+                        />
+                        <button onClick={applyPromo} disabled={promoLoading}
+                          className="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:opacity-90 disabled:opacity-50">
+                          {promoLoading ? '...' : (lang === 'vi' ? 'Áp dụng' : 'Apply')}
+                        </button>
+                      </div>
+                      {promoError && <p className="text-[10px] text-red-500">⚠️ {promoError}</p>}
+                    </div>
+                  )}
+                </div>
+              )}
+              {promoDiscount > 0 && <div className="flex justify-between text-green-600"><span className="text-xs font-semibold">{lang === 'vi' ? 'Giảm giá' : 'Discount'}</span><span className="text-xs font-bold">-{fmt(promoDiscount)}</span></div>}
               <div className="flex justify-between font-bold text-gray-900 text-base border-t border-gray-100 pt-2">
                 <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
                 <span className="text-primary">{fmt(total)}</span>
