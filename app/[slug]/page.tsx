@@ -97,6 +97,17 @@ function useCart() {
   return { cart, add, set, clear, totalQty, subtotal };
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 function ItemModal({ item, groups, lang, onClose, onAdd }: {
   item: any; groups: any[]; lang: string;
   onClose: () => void; onAdd: (item: CartItem) => void;
@@ -672,7 +683,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                   <input value={name} onChange={e => setName(e.target.value)} placeholder={lang === 'vi' ? 'Nguyễn Văn A' : 'John Doe'}
                     className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
                 </div>
-                <div className="grid grid-cols-2 gap-3 menu-grid">
+                <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                   <div>
                     <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">{lang === 'vi' ? 'Số điện thoại' : 'Phone'} *</label>
                     <input value={phone} onChange={e => setPhone(e.target.value)} placeholder="0912 345 678"
@@ -964,6 +975,7 @@ export default function RestaurantPage() {
   const [loadingReviews, setLoadingReviews] = useState(false);
 
   const { cart, add, set, clear, totalQty, subtotal } = useCart();
+  const isMobile = useIsMobile();
 
   const loadReviews = (id: string) => {
     if (reviews.length > 0) return;
