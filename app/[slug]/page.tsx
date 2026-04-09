@@ -881,6 +881,14 @@ export default function RestaurantPage() {
   const pollStartRef = useRef<number | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'menu' | 'location' | 'reviews'>('menu');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab === 'location') setActiveTab('location');
+    else if (tab === 'review') setActiveTab('reviews');
+    else setActiveTab('menu');
+  }, []);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
 
@@ -1334,7 +1342,7 @@ export default function RestaurantPage() {
                   })}
                 </div>
               )}
-              
+
             </div>
           )}
 
@@ -1472,7 +1480,13 @@ export default function RestaurantPage() {
                 { id: 'reviews' as const, label: lang === 'vi' ? 'Đánh Giá' : 'Reviews', sub: lang === 'vi' ? 'Từ khách đã đặt hàng' : 'From verified orders' },
               ]).map(item => (
                 <button key={item.id}
-                  onClick={() => { setActiveTab(item.id); setNavOpen(false); if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id); }}
+                  onClick={() => {
+  setActiveTab(item.id);
+  setNavOpen(false);
+  if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
+  const pathMap: Record<string, string> = { menu: '/menu', location: '/location', reviews: '/review' };
+  window.history.pushState({}, '', pathMap[item.id] || '/menu');
+}}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
                   <div>
                     <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
