@@ -878,6 +878,9 @@ export default function RestaurantPage() {
   const [loadingRestaurant, setLoadingRestaurant] = useState(true);
   const [loadingItems, setLoadingItems] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<'menu'|'location'|'reviews'>('menu');
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
   const [lang, setLang] = useState('vi');
   const [customer, setCustomer] = useState<any>(null);
   const [selectedItem, setSelectedItem] = useState<{ item: any; groups: any[] } | null>(null);
@@ -1206,65 +1209,280 @@ export default function RestaurantPage() {
         </div>
       </div>
 
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-30">
-        <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
-          <button onClick={() => setActiveCategory('all')}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === 'all' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-            {lang === 'vi' ? 'Tất cả' : 'All'}
+      {/* Page Tabs */}
+<div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex gap-0">
+      {[
+        { id:'menu', label: lang==='vi' ? '🍽️ Menu' : '🍽️ Menu' },
+        { id:'location', label: lang==='vi' ? '📍 Vị Trí' : '📍 Location' },
+        { id:'reviews', label: lang==='vi' ? '⭐ Đánh Giá' : '⭐ Reviews' },
+      ].map(tab => (
+        <button key={tab.id}
+          onClick={() => {
+            setActiveTab(tab.id as any);
+            if (tab.id === 'reviews' && reviews.length === 0) {
+              setLoadingReviews(true);
+              fetch(`${RAILWAY}/api/restaurant-reviews?restaurantId=${restaurant.id}`)
+                .then(r => r.json()).then(d => setReviews(d || [])).catch(() => {}).finally(() => setLoadingReviews(false));
+            }
+          }}
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${activeTab===tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+{/* Page Tabs */}
+<div className="bg-white border-b border-gray-200 sticky top-16 z-30">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex gap-0">
+      {[
+        { id:'menu', label: lang==='vi' ? 'Menu' : 'Menu' },
+        { id:'location', label: lang==='vi' ? 'Vị Trí' : 'Location' },
+        { id:'reviews', label: lang==='vi' ? 'Đánh Giá' : 'Reviews' },
+      ].map(tab => (
+        <button key={tab.id}
+          onClick={() => {
+            setActiveTab(tab.id as any);
+            if (tab.id === 'reviews' && reviews.length === 0) {
+              setLoadingReviews(true);
+              fetch(`${RAILWAY}/api/restaurant-reviews?restaurantId=${restaurant.id}`)
+                .then(r => r.json()).then(d => setReviews(d || [])).catch(() => {}).finally(() => setLoadingReviews(false));
+            }
+          }}
+          className={`px-5 py-3 text-sm font-semibold border-b-2 transition-all ${activeTab===tab.id ? 'border-primary text-primary' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  </div>
+</div>
+
+{/* Category bar — only show on menu tab */}
+{activeTab === 'menu' && (
+  <div className="bg-white border-b border-gray-200 sticky top-16 z-20" style={{top:'112px'}}>
+    <div className="max-w-6xl mx-auto px-4 flex gap-1 overflow-x-auto py-2 scrollbar-hide">
+      <button onClick={() => setActiveCategory('all')}
+        className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === 'all' ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+        {lang === 'vi' ? 'Tất cả' : 'All'}
+      </button>
+      {categories
+        .filter((cat: any) => {
+          if (!cat.name || typeof cat.name !== 'string') return false;
+          if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase() === 'all') return false;
+          if (cat.is_active === false) return false;
+          return allItems.filter((i: any) => i.category_id === cat.id).length > 0;
+        })
+        .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map((cat: any) => (
+          <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
+            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+            {getCatLabel(cat.name)}
           </button>
-          {categories
-            .filter((cat: any) => {
-              if (!cat.name || typeof cat.name !== 'string') return false;
-              if (cat.name.toLowerCase().includes('tất cả') || cat.name.toLowerCase() === 'all') return false;
-              if (cat.is_active === false) return false;
-              return allItems.filter((i: any) => i.category_id === cat.id).length > 0;
-            })
-            .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
-            .map((cat: any) => (
-              <button key={cat.id} onClick={() => setActiveCategory(cat.id)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeCategory === cat.id ? 'bg-primary text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-                {getCatLabel(cat.name)}
-              </button>
-            ))}
-        </div>
-      </div>
+        ))}
+    </div>
+  </div>
+)}
 
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-2xl font-black text-gray-900 tracking-tight">Menu</span>
-            <div className="h-0.5 flex-1 rounded-full bg-primary" />
-          </div>
-          {loadingItems ? (
-            <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Đang tải thực đơn...' : 'Loading menu...'}</div>
-          ) : groupedItems.length === 0 ? (
-            <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Chưa có món ăn' : 'No items yet'}</div>
-          ) : (
-            <div className="space-y-8">
-              {groupedItems.map(({ category, items }) => (
-                items.length > 0 && (
-                  <div key={category.id}>
-                    <div className="mb-4 pb-3 border-b border-gray-200">
-                      <h2 className="text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      {items.map((item: any) => (
-                        <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
-                          <MenuItemCard
-                            item={item}
-                            qty={cart.filter(c => c.id === item.id).reduce((s, i) => s + i.qty, 0)}
-                            onAdd={add} onSet={set}
-                            onOpen={(it, groups) => setSelectedItem({ item: it, groups })}
-                            isClosed={isClosed || item.is_available === false}
-                            isOutOfStock={item.is_available === false}
-                            lang={lang}
-                          />
+
+          {/* MENU TAB */}
+          {activeTab === 'menu' && (
+            <>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="text-2xl font-black text-gray-900 tracking-tight">Menu</span>
+                <div className="h-0.5 flex-1 rounded-full bg-primary" />
+              </div>
+              {loadingItems ? (
+                <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Đang tải thực đơn...' : 'Loading menu...'}</div>
+              ) : groupedItems.length === 0 ? (
+                <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Chưa có món ăn' : 'No items yet'}</div>
+              ) : (
+                <div className="space-y-8">
+                  {groupedItems.map(({ category, items }) => (
+                    items.length > 0 && (
+                      <div key={category.id}>
+                        <div className="mb-4 pb-3 border-b border-gray-200">
+                          <h2 className="text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
                         </div>
-                      ))}
+                        <div className="grid grid-cols-2 gap-3">
+                          {items.map((item: any) => (
+                            <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
+                              <MenuItemCard
+                                item={item}
+                                qty={cart.filter(c => c.id === item.id).reduce((s, i) => s + i.qty, 0)}
+                                onAdd={add} onSet={set}
+                                onOpen={(it, groups) => setSelectedItem({ item: it, groups })}
+                                isClosed={isClosed || item.is_available === false}
+                                isOutOfStock={item.is_available === false}
+                                lang={lang}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* LOCATION TAB */}
+          {activeTab === 'location' && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-black text-gray-900">{lang === 'vi' ? 'Vị Trí & Giờ Mở Cửa' : 'Location & Hours'}</h2>
+
+              {/* Map embed */}
+              {restaurant.address && (
+                <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+                  <iframe
+                    title="map"
+                    width="100%" height="320"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=${encodeURIComponent(restaurant.address)}&zoom=16`}
+                  />
+                </div>
+              )}
+
+              {/* Address & Phone */}
+              <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+                {restaurant.address && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{lang === 'vi' ? 'Địa chỉ' : 'Address'}</p>
+                      <p className="text-sm font-medium text-gray-900">{restaurant.address}</p>
+                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="text-xs text-primary font-semibold hover:underline mt-1 inline-block">
+                        {lang === 'vi' ? 'Mở trong Google Maps →' : 'Open in Google Maps →'}
+                      </a>
                     </div>
                   </div>
-                )
-              ))}
+                )}
+                {restaurant.phone && restaurant.phone !== 'N/A' && restaurant.phone !== 'n/a' && (
+                  <div className="flex items-start gap-3">
+                    <div className="w-9 h-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{lang === 'vi' ? 'Điện thoại' : 'Phone'}</p>
+                      <a href={`tel:${restaurant.phone}`} className="text-sm font-medium text-primary hover:underline">{restaurant.phone}</a>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Hours */}
+              {restaurant.hours && (
+                <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Clock className="w-5 h-5 text-primary" />
+                    <h3 className="font-bold text-gray-900">{lang === 'vi' ? 'Giờ Mở Cửa' : 'Opening Hours'}</h3>
+                  </div>
+                  {(() => {
+                    const DAYS_VI = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+                    const DAYS_EN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                    const DAYS_KEY = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+                    const today = new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Ho_Chi_Minh'})).getDay();
+                    return DAYS_KEY.map((key, i) => {
+                      const hours = restaurant.hours[key];
+                      const isToday = i === today;
+                      return (
+                        <div key={key} className={`flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 ${isToday ? 'bg-primary/5 -mx-2 px-2 rounded-xl' : ''}`}>
+                          <span className={`text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700'}`}>
+                            {lang === 'vi' ? DAYS_VI[i] : DAYS_EN[i]}
+                            {isToday && <span className="ml-2 text-xs bg-primary text-white px-1.5 py-0.5 rounded-full">{lang === 'vi' ? 'Hôm nay' : 'Today'}</span>}
+                          </span>
+                          <span className={`text-sm font-semibold ${hours ? (isToday ? 'text-primary' : 'text-gray-900') : 'text-gray-400'}`}>
+                            {hours || (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
+                          </span>
+                        </div>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* REVIEWS TAB */}
+          {activeTab === 'reviews' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-black text-gray-900">{lang === 'vi' ? 'Đánh Giá' : 'Reviews'}</h2>
+                {restaurant.total_ratings >= 3 && (
+                  <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                    <span className="text-2xl font-black text-amber-600">{parseFloat(restaurant.average_rating).toFixed(1)}</span>
+                    <div>
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(s => (
+                          <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={s <= Math.round(restaurant.average_rating) ? '#F59E0B' : '#E5E7EB'}>
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500">{restaurant.total_ratings} {lang === 'vi' ? 'đánh giá' : 'reviews'}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3">
+                <p className="text-xs text-blue-700 font-semibold">
+                  ✓ {lang === 'vi' ? 'Chỉ hiển thị đánh giá từ khách hàng đã đặt hàng thực sự qua LÒ ĐỒ ĂN' : 'Only showing reviews from verified orders placed through LÒ ĐỒ ĂN'}
+                </p>
+              </div>
+
+              {loadingReviews ? (
+                <div className="text-center py-12">
+                  <div className="w-8 h-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
+                </div>
+              ) : reviews.length === 0 ? (
+                <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
+                  <p className="text-4xl mb-3">⭐</p>
+                  <p className="text-gray-500 font-medium">{lang === 'vi' ? 'Chưa có đánh giá nào' : 'No reviews yet'}</p>
+                  <p className="text-sm text-gray-400 mt-1">{lang === 'vi' ? 'Hãy là người đầu tiên đánh giá!' : 'Be the first to review!'}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {reviews.map((r: any, i: number) => (
+                    <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-bold text-primary">{r.customer_name?.[0]?.toUpperCase() || '?'}</span>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{r.customer_name || 'Khách hàng'}</p>
+                            <p className="text-xs text-gray-400">{new Date(r.created_date).toLocaleDateString('vi-VN')}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-0.5">
+                          {[1,2,3,4,5].map(s => (
+                            <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill={s <= r.star_rating ? '#F59E0B' : '#E5E7EB'}>
+                              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                          ))}
+                        </div>
+                      </div>
+                      {r.comment && <p className="text-sm text-gray-700 leading-relaxed">{r.comment}</p>}
+                      <div className="mt-2 flex items-center gap-1">
+                        <span className="text-xs text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded-full">✓ {lang === 'vi' ? 'Đã đặt hàng' : 'Verified order'}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
