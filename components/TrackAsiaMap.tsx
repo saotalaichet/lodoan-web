@@ -27,7 +27,7 @@ export default function TrackAsiaMap({ latitude, longitude, name }: Props) {
       const TA = (window as any).trackasiagl;
       const map = new TA.Map({
         container: mapRef.current!,
-        style: `https://maps.track-asia.com/styles/v1/style.json?key=b4948621d117757258530daee9e48a980b`,
+        style: `https://maps.track-asia.com/styles/v2/streets.json?key=b4948621d117757258530daee9e48a980b`,
         center: [longitude, latitude],
         zoom: 15,
         attributionControl: false,
