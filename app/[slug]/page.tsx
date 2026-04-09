@@ -380,7 +380,7 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
         <div className="space-y-5">
           <div>
             <label className="block text-xs font-semibold text-gray-600 mb-2 uppercase">{lang === 'vi' ? 'Loại đặt hàng' : 'Order Type'}</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(['pickup', 'delivery'] as const).map(type => (
                 <button key={type} onClick={() => setOrderType(type)}
                   className={`py-3 rounded-xl border-2 text-sm font-bold flex items-center justify-center gap-2 transition-all ${orderType === type ? 'bg-primary border-primary text-white' : 'border-gray-200 text-gray-500 hover:border-primary/30'}`}>
