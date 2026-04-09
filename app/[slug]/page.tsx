@@ -881,6 +881,12 @@ export default function RestaurantPage() {
   const pollStartRef = useRef<number | null>(null);
   const [navOpen, setNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'menu' | 'location' | 'reviews'>('menu');
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path.endsWith('/location')) setActiveTab('location');
+    else if (path.endsWith('/reviews')) setActiveTab('reviews');
+    else setActiveTab('menu');
+  }, []);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
 
@@ -1476,6 +1482,9 @@ export default function RestaurantPage() {
   setActiveTab(item.id);
   setNavOpen(false);
   if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
+  const pathMap: Record<string, string> = { menu: '', location: '/location', reviews: '/reviews' };
+  const base = window.location.pathname.split('/')[1];
+  window.history.pushState({}, '', `/${base}${pathMap[item.id]}`);
 }}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
                   <div>
