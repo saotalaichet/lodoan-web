@@ -3,58 +3,58 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, CreditCard, ShoppingBag, Star, Trash2, Check, Lock } from 'lucide-react';
+import { User, ShoppingBag, Star, Lock } from 'lucide-react';
 import { customerAuth } from '@/lib/customerAuth';
 
-const APP_ID = '69c130c9110a89987aae7fb0';
-const API_KEY = '1552c0075c5e4229b7c5a76cbbb9a457';
-const BASE44_URL = `https://api.base44.app/api/apps/${APP_ID}`;
-const BASE44_HEADERS = { 'api-key': API_KEY, 'Content-Type': 'application/json' };
-const BASE44_ENTITY = `https://api.base44.app/api/apps/${APP_ID}`;
+const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'text-yellow-600 bg-yellow-50',
-  confirmed: 'text-blue-600 bg-blue-50',
-  preparing: 'text-orange-600 bg-orange-50',
-  delivered: 'text-green-600 bg-green-50',
-  completed: 'text-green-600 bg-green-50',
-  cancelled: 'text-red-600 bg-red-50',
-  declined: 'text-red-600 bg-red-50',
+const STATUS_LABELS: Record<string, { vi: string; en: string; color: string }> = {
+  pending:          { vi: 'Đang xử lý',    en: 'Pending',     color: 'text-yellow-600 bg-yellow-50' },
+  confirmed:        { vi: 'Đã xác nhận',   en: 'Confirmed',   color: 'text-blue-600 bg-blue-50' },
+  accepted:         { vi: 'Đang chuẩn bị', en: 'Preparing',   color: 'text-orange-600 bg-orange-50' },
+  preparing:        { vi: 'Đang chuẩn bị', en: 'Preparing',   color: 'text-orange-600 bg-orange-50' },
+  ready:            { vi: 'Sẵn sàng',      en: 'Ready',       color: 'text-green-600 bg-green-50' },
+  delivering:       { vi: 'Đang giao',     en: 'Delivering',  color: 'text-blue-600 bg-blue-50' },
+  completed:        { vi: 'Hoàn thành',    en: 'Completed',   color: 'text-green-600 bg-green-50' },
+  cancelled:        { vi: 'Đã huỷ',        en: 'Cancelled',   color: 'text-red-600 bg-red-50' },
+  declined:         { vi: 'Bị từ chối',    en: 'Declined',    color: 'text-red-600 bg-red-50' },
+  timed_out:        { vi: 'Hết thời gian', en: 'Timed out',   color: 'text-gray-600 bg-gray-50' },
+  pending_payment:  { vi: 'Chờ thanh toán','en': 'Awaiting payment', color: 'text-yellow-600 bg-yellow-50' },
 };
 
 const T = {
   vi: {
-    myProfile: 'Thông Tin Cá Nhân', payments: 'Phương Thức Thanh Toán', orders: 'Lịch Sử Đơn Hàng',
+    myProfile: 'Thông Tin Cá Nhân', orders: 'Lịch Sử Đơn Hàng',
     fullName: 'Họ và Tên', phone: 'Số Điện Thoại', preferredLang: 'Ngôn ngữ ưa thích',
     saveChanges: 'Lưu Thay Đổi', saving: 'Đang lưu...',
     changePassword: 'Đổi Mật Khẩu', currentPw: 'Mật Khẩu Hiện Tại',
     newPw: 'Mật Khẩu Mới', confirmPw: 'Xác Nhận Mật Khẩu Mới', updatePw: 'Cập Nhật Mật Khẩu',
-    addPayment: 'Thêm Phương Thức', deleteConfirm: 'Bạn có chắc muốn xóa phương thức thanh toán này?',
-    setDefault: 'Đặt mặc định', default: 'Mặc định',
-    noPayments: 'Chưa có phương thức thanh toán nào.', noOrders: 'Chưa có đơn hàng nào.',
+    noOrders: 'Chưa có đơn hàng nào.',
     rateOrder: 'Đánh Giá', logout: 'Đăng Xuất',
     langVi: 'Tiếng Việt', langEn: 'English',
     profileSaved: '✅ Thông tin đã được cập nhật!', pwUpdated: '✅ Mật khẩu đã được cập nhật!',
     pwMismatch: 'Mật khẩu xác nhận không khớp', wrongPw: 'Mật khẩu hiện tại không đúng',
     loadingOrders: 'Đang tải đơn hàng...',
+    orderType: { pickup: 'Mang về', delivery: 'Giao hàng' },
+    payMethod: { cash_or_transfer: 'Tiền mặt / CK', cod: 'COD', momo: 'MoMo', zalopay: 'ZaloPay', vnpay: 'VNPay', creditcard: 'Thẻ tín dụng' },
   },
   en: {
-    myProfile: 'My Profile', payments: 'Payment Methods', orders: 'Order History',
+    myProfile: 'My Profile', orders: 'Order History',
     fullName: 'Full Name', phone: 'Phone Number', preferredLang: 'Preferred Language',
     saveChanges: 'Save Changes', saving: 'Saving...',
     changePassword: 'Change Password', currentPw: 'Current Password',
     newPw: 'New Password', confirmPw: 'Confirm New Password', updatePw: 'Update Password',
-    addPayment: 'Add Payment Method', deleteConfirm: 'Are you sure you want to remove this payment method?',
-    setDefault: 'Set as Default', default: 'Default',
-    noPayments: 'No payment methods saved yet.', noOrders: 'No orders yet.',
-    rateOrder: 'Rate Order', logout: 'Logout',
+    noOrders: 'No orders yet.',
+    rateOrder: 'Rate', logout: 'Logout',
     langVi: 'Tiếng Việt', langEn: 'English',
     profileSaved: '✅ Profile updated!', pwUpdated: '✅ Password updated!',
     pwMismatch: 'Passwords do not match', wrongPw: 'Current password is incorrect',
     loadingOrders: 'Loading orders...',
+    orderType: { pickup: 'Pickup', delivery: 'Delivery' },
+    payMethod: { cash_or_transfer: 'Cash / Transfer', cod: 'COD', momo: 'MoMo', zalopay: 'ZaloPay', vnpay: 'VNPay', creditcard: 'Credit card' },
   },
 };
 
@@ -65,8 +65,7 @@ function ProfileInner() {
   const [customer, setCustomer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(
-    searchParams.get('tab') === 'orders' ? 'orders' :
-    searchParams.get('tab') === 'payments' ? 'payments' : 'profile'
+    searchParams.get('tab') === 'orders' ? 'orders' : 'profile'
   );
   const [profileForm, setProfileForm] = useState({ full_name: '', phone_number: '', preferred_language: 'vi' });
   const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm_password: '' });
@@ -76,7 +75,6 @@ function ProfileInner() {
   const [pwMsg, setPwMsg] = useState('');
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
-  const [paymentMethods, setPaymentMethods] = useState<any[]>([]);
   const t = T[lang as keyof typeof T];
 
   useEffect(() => {
@@ -97,74 +95,14 @@ function ProfileInner() {
     });
   }, [router]);
 
-  // Fetch orders
   useEffect(() => {
-    if (activeTab === 'orders' && customer?.email) {
-      setLoadingOrders(true);
-      const fetchOrders = async () => {
-        try {
-          const token = customerAuth.getToken() || '';
-          if (!token) { setLoadingOrders(false); return; }
-
-          // Primary: customerAuth get_orders (service role — returns full history)
-          const res = await fetch(`/api/orders?token=${encodeURIComponent(token)}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (Array.isArray(data) && data.length > 0) {
-              setOrders(data);
-              setLoadingOrders(false);
-              return;
-            }
-          }
-
-          // Fallback: localStorage orders placed on this device
-          const local: any[] = JSON.parse(localStorage.getItem('lo_do_an_order_history') || '[]');
-          const mine = local.filter((o: any) => !o.customer_email || o.customer_email === customer.email);
-
-          // Refresh live status for each local order
-          const refreshed = await Promise.all(
-            mine.map(async (o: any) => {
-              try {
-                const r = await fetch(`${BASE44_URL}/functions/getOrderStatus`, {
-                  method: 'POST',
-                  headers: BASE44_HEADERS,
-                  body: JSON.stringify({ orderId: o.id }),
-                });
-                if (r.ok) {
-                  const d = await r.json();
-                  if (d?.status) return { ...o, status: d.status };
-                }
-              } catch {}
-              return o;
-            })
-          );
-          setOrders(refreshed);
-        } catch {}
-        setLoadingOrders(false);
-      };
-      fetchOrders();
-    }
-  }, [activeTab, customer?.email]);
-
-  // Fetch payment methods
-  useEffect(() => {
-    if (activeTab === 'payments' && customer?.id) {
-      const fetchPayments = async () => {
-        try {
-          const token = customerAuth.getToken() || '';
-          const res = await fetch(
-            `${BASE44_ENTITY}/entities/PaymentMethod?customer_id=${customer.id}&_limit=50`,
-            { headers: { ...BASE44_HEADERS, 'Authorization': `Bearer ${token}` } }
-          );
-          if (res.ok) {
-            const body = await res.json();
-            setPaymentMethods(Array.isArray(body) ? body : (body?.items ?? body?.data ?? []));
-          }
-        } catch {}
-      };
-      fetchPayments();
-    }
-  }, [activeTab, customer?.id]);
+    if (activeTab !== 'orders' || !customer) return;
+    setLoadingOrders(true);
+    customerAuth.getOrders()
+      .then(data => setOrders(Array.isArray(data) ? data : []))
+      .catch(() => setOrders([]))
+      .finally(() => setLoadingOrders(false));
+  }, [activeTab, customer]);
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,30 +138,6 @@ function ProfileInner() {
     }
   };
 
-  const handleDeletePayment = async (pmId: string) => {
-    if (!window.confirm(t.deleteConfirm)) return;
-    try {
-      await fetch(`${BASE44_ENTITY}/entities/PaymentMethod/${pmId}`, { method: 'DELETE', headers: BASE44_HEADERS });
-      setPaymentMethods(prev => prev.filter((pm: any) => pm.id !== pmId));
-    } catch {}
-  };
-
-  const handleSetDefault = async (pmId: string) => {
-    try {
-      for (const pm of paymentMethods) {
-        if (pm.is_default) {
-          await fetch(`${BASE44_ENTITY}/entities/PaymentMethod/${pm.id}`, {
-            method: 'PUT', headers: BASE44_HEADERS, body: JSON.stringify({ is_default: false }),
-          });
-        }
-      }
-      await fetch(`${BASE44_ENTITY}/entities/PaymentMethod/${pmId}`, {
-        method: 'PUT', headers: BASE44_HEADERS, body: JSON.stringify({ is_default: true }),
-      });
-      setPaymentMethods(prev => prev.map((pm: any) => ({ ...pm, is_default: pm.id === pmId })));
-    } catch {}
-  };
-
   const handleLogout = async () => {
     await customerAuth.logout();
     router.push('/');
@@ -231,7 +145,6 @@ function ProfileInner() {
 
   const TABS = [
     { key: 'profile', label: t.myProfile, icon: User },
-    { key: 'payments', label: t.payments, icon: CreditCard },
     { key: 'orders', label: t.orders, icon: ShoppingBag },
   ];
 
@@ -258,7 +171,7 @@ function ProfileInner() {
 
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Customer card */}
-        <div className="bg-white rounded-2xl p-6 mb-6 flex items-center gap-4" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white rounded-2xl p-6 mb-6 flex items-center gap-4 shadow-sm">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-2xl font-bold text-primary flex-shrink-0">
             {customer?.full_name?.[0]?.toUpperCase() || '?'}
           </div>
@@ -274,7 +187,7 @@ function ProfileInner() {
             <button key={tab.key} onClick={() => setActiveTab(tab.key)}
               className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all ${activeTab === tab.key ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
               <tab.icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
+              <span>{tab.label}</span>
             </button>
           ))}
         </div>
@@ -282,7 +195,7 @@ function ProfileInner() {
         {/* ── PROFILE TAB ── */}
         {activeTab === 'profile' && (
           <div className="space-y-6">
-            <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="font-bold text-lg text-gray-900 mb-4">{t.myProfile}</h2>
               <form onSubmit={handleSaveProfile} className="space-y-4">
                 <div>
@@ -306,7 +219,11 @@ function ProfileInner() {
                     <option value="en">{t.langEn}</option>
                   </select>
                 </div>
-                {profileMsg && <p className={`text-sm font-medium ${profileMsg.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{profileMsg}</p>}
+                {profileMsg && (
+                  <p className={`text-sm font-medium ${profileMsg.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+                    {profileMsg}
+                  </p>
+                )}
                 <button type="submit" disabled={savingProfile}
                   className="bg-primary text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90 disabled:opacity-50 transition-colors">
                   {savingProfile ? t.saving : t.saveChanges}
@@ -314,7 +231,7 @@ function ProfileInner() {
               </form>
             </div>
 
-            <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
               <h2 className="font-bold text-lg text-gray-900 mb-4 flex items-center gap-2">
                 <Lock className="w-5 h-5 text-gray-400" /> {t.changePassword}
               </h2>
@@ -331,7 +248,11 @@ function ProfileInner() {
                       className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
                   </div>
                 ))}
-                {pwMsg && <p className={`text-sm font-medium ${pwMsg.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>{pwMsg}</p>}
+                {pwMsg && (
+                  <p className={`text-sm font-medium ${pwMsg.startsWith('✅') ? 'text-green-600' : 'text-red-600'}`}>
+                    {pwMsg}
+                  </p>
+                )}
                 <button type="submit" disabled={savingPw}
                   className="bg-gray-800 text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90 disabled:opacity-50 transition-colors">
                   {savingPw ? t.saving : t.updatePw}
@@ -341,57 +262,9 @@ function ProfileInner() {
           </div>
         )}
 
-        {/* ── PAYMENTS TAB ── */}
-        {activeTab === 'payments' && (
-          <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-lg text-gray-900">{t.payments}</h2>
-              <button
-                onClick={() => alert(lang === 'vi' ? 'Tính năng sắp ra mắt' : 'Coming soon')}
-                className="bg-primary text-white text-sm font-bold px-4 py-2 rounded-xl hover:opacity-90 transition-colors">
-                + {t.addPayment}
-              </button>
-            </div>
-            {paymentMethods.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">{t.noPayments}</p>
-            ) : (
-              <div className="space-y-3">
-                {paymentMethods.map((pm: any) => (
-                  <div key={pm.id} className="border border-gray-200 rounded-xl p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">
-                        {pm.payment_type === 'MoMo' ? '💜' : pm.payment_type === 'ZaloPay' ? '🔵' : '💳'}
-                      </span>
-                      <div>
-                        <p className="font-semibold text-sm text-gray-900">{pm.display_name}</p>
-                        {pm.is_default && (
-                          <span className="text-xs text-green-600 font-semibold flex items-center gap-1">
-                            <Check className="w-3 h-3" />{t.default}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {!pm.is_default && (
-                        <button onClick={() => handleSetDefault(pm.id)} className="text-xs text-primary font-semibold hover:underline">
-                          {t.setDefault}
-                        </button>
-                      )}
-                      <button onClick={() => handleDeletePayment(pm.id)}
-                        className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
         {/* ── ORDERS TAB ── */}
         {activeTab === 'orders' && (
-          <div className="bg-white rounded-2xl p-6" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
             <h2 className="font-bold text-lg text-gray-900 mb-4">{t.orders}</h2>
             {loadingOrders ? (
               <div className="text-center py-8">
@@ -399,36 +272,57 @@ function ProfileInner() {
                 <p className="text-sm text-gray-400">{t.loadingOrders}</p>
               </div>
             ) : orders.length === 0 ? (
-              <p className="text-gray-400 text-center py-8">{t.noOrders}</p>
+              <div className="text-center py-12">
+                <p className="text-4xl mb-3">🍜</p>
+                <p className="text-gray-400 font-medium">{t.noOrders}</p>
+              </div>
             ) : (
               <div className="space-y-4">
-                {orders.map((order: any) => (
-                  <div key={order.id} className="border border-gray-200 rounded-xl p-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <p className="font-bold text-sm text-gray-900">{order.restaurant_name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {new Date(order.created_date).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' })}
-                        </p>
+                {orders.map((order: any) => {
+                  const s = STATUS_LABELS[order.status];
+                  const items = Array.isArray(order.items) ? order.items : [];
+                  return (
+                    <div key={order.id} className="border border-gray-200 rounded-xl p-4 hover:border-primary/30 transition-colors">
+                      <div className="flex items-start justify-between mb-2 gap-3">
+                        <div className="min-w-0">
+                          <p className="font-bold text-sm text-gray-900 truncate">{order.restaurant_name}</p>
+                          <p className="text-xs text-gray-400 mt-0.5 font-mono">#{order.id?.slice(-8).toUpperCase()}</p>
+                          <p className="text-xs text-gray-400 mt-0.5">
+                            {order.created_date
+                              ? new Date(order.created_date).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                              : ''}
+                          </p>
+                        </div>
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${s?.color || 'text-gray-600 bg-gray-50'}`}>
+                          {lang === 'vi' ? (s?.vi || order.status) : (s?.en || order.status)}
+                        </span>
                       </div>
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_COLORS[order.status] || 'text-gray-600 bg-gray-50'}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-500 mb-2">
-                      {Array.isArray(order.items) ? order.items.map((i: any) => `${i.quantity}× ${i.name}`).join(', ') : ''}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <p className="font-bold text-primary">{fmt(order.total)}</p>
-                      {(order.status === 'delivered' || order.status === 'completed') && order.rating_token && (
-                        <Link href={`/rate/${order.id}?token=${order.rating_token}`}
-                          className="text-xs bg-yellow-400 text-yellow-900 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-yellow-500 transition-colors">
-                          <Star className="w-3 h-3" /> {t.rateOrder}
-                        </Link>
+
+                      {items.length > 0 && (
+                        <p className="text-xs text-gray-500 mb-3 line-clamp-2">
+                          {items.map((i: any) => `${i.quantity}× ${i.name}`).join(', ')}
+                        </p>
                       )}
+
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-gray-400">
+                          <span>{(t.orderType as any)[order.order_type] || order.order_type}</span>
+                          <span>•</span>
+                          <span>{(t.payMethod as any)[order.payment_method] || order.payment_method}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-primary text-sm">{fmt(order.total)}</p>
+                          {(order.status === 'completed') && order.rating_token && (
+                            <Link href={`/rate/${order.id}?token=${order.rating_token}`}
+                              className="text-xs bg-amber-400 text-amber-900 font-bold px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-amber-500 transition-colors">
+                              <Star className="w-3 h-3" /> {t.rateOrder}
+                            </Link>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

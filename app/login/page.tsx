@@ -6,8 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock } from 'lucide-react';
 import { customerAuth } from '@/lib/customerAuth';
 
-const BASE44_APP_ID = process.env.NEXT_PUBLIC_BASE44_APP_ID || '69c130c9110a89987aae7fb0';
-
 const T = {
   vi: {
     title: 'Đăng Nhập', email: 'Email', password: 'Mật Khẩu',
@@ -15,11 +13,8 @@ const T = {
     forgot: 'Quên Mật Khẩu?', noAccount: 'Chưa có tài khoản? Đăng ký ngay',
     wrongCreds: 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.',
     suspended: 'Tài khoản của bạn đã bị tạm khóa. Vui lòng liên hệ hello@ovenly.io.',
-    forgotSent: 'Email đặt lại mật khẩu đã được gửi nếu tài khoản tồn tại.',
+    forgotSent: 'Nếu email tồn tại, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.',
     enterEmail: 'Vui lòng nhập email để đặt lại mật khẩu',
-    orContinueWith: 'Hoặc đăng nhập với',
-    googleLogin: 'Đăng nhập với Google',
-    facebookLogin: 'Đăng nhập với Facebook',
   },
   en: {
     title: 'Login', email: 'Email', password: 'Password',
@@ -27,11 +22,8 @@ const T = {
     forgot: 'Forgot Password?', noAccount: "Don't have an account? Sign up",
     wrongCreds: 'Incorrect email or password. Please try again.',
     suspended: 'Your account has been suspended. Please contact hello@ovenly.io.',
-    forgotSent: 'Password reset email sent if account exists.',
+    forgotSent: 'If the account exists, password reset instructions will be sent.',
     enterEmail: 'Please enter your email to reset password',
-    orContinueWith: 'Or continue with',
-    googleLogin: 'Sign in with Google',
-    facebookLogin: 'Sign in with Facebook',
   },
 };
 
@@ -77,20 +69,9 @@ export default function LoginPage() {
     setError(t.forgotSent);
   };
 
-  const handleGoogleLogin = () => {
-    const checkoutRedirect = localStorage.getItem('checkout_redirect');
-    const nextUrl = checkoutRedirect || '/';
-    window.location.href = `https://api.base44.app/api/apps/${BASE44_APP_ID}/auth/google?redirect_url=${encodeURIComponent(window.location.origin + nextUrl)}`;
-  };
-
-  const handleFacebookLogin = () => {
-    window.location.href = `https://api.base44.app/api/apps/${BASE44_APP_ID}/auth/facebook?redirect_url=${encodeURIComponent(window.location.origin + '/')}`;
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 to-orange-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-
         <div className="flex justify-between items-center mb-6">
           <Link href="/" className="font-heading font-black text-primary text-xl">LÒ ĐỒ ĂN</Link>
           <div className="flex items-center bg-gray-100 rounded-full p-1 text-xs font-bold">
@@ -102,7 +83,7 @@ export default function LoginPage() {
         <h1 className="font-heading text-2xl font-bold text-gray-900 mb-6">{t.title}</h1>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-4 text-sm text-red-600">
+          <div className={`border rounded-xl px-4 py-3 mb-4 text-sm ${error === t.forgotSent ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-600'}`}>
             {error}
           </div>
         )}
@@ -146,33 +127,7 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
-          <div className="relative flex justify-center"><span className="bg-white px-3 text-xs text-gray-400 font-medium">{t.orContinueWith}</span></div>
-        </div>
-
-        <div className="space-y-3">
-          <button type="button" onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-            <svg width="18" height="18" viewBox="0 0 48 48">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-            </svg>
-            {t.googleLogin}
-          </button>
-
-          <button type="button" onClick={handleFacebookLogin}
-            className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-xl py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2">
-              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-            </svg>
-            {t.facebookLogin}
-          </button>
-        </div>
-
-        <p className="text-center text-sm text-gray-500 mt-4">
+        <p className="text-center text-sm text-gray-500 mt-6">
           <Link href="/signup" className="text-primary font-semibold hover:underline">
             {t.noAccount}
           </Link>
