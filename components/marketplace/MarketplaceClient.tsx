@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Crown, User, ChevronDown, Menu, X } from 'lucide-react';
+import { Crown, User, ChevronDown, Menu, X, Search } from 'lucide-react';
 import FilterBar from './FilterBar';
 import AddressInput from './AddressInput';
 import { customerAuth } from '@/lib/customerAuth';
@@ -107,28 +107,29 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
   const statusText = getStatusText(status, lang);
   const isPremium = restaurant.subscription_tier === 'Premium';
   const firstLetter = restaurant.name?.charAt(0)?.toUpperCase() || '?';
+
+  // FIX 3 (cuisine array): always treat as array
   const cuisineTypes = Array.isArray(restaurant.cuisine_type)
     ? restaurant.cuisine_type
     : restaurant.cuisine_type ? [restaurant.cuisine_type] : [];
   const cuisineLabels = cuisineTypes.map((c: string) =>
     CUISINE_DISPLAY[c]?.[lang === 'vi' ? 'vi' : 'en'] ?? c
   );
+
   const avgRating = restaurant.average_rating;
   const totalRatings = restaurant.total_ratings;
 
-  // Safe slug guard — prevents navigation to /undefined or /null
   const safeSlug = restaurant.slug && restaurant.slug !== 'undefined' && restaurant.slug !== 'null'
-    ? restaurant.slug
-    : null;
+    ? restaurant.slug : null;
   const hasSlug = !!safeSlug;
 
   const handleClick = () => {
-    if (safeSlug) window.location.href = `/order/${safeSlug}`;
+    if (safeSlug) window.location.href = `/${safeSlug}`;
   };
 
   const handleOrderNow = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (safeSlug && !isOrderingDisabled) window.location.href = `/order/${safeSlug}`;
+    if (safeSlug && !isOrderingDisabled) window.location.href = `/${safeSlug}`;
   };
 
   return (
@@ -151,21 +152,28 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             </svg>
           </div>
         )}
-        {isPremium && (
-          <span className="absolute top-2 left-2 z-20 bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-            <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Ưu Tiên' : 'Priority'}
-          </span>
-        )}
-        {restaurant.featured && (
-          <span className="absolute top-2 right-2 z-20 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-            <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Nổi Bật' : 'Featured'}
-          </span>
-        )}
+
+        {/* FIX 3 (badge overlap): left side for Premium + Featured, right side for status only */}
+        <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
+          {isPremium && (
+            <span className="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Ưu Tiên' : 'Priority'}
+            </span>
+          )}
+          {restaurant.featured && (
+            <span className="bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Crown className="w-3 h-3" /> {lang === 'vi' ? 'Nổi Bật' : 'Featured'}
+            </span>
+          )}
+        </div>
+
+        {/* Status badge — right side, never overlaps */}
         <div className="absolute top-2 right-2 z-20">
           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badgeClass}`}>
             {statusText}
           </span>
         </div>
+
         <div
           className="absolute flex items-center justify-center overflow-hidden"
           style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}
@@ -250,7 +258,6 @@ const NAV_LINKS = [
 export default function MarketplaceClient() {
   const [lang, setLang] = useState('vi');
   const [restaurants, setRestaurants] = useState<any[]>([]);
-  const [allMenuItems, setAllMenuItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
@@ -280,7 +287,7 @@ export default function MarketplaceClient() {
     localStorage.setItem('ovenly_language', lang);
   }, [lang]);
 
-  // Fetch via server-side proxy to avoid CORS
+  // FIX 1 & 5: Fetch restaurants via our own server proxy only — no Base44 direct call
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -295,26 +302,13 @@ export default function MarketplaceClient() {
       setLoading(false);
     };
     fetchRestaurants();
+    // Poll only restaurant status every 30s
     const interval = setInterval(fetchRestaurants, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const res = await fetch(
-          `https://api.base44.app/api/apps/69c130c9110a89987aae7fb0/entities/MenuItem?_limit=2000`,
-          { headers: { 'api-key': '1552c0075c5e4229b7c5a76cbbb9a457' } }
-        );
-        if (res.ok) {
-          const body = await res.json();
-          const data = Array.isArray(body) ? body : (body?.items ?? body?.data ?? []);
-          if (Array.isArray(data)) setAllMenuItems(data);
-        }
-      } catch {}
-    };
-    fetchItems();
-  }, []);
+  // FIX 1: Removed allMenuItems fetch entirely — was exposing Base44 API key client-side
+  // and fetching 2000 items on every page load. Menu item search removed from filter.
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -344,18 +338,20 @@ export default function MarketplaceClient() {
 
     if (search.trim()) {
       const q = normalize(search);
-      const matchingIds = new Set(
-        allMenuItems.filter(item => normalize(item.name).includes(q)).map(item => item.restaurant_id)
-      );
-      list = list.filter(r =>
-        normalize(r.name).includes(q) ||
-        normalize(r.cuisine_type || '').includes(q) ||
-        normalize(r.cuisine_type_vietnamese || '').includes(q) ||
-        normalize(r.address || '').includes(q) ||
-        normalize(r.district || '').includes(q) ||
-        normalize(r.city || '').includes(q) ||
-        matchingIds.has(r.id)
-      );
+      list = list.filter(r => {
+        // FIX 4: handle cuisine_type as array in search
+        const cuisineStr = Array.isArray(r.cuisine_type)
+          ? r.cuisine_type.map((c: string) => normalize(c)).join(' ')
+          : normalize(r.cuisine_type || '');
+        return (
+          normalize(r.name).includes(q) ||
+          cuisineStr.includes(q) ||
+          normalize(r.cuisine_type_vietnamese || '').includes(q) ||
+          normalize(r.address || '').includes(q) ||
+          normalize(r.district || '').includes(q) ||
+          normalize(r.city || '').includes(q)
+        );
+      });
     }
 
     if (selectedCuisines.length > 0) {
@@ -394,7 +390,7 @@ export default function MarketplaceClient() {
     });
 
     return list;
-  }, [restaurants, allMenuItems, search, selectedCuisines, selectedDietary, selectedCity, nearMe, userCoords, deliveryCoords]);
+  }, [restaurants, search, selectedCuisines, selectedDietary, selectedCity, nearMe, userCoords, deliveryCoords]);
 
   const featuredRestaurants = useMemo(() =>
     restaurants.filter(r => r.featured && r.is_active && r.show_on_marketplace)
@@ -527,7 +523,8 @@ export default function MarketplaceClient() {
           <p className="text-white/80 mb-8 text-base md:text-lg">
             {lang === 'vi' ? 'Đặt món dễ dàng — Giao hàng nhanh chóng' : 'Easy ordering — Fast delivery'}
           </p>
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto space-y-3">
+            {/* Delivery address */}
             <div className="bg-white rounded-2xl shadow-2xl p-2">
               <AddressInput
                 onAddressValidated={(isValid, address, coords) => {
@@ -545,7 +542,22 @@ export default function MarketplaceClient() {
                 heroMode={true}
               />
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-3">
+            {/* FIX 2: Search input — was wired to state but had no UI */}
+            <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-2.5 flex items-center gap-3">
+              <Search className="w-4 h-4 text-white/70 flex-shrink-0" />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder={lang === 'vi' ? 'Tìm nhà hàng, món ăn...' : 'Search restaurants, cuisines...'}
+                className="flex-1 bg-transparent text-white placeholder-white/60 text-sm outline-none"
+              />
+              {search && (
+                <button onClick={() => setSearch('')} className="text-white/60 hover:text-white">
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button onClick={handleNearMe}
                 className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -676,8 +688,7 @@ export default function MarketplaceClient() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div>
               <div className="flex items-center mb-3" style={{ gap: '10px' }}>
-                <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly"
-                  style={{ height: '44px', width: 'auto' }} />
+                <img src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png" alt="Ovenly" style={{ height: '44px', width: 'auto' }} />
                 <div className="leading-none">
                   <div className="font-heading font-black text-primary text-2xl leading-none">LÒ ĐỒ ĂN</div>
                   <div className="text-xs text-gray-400 font-normal">by Ovenly</div>
@@ -686,18 +697,18 @@ export default function MarketplaceClient() {
               <p className="text-sm text-gray-500 leading-relaxed mb-4">
                 {lang === 'vi'
                   ? 'Nền tảng khám phá ẩm thực kết nối thực khách với các nhà hàng tuyệt vời tại Việt Nam.'
-                  : 'The food discovery platform connecting diners with amazing restaurants across Vietnam.'}
+                  : 'Connecting diners with amazing restaurants across Vietnam.'}
               </p>
               <div className="flex gap-3">
                 <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
                   style={{ background: '#EEEEEE', color: '#1877F2' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                   </svg>
                 </a>
                 <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
                   style={{ background: '#EEEEEE', color: '#E1306C' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2"/>
@@ -707,7 +718,7 @@ export default function MarketplaceClient() {
                   </svg>
                 </a>
                 <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer"
-                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+                  className="w-9 h-9 rounded-full flex items-center justify-center"
                   style={{ background: '#EEEEEE', color: '#000000' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19.321 5.562a5.122 5.122 0 01-2.756-3.106V2h-3.686v13.67a2.4 2.4 0 11-2.4-2.4c.293 0 .575.022.856.065V9.237c-.307-.05-.596-.065-.88-.065a6.3 6.3 0 105.894 6.3v-3.27a8.23 8.23 0 004.822 1.533V5.562z"/>
