@@ -5,16 +5,15 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const pathname = request.nextUrl.pathname;
 
-  // owner.ovenly.io — redirect root to /owner/login
-  if (host === 'owner.ovenly.io') {
-    if (pathname === '/') {
-      return NextResponse.redirect(new URL('/owner/login', request.url));
-    }
+  if (host === 'owner.ovenly.io' && pathname === '/') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/owner/login';
+    return NextResponse.rewrite(url);
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/', '/owner/:path*'],
+  matcher: '/';
 };
