@@ -1331,7 +1331,7 @@ export default function RestaurantPage() {
                         <div className="mb-4 pb-3 border-b border-gray-200">
                           <h2 className="text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
                           {items.map((item: any) => (
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
