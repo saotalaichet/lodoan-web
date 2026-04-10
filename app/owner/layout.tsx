@@ -25,13 +25,17 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     const stored = localStorage.getItem('owner_lang') || 'vi';
     setLang(stored);
+    if (pathname === '/owner/login') {
+      setSession({}); // skip auth check on login page
+      return;
+    }
     const data = ownerAuth.getSession();
     if (!data || !ownerAuth.getToken()) {
       router.push('/owner/login');
       return;
     }
     setSession(data);
-  }, [router]);
+  }, [router, pathname]);
 
   useEffect(() => {
     localStorage.setItem('owner_lang', lang);
@@ -42,11 +46,13 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
     router.push('/owner/login');
   };
 
-  if (!session) return (
+  if (!session && pathname !== '/owner/login') return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
     </div>
   );
+
+  if (pathname === '/owner/login') return <>{children}</>;
 
   const restaurantUrl = session.restaurantSlug ? `https://lodoan.vn/${session.restaurantSlug}` : null;
 
