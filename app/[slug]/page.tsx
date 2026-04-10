@@ -73,6 +73,7 @@ interface CartItem {
   addons?: { name: string; price: number }[];
 }
 
+// FIX 3 support: localStorage cart persistence
 function useCart() {
   const [cart, setCart] = useState<CartItem[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -249,7 +250,6 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
       className={`bg-white border border-gray-200 rounded-xl flex flex-row items-stretch gap-0 relative overflow-hidden ${isClosed ? 'cursor-default opacity-60' : 'cursor-pointer hover:border-primary/40 hover:shadow-sm'} transition-all`}
       style={{ minHeight: '136px' }}
     >
-      {/* Left: text */}
       <div className="flex-1 min-w-0 flex flex-col justify-between p-3">
         <div>
           <div className="flex flex-wrap gap-1 mb-0.5">
@@ -277,8 +277,6 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
           )}
         </div>
       </div>
-
-      {/* Right: square image */}
       <div className="relative flex-shrink-0 w-32 bg-gray-100">
         {item.image_url ? (
           <img src={item.image_url} alt={item.name} className="w-full h-full object-cover rounded-lg" />
@@ -295,11 +293,14 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
   );
 }
 
-function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, lang }: {
+// FIX 7: Added restaurant prop and min order warning
+function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, lang, restaurant }: {
   cart: CartItem[]; subtotal: number; totalQty: number;
   onSet: (id: string, qty: number) => void;
-  onCheckout: () => void; isClosed: boolean; lang: string;
+  onCheckout: () => void; isClosed: boolean; lang: string; restaurant?: any;
 }) {
+  const minOrder = parseFloat(restaurant?.min_order_amount) || 0;
+  const belowMin = minOrder > 0 && subtotal < minOrder;
   return (
     <div className="flex flex-col h-full bg-white border border-gray-200 rounded-2xl overflow-hidden">
       <div className="p-4 border-b border-gray-100">
@@ -353,6 +354,20 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
               <p className="text-xs font-bold text-red-700">{lang === 'vi' ? '⚠️ Đơn quá lớn' : '⚠️ Order too large'}</p>
               <p className="text-xs text-red-600">{lang === 'vi' ? 'Vui lòng liên hệ nhà hàng trực tiếp.' : 'Please contact the restaurant directly.'}</p>
             </div>
+          ) : belowMin ? (
+            // FIX 7: Min order warning
+            <div className="space-y-2">
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
+                <p className="text-xs font-semibold text-orange-700">
+                  {lang === 'vi'
+                    ? `Đơn tối thiểu ${fmt(minOrder)}. Còn thiếu ${fmt(minOrder - subtotal)}.`
+                    : `Min. order ${fmt(minOrder)}. Add ${fmt(minOrder - subtotal)} more.`}
+                </p>
+              </div>
+              <button disabled className="w-full bg-gray-200 text-gray-400 font-bold py-3 rounded-xl text-sm cursor-not-allowed">
+                {lang === 'vi' ? 'Đặt hàng ngay' : 'Place Order Now'}
+              </button>
+            </div>
           ) : (
             <button onClick={onCheckout}
               className="w-full bg-primary hover:opacity-90 text-white font-bold py-3 rounded-xl text-sm mt-1 shadow-lg shadow-primary/30">
@@ -365,6 +380,7 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
   );
 }
 
+// FIX 6: State declarations are BEFORE the `if (!isOpen) return null` so address persists on reopen
 function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal, lang }: {
   isOpen: boolean; onClose: () => void;
   onConfirm: (details: { orderType: string; address?: string; fee?: number }) => void;
@@ -373,10 +389,10 @@ function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal
   const [orderType, setOrderType] = useState<'pickup' | 'delivery'>('delivery');
   const [address, setAddress] = useState('');
   const [addressValid, setAddressValid] = useState(false);
-  if (!isOpen) return null;
   const minOrder = parseFloat(restaurant?.min_order_amount) || 50000;
   const deliveryFee = parseFloat(restaurant?.delivery_fee) || 0;
   const belowMin = orderType === 'delivery' && subtotal < minOrder;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 flex items-start justify-center pt-20">
@@ -481,6 +497,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   const promoDiscount = promoApplied?.discount_amount ?? 0;
   const total = subtotal + serviceFee + (orderType === 'delivery' ? effectiveDelivery : 0) + tipAmount - promoDiscount;
   const validMethods = PAYMENT_METHODS.filter(m => m.for.includes(orderType));
+
   const applyPromo = async () => {
     if (!promoCode.trim()) return;
     setPromoLoading(true);
@@ -511,6 +528,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
     try {
       if (!name.trim() || !phone.trim() || !email.trim()) {
         alert(lang === 'vi' ? 'Vui lòng điền đầy đủ thông tin' : 'Please fill in all required fields');
+        // FIX 1: Reset placing state on validation failure so user can retry
+        setPlacing(false); placingRef.current = false;
         return;
       }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
@@ -1028,7 +1047,14 @@ export default function RestaurantPage() {
       setLoadingItems(false);
     };
     load();
-    const interval = setInterval(load, 30000);
+    // FIX 3: Poll only restaurant status every 30s — not the full menu
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
+        const data = await res.json();
+        if (data) setRestaurant(data);
+      } catch {}
+    }, 30000);
     return () => clearInterval(interval);
   }, [slug]);
 
@@ -1185,30 +1211,32 @@ export default function RestaurantPage() {
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center">
+          <div className="flex items-center min-w-0 flex-shrink">
             {restaurant.logo ? (
-              <img src={restaurant.logo} alt={restaurant.name} className="object-contain" style={{ height: '52px', width: 'auto' }}
+              <img src={restaurant.logo} alt={restaurant.name} className="object-contain flex-shrink-0" style={{ height: '44px', width: 'auto', maxWidth: '140px' }}
                 onError={e => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = 'none';
                   const span = document.createElement('span');
                   span.textContent = restaurant.name;
-                  span.className = 'font-bold text-gray-900 text-base';
+                  span.className = 'font-bold text-gray-900 text-sm truncate';
                   img.parentNode?.insertBefore(span, img);
                 }} />
             ) : (
-              <span className="font-bold text-gray-900 text-base">{restaurant.name}</span>
+              <span className="font-bold text-gray-900 text-sm truncate max-w-[140px]">{restaurant.name}</span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             <div className="flex items-center bg-gray-100 rounded-full p-0.5 text-xs font-semibold">
               <button onClick={() => setLang('vi')} className={`px-2.5 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>VI</button>
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>EN</button>
             </div>
+            {/* Cart button — icon only on mobile, shows price on desktop */}
             {activeTab === 'menu' && (
               <button onClick={() => setShowMobileCart(true)}
                 className="relative flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition-all">
                 <ShoppingBag className="w-4 h-4" />
+                {/* FIX: hide subtotal on mobile to avoid denting logo */}
                 {totalQty > 0 && <span className="hidden md:inline text-sm font-bold">{fmt(subtotal)}</span>}
                 {totalQty > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-primary text-[10px] font-black rounded-full flex items-center justify-center shadow">
@@ -1217,21 +1245,29 @@ export default function RestaurantPage() {
                 )}
               </button>
             )}
+            {/* FIX 4 & 5: Profile → /profile click, name hidden on mobile; Login saves redirect + icon-only on mobile */}
             {customer ? (
-              <button
-                onClick={() => window.location.href = '/profile'}
-                className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl px-3 py-1.5 transition-colors">
-                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                  <span className="text-[9px] font-black text-white">{customer.full_name?.[0]?.toUpperCase() || '?'}</span>
-                </div>
-                <span className="hidden md:inline text-xs font-semibold text-gray-700 max-w-[80px] truncate">{customer.full_name?.split(' ').pop()}</span>
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => window.location.href = '/profile'}
+                  className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl px-2.5 py-1.5 transition-colors">
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <span className="text-[9px] font-black text-white">{customer.full_name?.[0]?.toUpperCase() || '?'}</span>
+                  </div>
+                  <span className="hidden md:inline text-xs font-semibold text-gray-700 max-w-[80px] truncate">{customer.full_name?.split(' ').pop()}</span>
+                </button>
+                <button
+                  onClick={() => { customerAuth.logout().then(() => setCustomer(null)); }}
+                  className="hidden md:block text-xs text-gray-400 hover:text-red-500 transition-colors font-medium">
+                  {lang === 'vi' ? 'Đăng xuất' : 'Logout'}
+                </button>
+              </div>
             ) : (
               <button
                 onClick={() => { localStorage.setItem('checkout_redirect', window.location.pathname); window.location.href = '/login'; }}
-                className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors">
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                {lang === 'vi' ? 'Đăng nhập' : 'Log in'}
+                className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-gray-700 transition-colors">
+                <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <span className="hidden md:inline">{lang === 'vi' ? 'Đăng nhập' : 'Log in'}</span>
               </button>
             )}
             <button onClick={() => setNavOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Navigation">
@@ -1352,7 +1388,8 @@ export default function RestaurantPage() {
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
                                 item={item}
-                                qty={cart.filter(c => c.id === item.id).reduce((s, i) => s + i.qty, 0)}
+                                // FIX 2: match add-on items by base id prefix so qty shows correctly
+                                qty={cart.filter(c => c.id === item.id || c.id.startsWith(item.id)).reduce((s, i) => s + i.qty, 0)}
                                 onAdd={add} onSet={set}
                                 onOpen={(it, groups) => setSelectedItem({ item: it, groups })}
                                 isClosed={isClosed || item.is_available === false}
@@ -1444,7 +1481,6 @@ export default function RestaurantPage() {
                   })}
                 </div>
               )}
-
             </div>
           )}
 
@@ -1511,12 +1547,12 @@ export default function RestaurantPage() {
           )}
         </div>
 
-        {/* Desktop cart */}
+        {/* Desktop cart — FIX 7: pass restaurant for min order check */}
         {activeTab === 'menu' && (
           <div className="hidden md:block w-72 flex-shrink-0">
             <div className="sticky top-[112px]">
               <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
-                onCheckout={() => setShowDeliveryModal(true)} isClosed={isClosed} lang={lang} />
+                onCheckout={() => setShowDeliveryModal(true)} isClosed={isClosed} lang={lang} restaurant={restaurant} />
             </div>
           </div>
         )}
@@ -1534,7 +1570,7 @@ export default function RestaurantPage() {
         </div>
       )}
 
-      {/* Mobile cart drawer */}
+      {/* Mobile cart drawer — FIX 7: pass restaurant */}
       {showMobileCart && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
@@ -1547,7 +1583,7 @@ export default function RestaurantPage() {
             </div>
             <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
               onCheckout={() => { setShowMobileCart(false); setShowDeliveryModal(true); }}
-              isClosed={isClosed} lang={lang} />
+              isClosed={isClosed} lang={lang} restaurant={restaurant} />
           </div>
         </div>
       )}
@@ -1583,13 +1619,13 @@ export default function RestaurantPage() {
               ]).map(item => (
                 <button key={item.id}
                   onClick={() => {
-  setActiveTab(item.id);
-  setNavOpen(false);
-  if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
-  const pathMap: Record<string, string> = { menu: '', location: '/location', reviews: '/reviews' };
-  const base = window.location.pathname.split('/')[1];
-  window.history.pushState({}, '', `/${base}${pathMap[item.id]}`);
-}}
+                    setActiveTab(item.id);
+                    setNavOpen(false);
+                    if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
+                    const pathMap: Record<string, string> = { menu: '', location: '/location', reviews: '/reviews' };
+                    const base = window.location.pathname.split('/')[1];
+                    window.history.pushState({}, '', `/${base}${pathMap[item.id]}`);
+                  }}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
                   <div>
                     <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
@@ -1599,6 +1635,22 @@ export default function RestaurantPage() {
                 </button>
               ))}
             </nav>
+            {/* Logout option in nav drawer for mobile */}
+            {customer && (
+              <div className="px-3 pb-3 border-t border-gray-100 pt-3 space-y-1">
+                <button onClick={() => { window.location.href = '/profile'; setNavOpen(false); }}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 rounded-xl hover:bg-gray-50 text-left">
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <span className="text-[9px] font-black text-white">{customer.full_name?.[0]?.toUpperCase() || '?'}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700 truncate">{customer.full_name}</span>
+                </button>
+                <button onClick={() => { customerAuth.logout().then(() => { setCustomer(null); setNavOpen(false); }); }}
+                  className="w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 rounded-xl">
+                  {lang === 'vi' ? 'Đăng xuất' : 'Logout'}
+                </button>
+              </div>
+            )}
             <div className="px-5 py-3 border-t border-gray-100">
               <p className="text-xs text-gray-400">
                 {lang === 'vi' ? 'Đang xem: ' : 'Viewing: '}
