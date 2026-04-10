@@ -78,13 +78,13 @@ function useCart() {
   const [cart, setCart] = useState<CartItem[]>(() => {
     if (typeof window === 'undefined') return [];
     try {
-      const saved = localStorage.getItem('ovenly_cart');
+      const saved = sessionStorage.getItem('ovenly_cart');
       return saved ? JSON.parse(saved) : [];
     } catch { return []; }
   });
 
   useEffect(() => {
-    localStorage.setItem('ovenly_cart', JSON.stringify(cart));
+    sessionStorage.setItem('ovenly_cart', JSON.stringify(cart));
   }, [cart]);
 
   const add = (item: CartItem) => setCart(prev => {
@@ -1028,9 +1028,9 @@ export default function RestaurantPage() {
 
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
-    const lastSlug = localStorage.getItem('ovenly_cart_slug');
-    if (lastSlug && lastSlug !== slug) clear();
-    localStorage.setItem('ovenly_cart_slug', slug);
+    const lastSlug = sessionStorage.getItem('ovenly_cart_slug');
+if (lastSlug && lastSlug !== slug) clear();
+sessionStorage.setItem('ovenly_cart_slug', slug);
     const load = async () => {
       try {
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
