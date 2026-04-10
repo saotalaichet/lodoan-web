@@ -1209,7 +1209,7 @@ export default function RestaurantPage() {
               <button onClick={() => setShowMobileCart(true)}
                 className="relative flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition-all">
                 <ShoppingBag className="w-4 h-4" />
-                {totalQty > 0 && <span className="text-sm font-bold">{fmt(subtotal)}</span>}
+                {totalQty > 0 && <span className="hidden md:inline text-sm font-bold">{fmt(subtotal)}</span>}
                 {totalQty > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-primary text-[10px] font-black rounded-full flex items-center justify-center shadow">
                     {totalQty}
@@ -1218,12 +1218,14 @@ export default function RestaurantPage() {
               </button>
             )}
             {customer ? (
-              <div className="flex items-center gap-1.5 bg-gray-100 rounded-xl px-3 py-1.5">
+              <button
+                onClick={() => window.location.href = '/profile'}
+                className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl px-3 py-1.5 transition-colors">
                 <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                   <span className="text-[9px] font-black text-white">{customer.full_name?.[0]?.toUpperCase() || '?'}</span>
                 </div>
-                <span className="text-xs font-semibold text-gray-700 max-w-[80px] truncate">{customer.full_name?.split(' ').pop()}</span>
-              </div>
+                <span className="hidden md:inline text-xs font-semibold text-gray-700 max-w-[80px] truncate">{customer.full_name?.split(' ').pop()}</span>
+              </button>
             ) : (
               <button
                 onClick={() => { localStorage.setItem('checkout_redirect', window.location.pathname); window.location.href = '/login'; }}
