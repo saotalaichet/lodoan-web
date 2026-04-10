@@ -1,9 +1,4 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  async redirects() {
+async redirects() {
     return [
       {
         source: '/',
