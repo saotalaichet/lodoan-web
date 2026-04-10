@@ -1217,6 +1217,21 @@ export default function RestaurantPage() {
                 )}
               </button>
             )}
+            {customer ? (
+              <div className="flex items-center gap-1.5 bg-gray-100 rounded-xl px-3 py-1.5">
+                <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                  <span className="text-[9px] font-black text-white">{customer.full_name?.[0]?.toUpperCase() || '?'}</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-700 max-w-[80px] truncate">{customer.full_name?.split(' ').pop()}</span>
+              </div>
+            ) : (
+              <button
+                onClick={() => { localStorage.setItem('checkout_redirect', window.location.pathname); window.location.href = '/login'; }}
+                className="flex items-center gap-1.5 bg-gray-100 hover:bg-gray-200 rounded-xl px-3 py-1.5 text-xs font-semibold text-gray-700 transition-colors">
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                {lang === 'vi' ? 'Đăng nhập' : 'Log in'}
+              </button>
+            )}
             <button onClick={() => setNavOpen(true)} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Navigation">
               <Menu className="w-5 h-5 text-gray-600" />
             </button>
