@@ -42,10 +42,10 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
   }, [lang]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('owner_lang') || 'vi';
-    setLang(stored);
-    if (ownerAuth.getToken()) window.location.href = 'https://owner.ovenly.io/owner/orders';
-  }, []);
+  const stored = localStorage.getItem('owner_lang') || 'vi';
+  setLang(stored);
+  if (ownerAuth.getToken()) router.push('/owner/orders');
+}, [router]);
 
   if (!session && pathname !== '/owner/login') return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
