@@ -240,8 +240,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
     if (isClosed) return;
     let groups: any[] = [];
     try { if (item.customization_options) groups = JSON.parse(item.customization_options); } catch {}
-    if (groups.length > 0) onOpen(item, groups);
-    else onAdd({ id: item.id, name: item.name, price, basePrice: price, qty: 1 });
+    onOpen(item, groups);
   };
 
   return (
