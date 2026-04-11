@@ -9,22 +9,22 @@ const BORDER = '#F0E8E0';
 
 const T = {
   vi: {
-    nav: { cta: 'Đăng ký miễn phí' },
+    nav: { cta: 'Đăng ký' },
     hero: {
-      h1: 'Nhận đơn trực tuyến. Tăng doanh thu thực sự.',
-      sub: 'Ovenly giúp nhà hàng nhận đơn trực tuyến, tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN và được tìm thấy dễ dàng hơn trên Google.',
-      cta1: 'Đăng ký nhà hàng',
+      h1: 'Tăng doanh thu nhiều hơn mỗi ngày với đơn hàng trực tuyến',
+      sub: 'Ovenly giúp các quán ăn uống và nhà hàng nhận đơn online, tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN và trên Google.',
+      cta1: 'Đăng ký',
       cta2: 'Xem sàn thương mại',
     },
     apps: {
       tag: 'Ứng dụng',
-      h2: 'Hai ứng dụng tăng doanh thu trực tuyến',
+      h2: 'Tăng doanh thu trực tuyến',
       items: [
         {
           label: 'Sàn thương mại',
           title: 'LÒ ĐỒ ĂN',
           sub: 'Khách hàng tìm thấy bạn trên Google',
-          text: 'Nhà hàng của bạn xuất hiện trên sàn LÒ ĐỒ ĂN và được tối ưu để hiện trên kết quả tìm kiếm Google. Khách hàng mới tìm thấy bạn mỗi ngày mà không cần bạn tự chạy quảng cáo.',
+          text: 'Quán ăn của bạn xuất hiện trên sàn LÒ ĐỒ ĂN và được tối ưu để hiện trên kết quả tìm kiếm Google. Khách hàng mới tìm thấy bạn mỗi ngày mà không cần bạn tự chạy quảng cáo.',
           items: ['Hiện diện trên sàn marketplace', 'Tối ưu SEO trên Google', 'Tiếp cận khách hàng mới mỗi ngày'],
           cta: 'Xem LÒ ĐỒ ĂN',
           href: 'https://lodoan.vn',
@@ -36,7 +36,7 @@ const T = {
           label: 'Đặt hàng trực tiếp',
           title: 'Trang đặt hàng riêng',
           sub: 'Đơn hàng trực tiếp, không qua trung gian',
-          text: 'Nhà hàng của bạn có trang đặt hàng riêng. Khách đặt trực tiếp và đơn hàng vào thẳng máy tính bảng của bạn mà không mất phần trăm hoa hồng cho bên thứ ba.',
+          text: 'Quán của bạn có trang đặt hàng riêng. Khách đặt trực tiếp và đơn hàng vào thẳng máy tính bảng.',
           items: ['Trang đặt hàng với thương hiệu riêng', 'Quản lý đơn trên máy tính bảng', 'Hỗ trợ MoMo, ZaloPay, VNPay, tiền mặt'],
           cta: 'Đăng ký ngay',
           href: '/register',
@@ -51,22 +51,21 @@ const T = {
       h2: 'Lên sóng trong vòng một tuần',
       steps: [
         { num: '01', title: 'Đăng ký', text: 'Điền form đơn giản. Đội ngũ chúng tôi liên hệ trong 24 giờ.' },
-        { num: '02', title: 'Chúng tôi cài đặt', text: 'Chúng tôi tạo trang, nhập thực đơn và ảnh cho bạn. Không cần kỹ thuật.' },
-        { num: '03', title: 'Ra mắt', text: 'Nhà hàng của bạn lên sàn LÒ ĐỒ ĂN và có trang đặt hàng riêng.' },
+        { num: '02', title: 'Chúng tôi cài đặt', text: 'Chúng tôi tạo trang, nhập thực đơn và ảnh cho bạn.' },
+        { num: '03', title: 'Ra mắt', text: 'Quán của bạn lên sàn LÒ ĐỒ ĂN và có trang đặt hàng riêng.' },
         { num: '04', title: 'Nhận đơn', text: 'Đơn hàng hiện ra trên máy tính bảng. Xác nhận một chạm, bếp làm việc.' },
       ],
     },
     cta: {
-      h2: 'Sẵn sàng đưa nhà hàng lên trực tuyến',
+      h2: 'Sẵn sàng đưa quán lên trực tuyến',
       sub: 'Miễn phí cài đặt. Chúng tôi hỗ trợ bạn trực tiếp và đưa lên sóng trong một tuần.',
-      btn1: 'Đăng ký nhà hàng',
+      btn1: 'Đăng ký',
       btn2: 'hello@ovenly.io',
     },
     footer: {
       copy: '© 2026 Ovenly',
       links: [
         ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
-        ['Cho nhà hàng', '/register'],
         ['Bảo mật', '/privacy'],
         ['Điều khoản', '/terms'],
         ['Liên hệ', '/contact'],
@@ -76,7 +75,7 @@ const T = {
   en: {
     nav: { cta: 'Get started free' },
     hero: {
-      h1: 'Take online orders. Grow real revenue.',
+      h1: 'Sell more every day with online ordering',
       sub: 'Ovenly helps restaurants take online orders, reach new customers through the LÒ ĐỒ ĂN marketplace, and get found more easily on Google.',
       cta1: 'Register your restaurant',
       cta2: 'Visit the marketplace',
@@ -149,7 +148,7 @@ export default function CompanyPage() {
 
       {/* Nav — logo + lang toggle + CTA only */}
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 64, borderBottom: `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 100 }}>
-        <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.5px' }}>OVENLY<span style={{ color: PRIMARY }}>.</span></span>
+        <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 36, width: 'auto', objectFit: 'contain' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3 }}>
             {(['vi', 'en'] as const).map(l => (
@@ -213,9 +212,10 @@ export default function CompanyPage() {
                     </div>
                   ))}
                 </div>
-                <Link href={p.href} style={{ display: 'inline-block', background: PRIMARY, color: '#fff', padding: '13px 26px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}>
-                  {p.cta} →
-                </Link>
+                <Link href={p.href} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: PRIMARY, color: '#fff', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}>
+  {i === 0 && <img src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png" alt="LÒ ĐỒ ĂN" style={{ height: 22, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />}
+  {i !== 0 && <>{p.cta} →</>}
+</Link>
               </div>
               <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden' }}>
                 <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -258,7 +258,7 @@ export default function CompanyPage() {
             </div>
           </div>
           <div style={{ borderRadius: 16, overflow: 'hidden', height: 340 }}>
-            <img src="https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&q=80" alt="Restaurant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <Link src="https://images.unsplash.com/photo-1560180474-e8563fd75bab?w=800&q=80" alt="Restaurant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </section>
       </div>
@@ -266,7 +266,7 @@ export default function CompanyPage() {
       {/* Footer */}
       <footer style={{ borderTop: `1px solid ${BORDER}`, padding: '28px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 16 }}>
         <div>
-          <span style={{ fontWeight: 800, fontSize: 16 }}>OVENLY<span style={{ color: PRIMARY }}>.</span></span>
+          <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />
           <span style={{ fontSize: 13, color: '#aaa', marginLeft: 16 }}>{t.footer.copy}</span>
         </div>
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' as const }}>
