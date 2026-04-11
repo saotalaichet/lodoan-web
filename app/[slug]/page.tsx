@@ -1622,7 +1622,7 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
                     setActiveTab(item.id);
                     setNavOpen(false);
                     if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
-                    const pathMap: Record<string, string> = { menu: '', location: '/location', reviews: '/reviews' };
+                    const pathMap: Record<string, string> = { menu: '/menu', location: '/location', reviews: '/reviews' };
                     const base = window.location.pathname.split('/')[1];
                     window.history.pushState({}, '', `/${base}${pathMap[item.id]}`);
                   }}
