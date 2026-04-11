@@ -204,7 +204,7 @@ export default function CompanyPage() {
   <img
     src="https://i.postimg.cc/cJS2qLQz/L.png"
     alt="LÒ ĐỒ ĂN"
-    style={{ height: 80, width: 'auto', objectFit: 'contain', marginBottom: 8, display: 'block', mixBlendMode: 'multiply' as any }}
+    style={{ height: 240, width: 'auto', objectFit: 'contain', marginBottom: 8, display: 'block', mixBlendMode: 'multiply' as any }}
   />
 ) : (
   <h3 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8, color: '#111' }}>{p.title}</h3>
@@ -223,18 +223,9 @@ export default function CompanyPage() {
                 </div>
                 <Link
   href={p.href}
-  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: i === 0 ? '#FDF0EE' : PRIMARY, color: i === 0 ? PRIMARY : '#fff', border: i === 0 ? `1.5px solid ${PRIMARY}` : 'none', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}
+  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: PRIMARY, color: '#fff', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}
 >
-  {i === 0 ? (
-    <>
-      Xem
-      <img
-        src="https://i.postimg.cc/cJS2qLQz/L.png"
-alt="LÒ ĐỒ ĂN"
-style={{ height: 22, width: 'auto', objectFit: 'contain', display: 'block', mixBlendMode: 'multiply' as any }}
-      />
-    </>
-  ) : <>{p.cta} →</>}
+  {p.cta} →
 </Link>
               </div>
               <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden' }}>
