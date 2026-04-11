@@ -200,7 +200,15 @@ export default function CompanyPage() {
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden' }}>
               <div style={{ padding: '52px 48px', order: p.flip ? 1 : 0, display: 'flex', flexDirection: 'column' as const, justifyContent: 'center' }}>
                 <div style={{ display: 'inline-block', background: '#FDF0EE', color: PRIMARY, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6, letterSpacing: '0.5px', textTransform: 'uppercase' as const, marginBottom: 20, alignSelf: 'flex-start' as const }}>{p.label}</div>
-                <h3 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8, color: '#111' }}>{p.title}</h3>
+                {i === 0 ? (
+  <img
+    src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png"
+    alt="LÒ ĐỒ ĂN"
+    style={{ height: 48, width: 'auto', objectFit: 'contain', marginBottom: 8, display: 'block', mixBlendMode: 'multiply' as any }}
+  />
+) : (
+  <h3 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8, color: '#111' }}>{p.title}</h3>
+)}
                 <p style={{ fontSize: 15, color: PRIMARY, fontWeight: 600, marginBottom: 18 }}>{p.sub}</p>
                 <p style={{ fontSize: 16, color: '#555', lineHeight: 1.75, marginBottom: 28 }}>{p.text}</p>
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10, marginBottom: 36 }}>
@@ -214,11 +222,20 @@ export default function CompanyPage() {
                   ))}
                 </div>
                 <Link
-                  href={p.href}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: PRIMARY, color: '#fff', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}
-                >
-                  {p.cta} →
-                </Link>
+  href={p.href}
+  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: i === 0 ? '#FDF0EE' : PRIMARY, color: i === 0 ? PRIMARY : '#fff', border: i === 0 ? `1.5px solid ${PRIMARY}` : 'none', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}
+>
+  {i === 0 ? (
+    <>
+      Xem
+      <img
+        src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png"
+        alt="LÒ ĐỒ ĂN"
+        style={{ height: 18, width: 'auto', objectFit: 'contain', display: 'block', mixBlendMode: 'multiply' as any }}
+      />
+    </>
+  ) : <>{p.cta} →</>}
+</Link>
               </div>
               <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden' }}>
                 <img
