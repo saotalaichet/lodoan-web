@@ -150,7 +150,7 @@ export default function CompanyPage() {
 
       {/* Nav — logo + lang toggle + CTA only */}
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 64, borderBottom: `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 100 }}>
-        <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 36, width: 'auto', objectFit: 'contain' }} />
+        <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 44, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3 }}>
             {(['vi', 'en'] as const).map(l => (
@@ -215,8 +215,10 @@ export default function CompanyPage() {
                   ))}
                 </div>
                 <Link href={p.href} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: PRIMARY, color: '#fff', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}>
-  {i === 0 && <img src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png" alt="LÒ ĐỒ ĂN" style={{ height: 22, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />}
-  {i !== 0 && <>{p.cta} →</>}
+  {i === 0
+    ? <><img src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png" alt="LÒ ĐỒ ĂN" style={{ height: 20, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} /> {p.cta} →</>
+    : <>{p.cta} →</>
+  }
 </Link>
               </div>
               <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden' }}>
@@ -268,7 +270,7 @@ export default function CompanyPage() {
       {/* Footer */}
       <footer style={{ borderTop: `1px solid ${BORDER}`, padding: '28px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 16 }}>
         <div>
-          <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 28, width: 'auto', objectFit: 'contain' }} />
+          <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 36, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
           <span style={{ fontSize: 13, color: '#aaa', marginLeft: 16 }}>{t.footer.copy}</span>
         </div>
         <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' as const }}>
