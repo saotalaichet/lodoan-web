@@ -5,15 +5,15 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get('host') || '';
   const pathname = request.nextUrl.pathname;
 
-  if (host === 'owner.ovenly.io' && pathname === '/') {
+  if ((host === 'ovenly.io' || host === 'www.ovenly.io') && pathname === '/') {
     const url = request.nextUrl.clone();
-    url.pathname = '/owner/login';
+    url.pathname = '/company';
     return NextResponse.rewrite(url);
   }
 
-  if (host === 'ovenly.io' && pathname === '/') {
+  if ((host === 'owner.ovenly.io') && pathname === '/') {
     const url = request.nextUrl.clone();
-    url.pathname = '/company';
+    url.pathname = '/owner/login';
     return NextResponse.rewrite(url);
   }
 
