@@ -202,9 +202,9 @@ export default function CompanyPage() {
                 <div style={{ display: 'inline-block', background: '#FDF0EE', color: PRIMARY, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6, letterSpacing: '0.5px', textTransform: 'uppercase' as const, marginBottom: 20, alignSelf: 'flex-start' as const }}>{p.label}</div>
                 {i === 0 ? (
   <img
-    src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png"
+    src="https://i.postimg.cc/cJS2qLQz/L.png"
     alt="LÒ ĐỒ ĂN"
-    style={{ height: 48, width: 'auto', objectFit: 'contain', marginBottom: 8, display: 'block', mixBlendMode: 'multiply' as any }}
+    style={{ height: 80, width: 'auto', objectFit: 'contain', marginBottom: 8, display: 'block', mixBlendMode: 'multiply' as any }}
   />
 ) : (
   <h3 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8, color: '#111' }}>{p.title}</h3>
@@ -229,9 +229,9 @@ export default function CompanyPage() {
     <>
       Xem
       <img
-        src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png"
-        alt="LÒ ĐỒ ĂN"
-        style={{ height: 18, width: 'auto', objectFit: 'contain', display: 'block', mixBlendMode: 'multiply' as any }}
+        src="https://i.postimg.cc/cJS2qLQz/L.png"
+alt="LÒ ĐỒ ĂN"
+style={{ height: 22, width: 'auto', objectFit: 'contain', display: 'block', mixBlendMode: 'multiply' as any }}
       />
     </>
   ) : <>{p.cta} →</>}
