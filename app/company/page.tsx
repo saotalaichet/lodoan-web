@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { useState } from 'react';
 
@@ -258,7 +260,7 @@ export default function CompanyPage() {
             </div>
           </div>
           <div style={{ borderRadius: 16, overflow: 'hidden', height: 340 }}>
-            <Link src="https://images.unsplash.com/photo-1560180474-e8563fd75bab?w=800&q=80" alt="Restaurant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="https://images.unsplash.com/..." alt="Restaurant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </section>
       </div>
