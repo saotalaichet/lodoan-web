@@ -28,7 +28,7 @@ const T = {
           sub: 'Khách hàng tìm thấy bạn trên Google',
           text: 'Quán ăn của bạn xuất hiện trên sàn LÒ ĐỒ ĂN và được tối ưu để hiện trên kết quả tìm kiếm Google. Khách hàng mới tìm thấy bạn mỗi ngày mà không cần bạn tự chạy quảng cáo.',
           items: ['Hiện diện trên sàn marketplace', 'Tối ưu SEO trên Google', 'Tiếp cận khách hàng mới mỗi ngày'],
-          cta: 'Xem',
+          cta: 'Xem LÒ ĐỒ ĂN',
           href: 'https://lodoan.vn',
           photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
           photoAlt: 'Nhà hàng Việt Nam',
@@ -65,6 +65,7 @@ const T = {
       btn2: 'hello@ovenly.io',
     },
     footer: {
+      allRights: 'Bảo lưu mọi quyền',
       links: [
         ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
         ['Liên hệ', '/contact'],
@@ -89,7 +90,7 @@ const T = {
           sub: 'Customers find you on Google',
           text: 'Your restaurant appears on the LÒ ĐỒ ĂN marketplace and is optimized to show up in Google search results. New customers find you every day without you running any ads.',
           items: ['Marketplace listing and discovery', 'Google SEO optimization', 'New customers every day'],
-          cta: 'Visit',
+          cta: 'Visit LÒ ĐỒ ĂN',
           href: 'https://lodoan.vn',
           photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
           photoAlt: 'Vietnamese restaurant',
@@ -126,6 +127,7 @@ const T = {
       btn2: 'hello@ovenly.io',
     },
     footer: {
+      allRights: 'All rights reserved',
       links: [
         ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
         ['Contact', '/contact'],
@@ -211,31 +213,18 @@ export default function CompanyPage() {
                     </div>
                   ))}
                 </div>
-                {/* Button */}
                 <Link
                   href={p.href}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: PRIMARY, color: '#fff', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}
                 >
-                  {i === 0 ? (
-                    <>
-                      {p.cta}
-                      <img
-                        src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png"
-                        alt="LÒ ĐỒ ĂN"
-                        style={{ height: 20, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', display: 'block' }}
-                      />
-                    </>
-                  ) : (
-                    <>{p.cta} →</>
-                  )}
+                  {p.cta} →
                 </Link>
               </div>
-              {/* Photo — first card bg matches PRIMARY for blend */}
-              <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', background: i === 0 ? '#b02020' : '#eee' }}>
+              <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden' }}>
                 <img
                   src={p.photo}
                   alt={p.photoAlt}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: i === 0 ? 0.88 : 1 }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
             </div>
@@ -277,7 +266,7 @@ export default function CompanyPage() {
           </div>
           <div style={{ borderRadius: 16, overflow: 'hidden', height: 340 }}>
             <img
-              src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80"
+              src="https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=800&q=80"
               alt="Vietnamese food"
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
@@ -287,23 +276,27 @@ export default function CompanyPage() {
 
       {/* Footer */}
       <footer style={{ borderTop: `1px solid ${BORDER}`, padding: '48px 40px', background: BG }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 20 }}>
-          {/* Logo centered */}
-          <img
-            src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
-            alt="Ovenly"
-            style={{ height: 56, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any }}
-          />
-          {/* Links */}
-          <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' as const, justifyContent: 'center' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+          {/* Top row: copyright left, logo center, all rights right */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20, marginBottom: 24 }}>
+            <p style={{ fontSize: 16, fontWeight: 600, color: '#555', margin: 0 }}>
+              © 2026 Ovenly™
+            </p>
+            <img
+              src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
+              alt="Ovenly"
+              style={{ height: 64, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block' }}
+            />
+            <p style={{ fontSize: 16, fontWeight: 600, color: '#555', margin: 0, textAlign: 'right' as const }}>
+              {t.footer.allRights}
+            </p>
+          </div>
+          {/* Bottom row: links centered */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 28, flexWrap: 'wrap' as const }}>
             {t.footer.links.map(([label, href]) => (
-              <Link key={label} href={href} style={{ fontSize: 14, color: '#777', textDecoration: 'none' }}>{label}</Link>
+              <Link key={label} href={href} style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{label}</Link>
             ))}
           </div>
-          {/* Copyright */}
-          <p style={{ fontSize: 13, color: '#aaa', textAlign: 'center' as const }}>
-            © 2026 Ovenly™. All rights reserved.
-          </p>
         </div>
       </footer>
 
