@@ -9,43 +9,40 @@ const BORDER = '#F0E8E0';
 
 const T = {
   vi: {
-    nav: {
-      marketplace: 'LÒ ĐỒ ĂN',
-      forRestaurants: 'Cho nhà hàng',
-      contact: 'Liên hệ',
-      cta: 'Bắt đầu miễn phí',
-    },
+    nav: { cta: 'Đăng ký miễn phí' },
     hero: {
-      h1: 'Nhà hàng của bạn xứng đáng có nhiều khách hơn',
-      sub: 'Ovenly giúp nhà hàng nhận đơn trực tuyến và tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN.',
+      h1: 'Nhận đơn trực tuyến. Tăng doanh thu thực sự.',
+      sub: 'Ovenly giúp nhà hàng nhận đơn trực tuyến, tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN và được tìm thấy dễ dàng hơn trên Google.',
       cta1: 'Đăng ký nhà hàng',
       cta2: 'Xem sàn thương mại',
     },
     apps: {
       tag: 'Ứng dụng',
-      h2: 'Hai cách để tăng doanh thu trực tuyến',
+      h2: 'Hai ứng dụng tăng doanh thu trực tuyến',
       items: [
         {
           label: 'Sàn thương mại',
           title: 'LÒ ĐỒ ĂN',
-          sub: 'Khách hàng tìm thấy bạn',
-          text: 'Nhà hàng của bạn xuất hiện trên sàn LÒ ĐỒ ĂN trước hàng nghìn khách hàng đang tìm kiếm bữa ăn. Chúng tôi lo việc marketing, bạn tập trung vào việc nấu ăn.',
-          items: ['Hiện diện trên sàn marketplace', 'Tiếp cận khách hàng mới mỗi ngày', 'Không cần tự chạy quảng cáo'],
+          sub: 'Khách hàng tìm thấy bạn trên Google',
+          text: 'Nhà hàng của bạn xuất hiện trên sàn LÒ ĐỒ ĂN và được tối ưu để hiện trên kết quả tìm kiếm Google. Khách hàng mới tìm thấy bạn mỗi ngày mà không cần bạn tự chạy quảng cáo.',
+          items: ['Hiện diện trên sàn marketplace', 'Tối ưu SEO trên Google', 'Tiếp cận khách hàng mới mỗi ngày'],
           cta: 'Xem LÒ ĐỒ ĂN',
           href: 'https://lodoan.vn',
-          photo: 'https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80',
+          photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
           photoAlt: 'Nhà hàng Việt Nam',
+          flip: false,
         },
         {
           label: 'Đặt hàng trực tiếp',
           title: 'Trang đặt hàng riêng',
-          sub: 'Đơn hàng không qua trung gian',
-          text: 'Nhà hàng của bạn có trang đặt hàng riêng tại order.ovenly.io. Khách đặt trực tiếp và đơn hàng vào thẳng máy tính bảng của bạn mà không mất phần trăm hoa hồng.',
+          sub: 'Đơn hàng trực tiếp, không qua trung gian',
+          text: 'Nhà hàng của bạn có trang đặt hàng riêng. Khách đặt trực tiếp và đơn hàng vào thẳng máy tính bảng của bạn mà không mất phần trăm hoa hồng cho bên thứ ba.',
           items: ['Trang đặt hàng với thương hiệu riêng', 'Quản lý đơn trên máy tính bảng', 'Hỗ trợ MoMo, ZaloPay, VNPay, tiền mặt'],
           cta: 'Đăng ký ngay',
           href: '/register',
-          photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
-          photoAlt: 'Đặt hàng trực tuyến',
+          photo: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80',
+          photoAlt: 'Quản lý đơn hàng',
+          flip: true,
         },
       ],
     },
@@ -77,43 +74,40 @@ const T = {
     },
   },
   en: {
-    nav: {
-      marketplace: 'LÒ ĐỒ ĂN',
-      forRestaurants: 'For restaurants',
-      contact: 'Contact',
-      cta: 'Get started free',
-    },
+    nav: { cta: 'Get started free' },
     hero: {
-      h1: 'Your restaurant deserves more customers',
-      sub: 'Ovenly helps restaurants take online orders and reach new customers through the LÒ ĐỒ ĂN marketplace.',
+      h1: 'Take online orders. Grow real revenue.',
+      sub: 'Ovenly helps restaurants take online orders, reach new customers through the LÒ ĐỒ ĂN marketplace, and get found more easily on Google.',
       cta1: 'Register your restaurant',
       cta2: 'Visit the marketplace',
     },
     apps: {
       tag: 'Products',
-      h2: 'Two ways to grow your revenue online',
+      h2: 'Two products to grow your revenue online',
       items: [
         {
           label: 'Marketplace',
           title: 'LÒ ĐỒ ĂN',
-          sub: 'Customers find you',
-          text: 'Your restaurant appears on the LÒ ĐỒ ĂN marketplace in front of thousands of customers looking for their next meal. We handle the marketing. You focus on the food.',
-          items: ['Marketplace listing and discovery', 'New customers every day', 'No advertising required'],
+          sub: 'Customers find you on Google',
+          text: 'Your restaurant appears on the LÒ ĐỒ ĂN marketplace and is optimized to show up in Google search results. New customers find you every day without you running any ads.',
+          items: ['Marketplace listing and discovery', 'Google SEO optimization', 'New customers every day'],
           cta: 'Visit LÒ ĐỒ ĂN',
           href: 'https://lodoan.vn',
-          photo: 'https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80',
+          photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
           photoAlt: 'Vietnamese restaurant',
+          flip: false,
         },
         {
           label: 'Direct ordering',
           title: 'Your own ordering page',
           sub: 'Orders with no middleman',
-          text: 'Your restaurant gets its own ordering page at order.ovenly.io. Customers order directly and orders go straight to your tablet with no commission fees taken from every sale.',
+          text: 'Your restaurant gets its own ordering page. Customers order directly and orders go straight to your tablet with no commission percentage taken by a third party.',
           items: ['Branded ordering page', 'Tablet order management app', 'MoMo, ZaloPay, VNPay, cash on delivery'],
           cta: 'Register now',
           href: '/register',
-          photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80',
-          photoAlt: 'Online ordering',
+          photo: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80',
+          photoAlt: 'Order management',
+          flip: true,
         },
       ],
     },
@@ -153,13 +147,10 @@ export default function CompanyPage() {
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, color: '#1a1a1a', lineHeight: 1.6 }}>
 
-      {/* Nav */}
+      {/* Nav — logo + lang toggle + CTA only */}
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 64, borderBottom: `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 100 }}>
         <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: '-0.5px' }}>OVENLY<span style={{ color: PRIMARY }}>.</span></span>
-        <div style={{ display: 'flex', gap: 28, alignItems: 'center' }}>
-          <Link href="https://lodoan.vn" style={{ color: '#555', textDecoration: 'none', fontSize: 14 }}>{t.nav.marketplace}</Link>
-          <Link href="/register" style={{ color: '#555', textDecoration: 'none', fontSize: 14 }}>{t.nav.forRestaurants}</Link>
-          <Link href="/contact" style={{ color: '#555', textDecoration: 'none', fontSize: 14 }}>{t.nav.contact}</Link>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3 }}>
             {(['vi', 'en'] as const).map(l => (
               <button key={l} onClick={() => setLang(l)} style={{ padding: '4px 12px', borderRadius: 6, border: 'none', background: lang === l ? '#fff' : 'transparent', color: lang === l ? '#111' : '#888', fontWeight: lang === l ? 600 : 400, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -174,18 +165,18 @@ export default function CompanyPage() {
       </nav>
 
       {/* Hero */}
-      <section style={{ position: 'relative', minHeight: 580, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+      <section style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
         <img
           src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=1600&q=80"
-          alt="Nhà hàng Việt Nam"
+          alt="Vietnamese restaurant"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 40%' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(15,5,5,0.80) 50%, rgba(15,5,5,0.35) 100%)' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(12,4,4,0.82) 45%, rgba(12,4,4,0.30) 100%)' }} />
         <div style={{ position: 'relative', maxWidth: 1100, margin: '0 auto', padding: '80px 40px', width: '100%' }}>
-          <h1 style={{ fontSize: 'clamp(38px, 5.5vw, 68px)', fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.05, marginBottom: 24, color: '#fff', maxWidth: 640 }}>
+          <h1 style={{ fontSize: 'clamp(38px, 5.5vw, 68px)', fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.05, marginBottom: 24, color: '#fff', maxWidth: 660 }}>
             {t.hero.h1}
           </h1>
-          <p style={{ fontSize: 19, color: 'rgba(255,255,255,0.78)', maxWidth: 460, lineHeight: 1.75, marginBottom: 40 }}>
+          <p style={{ fontSize: 19, color: 'rgba(255,255,255,0.78)', maxWidth: 480, lineHeight: 1.75, marginBottom: 40 }}>
             {t.hero.sub}
           </p>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
@@ -199,7 +190,7 @@ export default function CompanyPage() {
         </div>
       </section>
 
-      {/* Apps / Products */}
+      {/* Apps */}
       <section style={{ maxWidth: 1100, margin: '0 auto', padding: '88px 40px' }}>
         <p style={{ fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase' as const, marginBottom: 14 }}>{t.apps.tag}</p>
         <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.08, maxWidth: 560, marginBottom: 56 }}>{t.apps.h2}</h2>
@@ -207,7 +198,7 @@ export default function CompanyPage() {
         <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 24 }}>
           {t.apps.items.map((p, i) => (
             <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 20, overflow: 'hidden' }}>
-              <div style={{ padding: '52px 48px', order: i % 2 === 0 ? 0 : 1, display: 'flex', flexDirection: 'column' as const, justifyContent: 'center' }}>
+              <div style={{ padding: '52px 48px', order: p.flip ? 1 : 0, display: 'flex', flexDirection: 'column' as const, justifyContent: 'center' }}>
                 <div style={{ display: 'inline-block', background: '#FDF0EE', color: PRIMARY, fontSize: 11, fontWeight: 700, padding: '4px 12px', borderRadius: 6, letterSpacing: '0.5px', textTransform: 'uppercase' as const, marginBottom: 20, alignSelf: 'flex-start' as const }}>{p.label}</div>
                 <h3 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8, color: '#111' }}>{p.title}</h3>
                 <p style={{ fontSize: 15, color: PRIMARY, fontWeight: 600, marginBottom: 18 }}>{p.sub}</p>
@@ -226,7 +217,7 @@ export default function CompanyPage() {
                   {p.cta} →
                 </Link>
               </div>
-              <div style={{ order: i % 2 === 0 ? 1 : 0, minHeight: 420, overflow: 'hidden' }}>
+              <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden' }}>
                 <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             </div>
@@ -267,7 +258,7 @@ export default function CompanyPage() {
             </div>
           </div>
           <div style={{ borderRadius: 16, overflow: 'hidden', height: 340 }}>
-            <img src="https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=800&q=80" alt="Restaurant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src="https://images.unsplash.com/photo-1526367790999-0150786686a2?w=800&q=80" alt="Restaurant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         </section>
       </div>
