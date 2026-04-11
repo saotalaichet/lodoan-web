@@ -204,4 +204,109 @@ export default function CompanyPage() {
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10, marginBottom: 36 }}>
                   {p.items.map((item, j) => (
                     <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, color: '#333' }}>
-                      <div style={{ width: 20, height: 20, background: '#FDF0EE', borderRadius: '50%', display: 'flex', alignItems: 'center
+                      <div style={{ width: 20, height: 20, background: '#FDF0EE', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 6, height: 6, background: PRIMARY, borderRadius: '50%' }} />
+                      </div>
+                      {item}
+                    </div>
+                  ))}
+                </div>
+                {/* Button */}
+                <Link
+                  href={p.href}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: PRIMARY, color: '#fff', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}
+                >
+                  {i === 0 ? (
+                    <>
+                      {p.cta}
+                      <img
+                        src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png"
+                        alt="LÒ ĐỒ ĂN"
+                        style={{ height: 20, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)', display: 'block' }}
+                      />
+                    </>
+                  ) : (
+                    <>{p.cta} →</>
+                  )}
+                </Link>
+              </div>
+              {/* Photo — first card bg matches PRIMARY for blend */}
+              <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', background: i === 0 ? '#b02020' : '#eee' }}>
+                <img
+                  src={p.photo}
+                  alt={p.photoAlt}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: i === 0 ? 0.88 : 1 }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <div style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
+        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '88px 40px' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase' as const, marginBottom: 14 }}>{t.how.tag}</p>
+          <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.08, marginBottom: 56 }}>{t.how.h2}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 48 }}>
+            {t.how.steps.map((s, i) => (
+              <div key={i}>
+                <div style={{ fontSize: 28, fontWeight: 800, color: PRIMARY, marginBottom: 16, letterSpacing: '-0.5px' }}>{s.num}</div>
+                <h4 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10 }}>{s.title}</h4>
+                <p style={{ fontSize: 15, color: '#666', lineHeight: 1.7 }}>{s.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+
+      {/* CTA */}
+      <div style={{ background: PRIMARY }}>
+        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '88px 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
+          <div>
+            <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 800, letterSpacing: '-1.5px', color: '#fff', marginBottom: 18, lineHeight: 1.08 }}>{t.cta.h2}</h2>
+            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.72)', lineHeight: 1.75, marginBottom: 36 }}>{t.cta.sub}</p>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
+              <Link href="/register" style={{ background: '#fff', color: PRIMARY, padding: '14px 28px', borderRadius: 10, fontSize: 16, fontWeight: 700, textDecoration: 'none' }}>
+                {t.cta.btn1} →
+              </Link>
+              <Link href="mailto:hello@ovenly.io" style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', padding: '14px 28px', borderRadius: 10, fontSize: 16, textDecoration: 'none' }}>
+                {t.cta.btn2}
+              </Link>
+            </div>
+          </div>
+          <div style={{ borderRadius: 16, overflow: 'hidden', height: 340 }}>
+            <img
+              src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&q=80"
+              alt="Vietnamese food"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        </section>
+      </div>
+
+      {/* Footer */}
+      <footer style={{ borderTop: `1px solid ${BORDER}`, padding: '48px 40px', background: BG }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 20 }}>
+          {/* Logo centered */}
+          <img
+            src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
+            alt="Ovenly"
+            style={{ height: 56, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any }}
+          />
+          {/* Links */}
+          <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' as const, justifyContent: 'center' }}>
+            {t.footer.links.map(([label, href]) => (
+              <Link key={label} href={href} style={{ fontSize: 14, color: '#777', textDecoration: 'none' }}>{label}</Link>
+            ))}
+          </div>
+          {/* Copyright */}
+          <p style={{ fontSize: 13, color: '#aaa', textAlign: 'center' as const }}>
+            © 2026 Ovenly™. All rights reserved.
+          </p>
+        </div>
+      </footer>
+
+    </div>
+  );
+}
