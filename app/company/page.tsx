@@ -13,7 +13,7 @@ const T = {
   vi: {
     nav: { cta: 'Đăng ký' },
     hero: {
-      h1: 'Tăng doanh thu nhiều hơn mỗi ngày với đơn hàng trực tuyến',
+      h1: 'Tăng doanh thu mỗi ngày với đơn hàng trực tuyến',
       sub: 'Ovenly giúp các quán ăn uống và nhà hàng nhận đơn online, tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN và trên Google.',
       cta1: 'Đăng ký',
       cta2: 'Xem sàn thương mại',
@@ -28,7 +28,7 @@ const T = {
           sub: 'Khách hàng tìm thấy bạn trên Google',
           text: 'Quán ăn của bạn xuất hiện trên sàn LÒ ĐỒ ĂN và được tối ưu để hiện trên kết quả tìm kiếm Google. Khách hàng mới tìm thấy bạn mỗi ngày mà không cần bạn tự chạy quảng cáo.',
           items: ['Hiện diện trên sàn marketplace', 'Tối ưu SEO trên Google', 'Tiếp cận khách hàng mới mỗi ngày'],
-          cta: 'Xem LÒ ĐỒ ĂN',
+          cta: 'Xem',
           href: 'https://lodoan.vn',
           photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
           photoAlt: 'Nhà hàng Việt Nam',
@@ -65,11 +65,8 @@ const T = {
       btn2: 'hello@ovenly.io',
     },
     footer: {
-      copy: '© 2026 Ovenly',
       links: [
         ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
-        ['Bảo mật', '/privacy'],
-        ['Điều khoản', '/terms'],
         ['Liên hệ', '/contact'],
       ],
     },
@@ -92,7 +89,7 @@ const T = {
           sub: 'Customers find you on Google',
           text: 'Your restaurant appears on the LÒ ĐỒ ĂN marketplace and is optimized to show up in Google search results. New customers find you every day without you running any ads.',
           items: ['Marketplace listing and discovery', 'Google SEO optimization', 'New customers every day'],
-          cta: 'Visit LÒ ĐỒ ĂN',
+          cta: 'Visit',
           href: 'https://lodoan.vn',
           photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
           photoAlt: 'Vietnamese restaurant',
@@ -129,12 +126,8 @@ const T = {
       btn2: 'hello@ovenly.io',
     },
     footer: {
-      copy: '© 2026 Ovenly',
       links: [
         ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
-        ['For restaurants', '/register'],
-        ['Privacy', '/privacy'],
-        ['Terms', '/terms'],
         ['Contact', '/contact'],
       ],
     },
@@ -148,9 +141,13 @@ export default function CompanyPage() {
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, color: '#1a1a1a', lineHeight: 1.6 }}>
 
-      {/* Nav — logo + lang toggle + CTA only */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 64, borderBottom: `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 100 }}>
-        <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 44, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
+      {/* Nav */}
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 72, borderBottom: `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 100 }}>
+        <img
+          src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
+          alt="Ovenly"
+          style={{ height: 64, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any }}
+        />
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3 }}>
             {(['vi', 'en'] as const).map(l => (
@@ -159,7 +156,7 @@ export default function CompanyPage() {
               </button>
             ))}
           </div>
-          <Link href="/register" style={{ background: PRIMARY, color: '#fff', padding: '9px 20px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
+          <Link href="/register" style={{ background: PRIMARY, color: '#fff', padding: '10px 22px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none' }}>
             {t.nav.cta}
           </Link>
         </div>
@@ -207,79 +204,4 @@ export default function CompanyPage() {
                 <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 10, marginBottom: 36 }}>
                   {p.items.map((item, j) => (
                     <div key={j} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 15, color: '#333' }}>
-                      <div style={{ width: 20, height: 20, background: '#FDF0EE', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <div style={{ width: 6, height: 6, background: PRIMARY, borderRadius: '50%' }} />
-                      </div>
-                      {item}
-                    </div>
-                  ))}
-                </div>
-                <Link href={p.href} style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: PRIMARY, color: '#fff', padding: '12px 22px', borderRadius: 9, fontSize: 15, fontWeight: 600, textDecoration: 'none', alignSelf: 'flex-start' as const }}>
-  {i === 0
-    ? <><img src="https://i.postimg.cc/c6m7wvwn/lodoan-logo.png" alt="LÒ ĐỒ ĂN" style={{ height: 20, width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} /> {p.cta} →</>
-    : <>{p.cta} →</>
-  }
-</Link>
-              </div>
-              <div style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden' }}>
-                <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <div style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
-        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '88px 40px' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase' as const, marginBottom: 14 }}>{t.how.tag}</p>
-          <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.08, marginBottom: 56 }}>{t.how.h2}</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 48 }}>
-            {t.how.steps.map((s, i) => (
-              <div key={i}>
-                <div style={{ fontSize: 28, fontWeight: 800, color: PRIMARY, marginBottom: 16, letterSpacing: '-0.5px' }}>{s.num}</div>
-                <h4 style={{ fontSize: 18, fontWeight: 700, marginBottom: 10 }}>{s.title}</h4>
-                <p style={{ fontSize: 15, color: '#666', lineHeight: 1.7 }}>{s.text}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-      </div>
-
-      {/* CTA */}
-      <div style={{ background: PRIMARY }}>
-        <section style={{ maxWidth: 1100, margin: '0 auto', padding: '88px 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 64, alignItems: 'center' }}>
-          <div>
-            <h2 style={{ fontSize: 'clamp(30px, 4vw, 46px)', fontWeight: 800, letterSpacing: '-1.5px', color: '#fff', marginBottom: 18, lineHeight: 1.08 }}>{t.cta.h2}</h2>
-            <p style={{ fontSize: 17, color: 'rgba(255,255,255,0.72)', lineHeight: 1.75, marginBottom: 36 }}>{t.cta.sub}</p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' as const }}>
-              <Link href="/register" style={{ background: '#fff', color: PRIMARY, padding: '14px 28px', borderRadius: 10, fontSize: 16, fontWeight: 700, textDecoration: 'none' }}>
-                {t.cta.btn1} →
-              </Link>
-              <Link href="mailto:hello@ovenly.io" style={{ background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', padding: '14px 28px', borderRadius: 10, fontSize: 16, textDecoration: 'none' }}>
-                {t.cta.btn2}
-              </Link>
-            </div>
-          </div>
-          <div style={{ borderRadius: 16, overflow: 'hidden', height: 340 }}>
-            <img src="https://images.unsplash.com/..." alt="Restaurant" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          </div>
-        </section>
-      </div>
-
-      {/* Footer */}
-      <footer style={{ borderTop: `1px solid ${BORDER}`, padding: '28px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' as const, gap: 16 }}>
-        <div>
-          <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 36, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' }} />
-          <span style={{ fontSize: 13, color: '#aaa', marginLeft: 16 }}>{t.footer.copy}</span>
-        </div>
-        <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' as const }}>
-          {t.footer.links.map(([label, href]) => (
-            <Link key={label} href={href} style={{ fontSize: 13, color: '#888', textDecoration: 'none' }}>{label}</Link>
-          ))}
-        </div>
-      </footer>
-
-    </div>
-  );
-}
+                      <div style={{ width: 20, height: 20, background: '#FDF0EE', borderRadius: '50%', display: 'flex', alignItems: 'center
