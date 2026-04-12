@@ -25,9 +25,9 @@ const T = {
         {
           label: 'Sàn thương mại',
           title: 'LÒ ĐỒ ĂN',
-          sub: 'Khách hàng tìm thấy bạn trên Google',
-          text: 'Quán ăn của bạn xuất hiện trên sàn LÒ ĐỒ ĂN và được tối ưu để hiện trên kết quả tìm kiếm Google. Khách hàng mới tìm thấy bạn mỗi ngày mà không cần bạn tự chạy quảng cáo.',
-          items: ['Hiện diện trên sàn marketplace', 'Tối ưu SEO trên Google', 'Tiếp cận khách hàng mới mỗi ngày'],
+          sub: '',
+          text: 'Quán ăn của bạn xuất hiện trên sàn LÒ ĐỒ ĂN, kênh bán hàng mới để tiếp cận khách chưa biết đến quán. Tiếp cận đúng người, đúng lúc, xây dựng lượng khách hàng dần theo thời gian.',
+          items: ['Nền tảng đặt hàng trực tuyến mới nhất tại Việt Nam', 'Tiếp cận khách hàng đang tìm món ăn của bạn', 'Tăng doanh thu mà không cần tự chạy quảng cáo'],
           cta: 'Xem LÒ ĐỒ ĂN',
           href: 'https://lodoan.vn',
           photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
@@ -37,9 +37,9 @@ const T = {
         {
           label: 'Đặt hàng trực tiếp',
           title: 'Trang đặt hàng riêng',
-          sub: 'Đơn hàng trực tiếp, không qua trung gian',
-          text: 'Quán của bạn có trang đặt hàng riêng. Khách đặt trực tiếp và đơn hàng vào thẳng máy tính bảng.',
-          items: ['Trang đặt hàng với thương hiệu riêng', 'Quản lý đơn trên máy tính bảng', 'Hỗ trợ MoMo, ZaloPay, VNPay, tiền mặt'],
+          sub: 'Đơn hàng trực tiếp, tối ưu hóa SEO',
+          text: 'Quán của bạn có trang đặt hàng riêng, được cải thiện để hiện trên kết quả tìm kiếm Google. Khách đặt trực tiếp và đơn hàng vào thẳng máy tính bảng.',
+          items: ['Trang đặt hàng với thương hiệu riêng', 'Tối ưu SEO trên Google', 'Hỗ trợ MoMo, ZaloPay, VNPay, tiền mặt'],
           cta: 'Đăng ký ngay',
           href: '/register',
           photo: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80',
@@ -87,9 +87,9 @@ const T = {
         {
           label: 'Marketplace',
           title: 'LÒ ĐỒ ĂN',
-          sub: 'Customers find you on Google',
-          text: 'Your restaurant appears on the LÒ ĐỒ ĂN marketplace and is optimized to show up in Google search results. New customers find you every day without you running any ads.',
-          items: ['Marketplace listing and discovery', 'Google SEO optimization', 'New customers every day'],
+          sub: '',
+          text: 'Your restaurant appears on LÒ ĐỒ ĂN, a new sales channel to reach customers who have never heard of you. Reach the right people at the right time and build your customer base over time.',
+          items: ['The latest online ordering platform in Vietnam', 'Reach customers already searching for your food', 'Grow revenue without running your own ads'],
           cta: 'Visit LÒ ĐỒ ĂN',
           href: 'https://lodoan.vn',
           photo: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80',
@@ -99,9 +99,9 @@ const T = {
         {
           label: 'Direct ordering',
           title: 'Your own ordering page',
-          sub: 'Orders with no middleman',
-          text: 'Your restaurant gets its own ordering page. Customers order directly and orders go straight to your tablet with no commission percentage taken by a third party.',
-          items: ['Branded ordering page', 'Tablet order management app', 'MoMo, ZaloPay, VNPay, cash on delivery'],
+          sub: 'Direct orders, SEO optimized',
+          text: 'Your restaurant gets its own ordering page, improved to show up in Google search results. Customers order directly and orders go straight to your tablet.',
+          items: ['Branded ordering page', 'Google SEO optimization', 'MoMo, ZaloPay, VNPay, cash on delivery'],
           cta: 'Register now',
           href: '/register',
           photo: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80',
@@ -204,7 +204,7 @@ export default function CompanyPage() {
   <img
     src="https://i.postimg.cc/cJS2qLQz/L.png"
     alt="LÒ ĐỒ ĂN"
-    style={{ height: 240, width: 'auto', objectFit: 'contain', marginBottom: 0, marginTop: -16, display: 'block', mixBlendMode: 'multiply' as any }}
+    style={{ height: 240, width: 'auto', objectFit: 'contain', marginBottom: 0, marginTop: -16, display: 'block', mixBlendMode: 'multiply' as any, alignSelf: 'flex-start' as any }}
   />
 ) : (
   <h3 style={{ fontSize: 30, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8, color: '#111' }}>{p.title}</h3>
