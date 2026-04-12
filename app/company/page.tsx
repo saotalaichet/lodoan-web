@@ -297,11 +297,11 @@ export default function CompanyPage() {
     </div>
   ) : i === 1 ? (
     <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
-      <img className="ov-slide" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800&q=80" alt="Bubble tea 1" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1541698444083-023c97d3f4b6?w=800&q=80" alt="Bubble tea 2" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?w=800&q=80" alt="Bubble tea 3" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=800&q=80" alt="Bubble tea 4" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80" alt="Bubble tea 5" />
+      <img className="ov-slide" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800&q=80" alt="Trà sữa" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&q=80" alt="Cà phê Việt Nam" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1541167760496-1628856ab772?w=800&q=80" alt="Cà phê trứng" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=800&q=80" alt="Trà sữa màu sắc" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=800&q=80" alt="Sinh tố Việt Nam" />
     </div>
   ) : (
     <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
