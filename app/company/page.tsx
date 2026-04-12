@@ -42,8 +42,8 @@ const T = {
           items: ['Trang đặt hàng với thương hiệu riêng', 'Tối ưu SEO trên Google', 'Hỗ trợ MoMo, ZaloPay, VNPay, tiền mặt'],
           cta: 'Đăng ký ngay',
           href: '/register',
-          photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-          photoAlt: 'Trà sữa bubble tea',
+          photo: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800&q=80',
+photoAlt: 'Trà sữa bubble tea',
           flip: true,
         },
       ],
@@ -104,8 +104,8 @@ const T = {
           items: ['Branded ordering page', 'Google SEO optimization', 'MoMo, ZaloPay, VNPay, cash on delivery'],
           cta: 'Register now',
           href: '/register',
-          photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
-          photoAlt: 'Bubble tea shop',
+          photo: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800&q=80',
+photoAlt: 'Bubble tea shop',
           flip: true,
         },
       ],
@@ -178,6 +178,13 @@ export default function CompanyPage() {
           .ov-cta-section { padding: 64px 32px !important; }
           .ov-footer { padding: 40px 32px !important; }
           .ov-hero h1 { font-size: 44px !important; }
+        }
+      .ov-footer-desktop { display: grid !important; }
+        .ov-footer-mobile { display: none !important; }
+        @media (max-width: 768px) {
+          .ov-footer-desktop { display: none !important; }
+          .ov-footer-mobile { display: flex !important; }
+          .ov-footer { padding: 36px 20px !important; }
         }
       `}</style>
 
@@ -310,8 +317,8 @@ export default function CompanyPage() {
             </div>
             <div className="ov-cta-photo" style={{ borderRadius: 16, overflow: 'hidden', height: 340 }}>
               <img
-                src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"
-                alt="Technology office"
+                src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80"
+alt="Vietnamese food"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             </div>
@@ -320,28 +327,37 @@ export default function CompanyPage() {
       </div>
 
       {/* Footer */}
-      <footer className="ov-footer" style={{ borderTop: `1px solid ${BORDER}`, padding: '48px 40px', background: BG }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-          <div className="ov-footer-grid" style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#555', margin: 0 }}>
-              © 2026 Ovenly™
-            </p>
-            <img
-              src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
-              alt="Ovenly"
-              style={{ height: 64, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block' }}
-            />
-            <p className="ov-footer-right" style={{ fontSize: 15, fontWeight: 600, color: '#555', margin: 0, textAlign: 'right' as const }}>
-              {t.footer.allRights}
-            </p>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 28, flexWrap: 'wrap' as const }}>
-            {t.footer.links.map(([label, href]) => (
-              <Link key={label} href={href} style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{label}</Link>
-            ))}
-          </div>
-        </div>
-      </footer>
+<footer className="ov-footer" style={{ borderTop: `1px solid ${BORDER}`, padding: '48px 40px', background: BG }}>
+  <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+
+    {/* Desktop footer: 3 columns */}
+    <div style={{ display: 'none' }} className="ov-footer-desktop">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20, marginBottom: 20 }}>
+        <p style={{ fontSize: 15, fontWeight: 600, color: '#555', margin: 0 }}>© 2026 Ovenly™</p>
+        <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 64, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block' }} />
+        <p style={{ fontSize: 15, fontWeight: 600, color: '#555', margin: 0, textAlign: 'right' as const }}>{t.footer.allRights}</p>
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 28 }}>
+        {t.footer.links.map(([label, href]) => (
+          <Link key={label} href={href} style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{label}</Link>
+        ))}
+      </div>
+    </div>
+
+    {/* Mobile/tablet footer: stacked centered */}
+    <div className="ov-footer-mobile" style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 16, textAlign: 'center' as const }}>
+      <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 56, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block' }} />
+      <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' as const }}>
+        {t.footer.links.map(([label, href]) => (
+          <Link key={label} href={href} style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{label}</Link>
+        ))}
+      </div>
+      <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>© 2026 Ovenly™</p>
+      <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>{t.footer.allRights}</p>
+    </div>
+
+  </div>
+</footer>
 
     </div>
   );
