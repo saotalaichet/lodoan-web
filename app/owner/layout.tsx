@@ -35,7 +35,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
       return;
     }
     setSession(data);
-  }, []); // ← only run once on mount, not on every navigation
+  }, [pathname]);
 
   useEffect(() => {
     localStorage.setItem('owner_lang', lang);
