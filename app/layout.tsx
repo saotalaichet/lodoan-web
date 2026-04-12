@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến',
   description: 'Đặt đồ ăn trực tuyến từ các nhà hàng tại Việt Nam',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/lodoan-favicon.ico',
     apple: '/apple-icon.png',
   },
 };
@@ -19,7 +19,7 @@ export default function RootLayout({
     <html lang="vi">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+        <link rel="icon" href="/lodoan-favicon.ico" type="image/x-icon" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon.png" />
       </head>
       <body>{children}</body>
