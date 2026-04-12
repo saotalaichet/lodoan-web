@@ -297,11 +297,11 @@ export default function CompanyPage() {
     </div>
   ) : i === 1 ? (
     <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
-      <img className="ov-slide" src="https://images.unsplash.com/aJpTyG2pkJ4?w=800&q=80" alt="Bubble tea" />
-<img className="ov-slide" src="https://images.unsplash.com/FchqkZj7jBU?w=800&q=80" alt="Boba drink" />
-<img className="ov-slide" src="https://images.unsplash.com/OFPGkd2swUM?w=800&q=80" alt="Bubble tea hand" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800&q=80" alt="Trà sữa" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=800&q=80" alt="Boba cups" />
+      <img className="ov-slide" src="https://images.pexels.com/photos/6412837/pexels-photo-6412837.jpeg?w=800&q=80" alt="Bubble tea" />
+<img className="ov-slide" src="https://images.pexels.com/photos/6412840/pexels-photo-6412840.jpeg?w=800&q=80" alt="Boba tea" />
+<img className="ov-slide" src="https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=800&q=80" alt="Bubble tea drinks" />
+<img className="ov-slide" src="https://images.pexels.com/photos/5765802/pexels-photo-5765802.jpeg?w=800&q=80" alt="Milk tea boba" />
+<img className="ov-slide" src="https://images.pexels.com/photos/4397920/pexels-photo-4397920.jpeg?w=800&q=80" alt="Boba drinks" />
     </div>
   ) : (
     <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
