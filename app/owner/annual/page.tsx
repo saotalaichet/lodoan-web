@@ -14,15 +14,25 @@ export default function OwnerAnnualPage() {
 
   useEffect(() => {
     setLang(localStorage.getItem('owner_lang') || 'vi');
+    const onLang = (e: any) => setLang(e.detail);
+    window.addEventListener('owner-lang-change', onLang);
+    return () => window.removeEventListener('owner-lang-change', onLang);
+  }, []);
+
+  useEffect(() => {
     const s = ownerAuth.getSession();
     setSession(s);
+    setLoading(true);
     ownerAuth.getOrders().then(orders => {
       const completed = orders.filter((o: any) => o.status === 'completed');
       const monthly = [];
       for (let m = 0; m < 12; m++) {
         const start = new Date(year, m, 1);
         const end = new Date(year, m + 1, 0, 23, 59, 59);
-        const mo = completed.filter((o: any) => { const d = new Date(o.created_date); return d >= start && d <= end; });
+        const mo = completed.filter((o: any) => {
+          const d = new Date(o.created_date);
+          return d >= start && d <= end;
+        });
         const agg = mo.reduce((acc: any, o: any) => {
           const subtotal = o.subtotal || 0;
           const tips = o.tip_amount || 0;
@@ -30,7 +40,14 @@ export default function OwnerAnnualPage() {
           const deliveryFee = o.order_type === 'pickup' ? 0 : (o.delivery_fee || 0);
           const rate = ((o.order_type === 'pickup' ? s?.pickupCommissionRate : s?.deliveryCommissionRate) ?? 15) / 100;
           const commission = subtotal * rate;
-          return { subtotal: acc.subtotal + subtotal, tips: acc.tips + tips, serviceFee: acc.serviceFee + serviceFee, deliveryFee: acc.deliveryFee + deliveryFee, commission: acc.commission + commission, netRevenue: acc.netRevenue + (subtotal + tips - commission - serviceFee - deliveryFee) };
+          return {
+            subtotal: acc.subtotal + subtotal,
+            tips: acc.tips + tips,
+            serviceFee: acc.serviceFee + serviceFee,
+            deliveryFee: acc.deliveryFee + deliveryFee,
+            commission: acc.commission + commission,
+            netRevenue: acc.netRevenue + (subtotal + tips - commission - serviceFee - deliveryFee),
+          };
         }, { subtotal: 0, tips: 0, serviceFee: 0, deliveryFee: 0, commission: 0, netRevenue: 0 });
         monthly.push({ month: m + 1, orders: mo.length, ...agg });
       }
@@ -40,13 +57,17 @@ export default function OwnerAnnualPage() {
   }, [year]);
 
   const totals = data.reduce((acc, m) => ({
-    orders: acc.orders + m.orders, subtotal: acc.subtotal + m.subtotal, tips: acc.tips + m.tips,
-    serviceFee: acc.serviceFee + m.serviceFee, deliveryFee: acc.deliveryFee + m.deliveryFee,
-    commission: acc.commission + m.commission, netRevenue: acc.netRevenue + m.netRevenue,
+    orders: acc.orders + m.orders,
+    subtotal: acc.subtotal + m.subtotal,
+    tips: acc.tips + m.tips,
+    serviceFee: acc.serviceFee + m.serviceFee,
+    deliveryFee: acc.deliveryFee + m.deliveryFee,
+    commission: acc.commission + m.commission,
+    netRevenue: acc.netRevenue + m.netRevenue,
   }), { orders: 0, subtotal: 0, tips: 0, serviceFee: 0, deliveryFee: 0, commission: 0, netRevenue: 0 });
 
   const months = lang === 'vi'
-    ? ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'].map((m, i) => `Tháng ${i+1}`)
+    ? Array.from({ length: 12 }, (_, i) => `Tháng ${i + 1}`)
     : ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
   const t = {
@@ -55,13 +76,12 @@ export default function OwnerAnnualPage() {
     month: lang === 'vi' ? 'Tháng' : 'Month',
     orders: lang === 'vi' ? 'Đơn' : 'Orders',
     subtotal: lang === 'vi' ? 'Cộng Tiền' : 'Subtotal',
-    tips: lang === 'vi' ? 'Tips' : 'Tips',
+    tips: 'Tips',
     serviceFee: lang === 'vi' ? 'Phí DV' : 'Svc Fee',
     deliveryFee: lang === 'vi' ? 'Phí Ship' : 'Delivery',
-    platformFee: lang === 'vi' ? 'Phí NTảng' : 'Platform',
+    platformFee: lang === 'vi' ? 'Phí Nền Tảng' : 'Platform Fee',
     net: lang === 'vi' ? 'Doanh Thu Thực' : 'Net Revenue',
     total: lang === 'vi' ? 'Tổng' : 'Total',
-    summary: lang === 'vi' ? 'Tóm Tắt Năm' : 'Annual Summary',
     loading: lang === 'vi' ? 'Đang tải...' : 'Loading...',
   };
 

@@ -16,9 +16,12 @@ export default function OwnerProfilePage() {
 
   useEffect(() => {
     setLang(localStorage.getItem('owner_lang') || 'vi');
+    const onLang = (e: any) => setLang(e.detail);
+window.addEventListener('owner-lang-change', onLang);
     const s = ownerAuth.getSession();
     setSession(s);
     if (s) setForm({ full_name: s.ownerName || '', email: s.ownerEmail || '' });
+    return () => window.removeEventListener('owner-lang-change', onLang);
   }, []);
 
   const t = {

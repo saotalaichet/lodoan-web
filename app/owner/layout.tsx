@@ -39,6 +39,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     localStorage.setItem('owner_lang', lang);
+    window.dispatchEvent(new CustomEvent('owner-lang-change', { detail: lang }));
   }, [lang]);
 
 const handleLogout = () => {

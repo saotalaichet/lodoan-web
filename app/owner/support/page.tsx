@@ -12,7 +12,7 @@ export default function OwnerSupportPage() {
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
 
-  useEffect(() => { setLang(localStorage.getItem('owner_lang') || 'vi'); }, []);
+  useEffect(() => { setLang(localStorage.getItem('owner_lang') || 'vi'); const onLang = (e: any) => setLang(e.detail); window.addEventListener('owner-lang-change', onLang); return () => window.removeEventListener('owner-lang-change', onLang); }, []);
 
   const topics = {
     billing: lang === 'vi' ? 'Thanh Toán' : 'Billing',

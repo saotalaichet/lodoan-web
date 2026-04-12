@@ -5,7 +5,7 @@ import { FileText } from 'lucide-react';
 
 export default function OwnerBillsPage() {
   const [lang, setLang] = useState('vi');
-  useEffect(() => { setLang(localStorage.getItem('owner_lang') || 'vi'); }, []);
+  useEffect(() => { setLang(localStorage.getItem('owner_lang') || 'vi'); const onLang = (e: any) => setLang(e.detail); window.addEventListener('owner-lang-change', onLang); return () => window.removeEventListener('owner-lang-change', onLang); }, []);
 
   return (
     <div className="space-y-6 max-w-2xl">

@@ -27,6 +27,9 @@ export default function OwnerMonthlyPage() {
     setLang(localStorage.getItem('owner_lang') || 'vi');
     setSession(ownerAuth.getSession());
     ownerAuth.getOrders().then(o => { setAllOrders(o); setLoading(false); });
+    const onLang = (e: any) => setLang(e.detail);
+    window.addEventListener('owner-lang-change', onLang);
+    return () => window.removeEventListener('owner-lang-change', onLang);
   }, []);
 
   useEffect(() => {

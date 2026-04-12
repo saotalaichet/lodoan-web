@@ -40,11 +40,14 @@ export default function OwnerOrdersPage() {
 
   useEffect(() => {
     setLang(localStorage.getItem('owner_lang') || 'vi');
+    const onLang = (e: any) => setLang(e.detail);
+window.addEventListener('owner-lang-change', onLang);
     const s = ownerAuth.getSession();
     setSession(s);
     Promise.all([ownerAuth.getOrders(), ownerAuth.getRefunds()])
       .then(([o, r]) => { setOrders(o); setRefunds(r); })
       .finally(() => setLoading(false));
+      return () => window.removeEventListener('owner-lang-change', onLang);
   }, []);
 
   const t = {
