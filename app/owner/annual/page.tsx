@@ -6,7 +6,7 @@ import { ownerAuth } from '@/lib/ownerAuth';
 const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
 export default function OwnerAnnualPage() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState(2026);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<any>(null);
@@ -91,7 +91,7 @@ export default function OwnerAnnualPage() {
         <h2 className="font-bold text-xl text-gray-900">{t.title}</h2>
         <div>
           <label className="block text-xs font-semibold text-gray-600 mb-1">{t.year}</label>
-          <input type="number" min={2024} max={new Date().getFullYear() + 1} value={year}
+          <input type="number" min={2024} max={2027} value={year}
             onChange={e => setYear(parseInt(e.target.value))}
             className="w-24 px-3 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/30" />
         </div>

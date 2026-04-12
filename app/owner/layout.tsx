@@ -124,7 +124,7 @@ const handleLogout = () => {
               <LogOut className="w-4 h-4" />
               {lang === 'vi' ? 'Đăng Xuất' : 'Logout'}
             </button>
-            <p className="text-center text-xs text-gray-400">© {new Date().getFullYear()} Ovenly</p>
+            <p className="text-center text-xs text-gray-400">© 2026 Ovenly</p>
           </div>
         </div>
       </aside>

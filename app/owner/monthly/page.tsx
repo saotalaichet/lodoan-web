@@ -16,7 +16,7 @@ function calcMetrics(order: any, session: any) {
 }
 
 export default function OwnerMonthlyPage() {
-  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [month, setMonth] = useState('2026-04');
   const [orders, setOrders] = useState<any[]>([]);
   const [allOrders, setAllOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
