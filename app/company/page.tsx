@@ -298,10 +298,10 @@ export default function CompanyPage() {
   ) : i === 1 ? (
     <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
       <img className="ov-slide" src="https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=800&q=80" alt="Bubble tea" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=800&q=80" alt="Trà sữa" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=800&q=80" alt="Bubble tea boba" />
 <img className="ov-slide" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80" alt="Cà phê" />
 <img className="ov-slide" src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&q=80" alt="Matcha trà xanh" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1561758033-d89a9ad46330?w=800&q=80" alt="Bubble tea" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=800&q=80" alt="Boba milk tea" />
     </div>
   ) : (
     <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
