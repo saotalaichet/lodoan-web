@@ -297,11 +297,11 @@ export default function CompanyPage() {
     </div>
   ) : i === 1 ? (
     <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
-      <img className="ov-slide" src="https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=800&q=80" alt="Bubble tea" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=800&q=80" alt="Bubble tea boba" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80" alt="Cà phê" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&q=80" alt="Matcha trà xanh" />
-<img className="ov-slide" src="https://images.unsplash.com/photo-1534353436294-0dbd4bdac845?w=800&q=80" alt="Boba milk tea" />
+      <img className="ov-slide" src="https://images.unsplash.com/aJpTyG2pkJ4?w=800&q=80" alt="Bubble tea" />
+<img className="ov-slide" src="https://images.unsplash.com/FchqkZj7jBU?w=800&q=80" alt="Boba drink" />
+<img className="ov-slide" src="https://images.unsplash.com/OFPGkd2swUM?w=800&q=80" alt="Bubble tea hand" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=800&q=80" alt="Trà sữa" />
+<img className="ov-slide" src="https://images.unsplash.com/photo-1499638673689-79a0b5115d87?w=800&q=80" alt="Boba cups" />
     </div>
   ) : (
     <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
