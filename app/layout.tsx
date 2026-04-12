@@ -4,9 +4,6 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến',
   description: 'Đặt đồ ăn trực tuyến từ các nhà hàng tại Việt Nam',
-  icons: {
-    icon: '/favicon.png',
-  },
 };
 
 export default function RootLayout({
@@ -18,6 +15,8 @@ export default function RootLayout({
     <html lang="vi">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="shortcut icon" href="/favicon.png" type="image/png" />
       </head>
       <body>{children}</body>
     </html>
