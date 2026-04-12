@@ -19,10 +19,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [lang, setLang] = useState('vi');
-  const [session, setSession] = useState<any>(() => {
-    if (typeof window === 'undefined') return null;
-    return ownerAuth.getSession() || null;
-  });
+  const [session, setSession] = useState<any>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
