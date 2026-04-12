@@ -30,11 +30,22 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
       return;
     }
     const data = ownerAuth.getSession();
-    if (!data || !ownerAuth.getToken()) {
+    const token = ownerAuth.getToken();
+    if (!data || !token) {
       router.push('/owner/login');
       return;
     }
+    // Set session immediately from localStorage for instant load
     setSession(data);
+    // Then validate token in background — if invalid, force logout
+    ownerAuth.validate().then(valid => {
+      if (!valid) {
+        ownerAuth.clearSession();
+        router.push('/owner/login');
+      }
+    }).catch(() => {
+      // Network error — keep session, don't log out
+    });
   }, [pathname]);
 
   useEffect(() => {
