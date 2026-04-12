@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến',
   description: 'Đặt đồ ăn trực tuyến từ các nhà hàng tại Việt Nam',
   icons: {
-    icon: 'https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png',
+    icon: '/favicon.png',
   },
 };
 
