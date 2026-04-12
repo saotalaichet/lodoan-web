@@ -11,14 +11,14 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
       title: 'Ovenly — Công nghệ nhà hàng Việt Nam',
       description: 'Ovenly giúp nhà hàng nhận đơn trực tuyến và tiếp cận khách hàng mới.',
-      icons: { icon: '/favicon.png' },
+      icons: { icon: '/favicon.png', apple: '/apple-icon.png' },
     };
   }
 
   return {
     title: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến',
     description: 'Đặt đồ ăn trực tuyến từ các nhà hàng tại Việt Nam',
-    icons: { icon: '/favicon.png' },
+    icons: { icon: '/lodoan-favicon.ico', apple: '/apple-icon.png' },
   };
 }
 
