@@ -41,12 +41,10 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
     localStorage.setItem('owner_lang', lang);
   }, [lang]);
 
-  useEffect(() => {
-  const stored = localStorage.getItem('owner_lang') || 'vi';
-  setLang(stored);
-  if (ownerAuth.getToken()) router.push('/owner/orders');
-}, [router]);
-
+const handleLogout = () => {
+    ownerAuth.logout();
+    router.push('/owner/login');
+  };
   if (!session && pathname !== '/owner/login') return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
