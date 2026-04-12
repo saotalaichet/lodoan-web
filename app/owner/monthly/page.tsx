@@ -6,11 +6,11 @@ import { ownerAuth } from '@/lib/ownerAuth';
 const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
 function calcMetrics(order: any, session: any) {
-  const subtotal = order.subtotal || 0;
-  const tips = order.tip_amount || 0;
-  const serviceFee = order.service_fee || 0;
-  const deliveryFee = order.order_type === 'pickup' ? 0 : (order.delivery_fee || 0);
-  const rate = ((order.order_type === 'pickup' ? session.pickupCommissionRate : session.deliveryCommissionRate) ?? 15) / 100;
+  const subtotal = parseFloat(order.subtotal) || 0;
+  const tips = parseFloat(order.tip_amount) || 0;
+  const serviceFee = parseFloat(order.service_fee) || 0;
+  const deliveryFee = order.order_type === 'pickup' ? 0 : (parseFloat(order.delivery_fee) || 0);
+  const rate = ((order.order_type === 'pickup' ? parseFloat(session.pickupCommissionRate) : parseFloat(session.deliveryCommissionRate)) ?? 15) / 100;
   const commission = subtotal * rate;
   return { subtotal, tips, serviceFee, deliveryFee, commission, netRevenue: subtotal + tips - commission - serviceFee - deliveryFee };
 }

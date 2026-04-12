@@ -34,11 +34,11 @@ export default function OwnerAnnualPage() {
           return d >= start && d <= end;
         });
         const agg = mo.reduce((acc: any, o: any) => {
-          const subtotal = o.subtotal || 0;
-          const tips = o.tip_amount || 0;
-          const serviceFee = o.service_fee || 0;
-          const deliveryFee = o.order_type === 'pickup' ? 0 : (o.delivery_fee || 0);
-          const rate = ((o.order_type === 'pickup' ? s?.pickupCommissionRate : s?.deliveryCommissionRate) ?? 15) / 100;
+          const subtotal = parseFloat(o.subtotal) || 0;
+          const tips = parseFloat(o.tip_amount) || 0;
+          const serviceFee = parseFloat(o.service_fee) || 0;
+          const deliveryFee = o.order_type === 'pickup' ? 0 : (parseFloat(o.delivery_fee) || 0);
+          const rate = ((o.order_type === 'pickup' ? parseFloat(s?.pickupCommissionRate) : parseFloat(s?.deliveryCommissionRate)) ?? 15) / 100;
           const commission = subtotal * rate;
           return {
             subtotal: acc.subtotal + subtotal,
