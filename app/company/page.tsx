@@ -297,11 +297,11 @@ export default function CompanyPage() {
     </div>
   ) : i === 1 ? (
     <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
-      <img className="ov-slide" src="https://images.pexels.com/photos/6412837/pexels-photo-6412837.jpeg?w=800&q=80" alt="Bubble tea" />
-<img className="ov-slide" src="https://images.pexels.com/photos/6412840/pexels-photo-6412840.jpeg?w=800&q=80" alt="Boba tea" />
-<img className="ov-slide" src="https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=800&q=80" alt="Bubble tea drinks" />
-<img className="ov-slide" src="https://images.pexels.com/photos/5765802/pexels-photo-5765802.jpeg?w=800&q=80" alt="Milk tea boba" />
-<img className="ov-slide" src="https://images.pexels.com/photos/4397920/pexels-photo-4397920.jpeg?w=800&q=80" alt="Boba drinks" />
+      <img className="ov-slide" src="/drinks/bt1.jpg" alt="Bubble tea 1" />
+<img className="ov-slide" src="/drinks/bt2.jpg" alt="Bubble tea 2" />
+<img className="ov-slide" src="/drinks/bt3.jpg" alt="Bubble tea 3" />
+<img className="ov-slide" src="/drinks/bt4.jpg" alt="Bubble tea 4" />
+<img className="ov-slide" src="/drinks/bt5.jpg" alt="Bubble tea 5" />
     </div>
   ) : (
     <img src={p.photo} alt={p.photoAlt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
