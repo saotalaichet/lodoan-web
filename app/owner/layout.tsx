@@ -19,14 +19,17 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [lang, setLang] = useState('vi');
-  const [session, setSession] = useState<any>(null);
+  const [session, setSession] = useState<any>(() => {
+    if (typeof window === 'undefined') return null;
+    return ownerAuth.getSession() || null;
+  });
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem('owner_lang') || 'vi';
     setLang(stored);
     if (pathname === '/owner/login') {
-      setSession({}); // skip auth check on login page
+      setSession({});
       return;
     }
     const data = ownerAuth.getSession();
@@ -35,7 +38,7 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
       return;
     }
     setSession(data);
-  }, [router, pathname]);
+  }, []); // ← only run once on mount, not on every navigation
 
   useEffect(() => {
     localStorage.setItem('owner_lang', lang);
