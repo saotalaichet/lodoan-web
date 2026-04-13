@@ -6,19 +6,17 @@ import CompanyPage from './company/page';
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const host = headersList.get('host') || '';
-
   if (host === 'ovenly.io' || host === 'www.ovenly.io') {
     return {
       title: 'Ovenly — Công nghệ nhà hàng Việt Nam',
       description: 'Ovenly giúp nhà hàng nhận đơn trực tuyến và tiếp cận khách hàng mới.',
-      icons: { icon: '/favicon.png', apple: '/apple-icon.png' },
+      icons: { icon: '/ovenly-apple.jpg', apple: '/ovenly-apple.jpg' },
     };
   }
-
   return {
     title: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến',
     description: 'Đặt đồ ăn trực tuyến từ các nhà hàng tại Việt Nam',
-    icons: { icon: '/lodoan-favicon.ico', apple: '/apple-icon.png' },
+    icons: { icon: '/lodoan-favicon.ico', apple: '/lodoan-apple.jpg' },
   };
 }
 
