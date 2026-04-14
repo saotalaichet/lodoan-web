@@ -31,6 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: 'LÒ ĐỒ ĂN',
       locale: 'vi_VN',
       type: 'website',
+      images: [{ url: 'https://www.lodoan.vn/lodoan-og.jpg', width: 1200, height: 630, alt: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến' }],
     },
   };
 }
