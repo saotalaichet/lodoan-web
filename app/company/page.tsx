@@ -139,6 +139,28 @@ const T = {
 export default function CompanyPage() {
   const [lang, setLang] = useState<'vi' | 'en'>('vi');
   const t = T[lang];
+  const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Ovenly',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web, Android, IOS',
+  description: 'Phần mềm nhận đơn online và quản lý nhà hàng tại Việt Nam',
+  url: 'https://www.ovenly.io',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'VND',
+    description: 'Miễn phí đăng ký',
+  },
+  provider: {
+    '@type': 'Organization',
+    name: 'Ovenly',
+    url: 'https://www.ovenly.io',
+    email: 'hello@ovenly.io',
+    areaServed: 'VN',
+  },
+};
 
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, color: '#1a1a1a', lineHeight: 1.6 }}>
