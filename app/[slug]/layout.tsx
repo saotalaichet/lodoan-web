@@ -75,7 +75,7 @@ export default async function SlugLayout({
 }) {
   const r = await getRestaurant(params.slug);
 
-  const jsonLd = r ? {
+  const jsonLd = r ? JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
     name: r.name,
@@ -106,21 +106,6 @@ export default async function SlugLayout({
       bestRating: '5',
       worstRating: '1',
     } : undefined,
-    openingHoursSpecification: r.hours ? Object.entries(r.hours)
-      .filter(([, v]) => v)
-      .map(([day, hours]: [string, any]) => {
-        const [open, close] = hours.split('-');
-        const dayMap: Record<string, string> = {
-          monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
-          thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday',
-        };
-        return {
-          '@type': 'OpeningHoursSpecification',
-          dayOfWeek: dayMap[day],
-          opens: open?.trim(),
-          closes: close?.trim(),
-        };
-      }) : undefined,
     potentialAction: {
       '@type': 'OrderAction',
       target: {
@@ -132,19 +117,20 @@ export default async function SlugLayout({
           'http://schema.org/MobileWebPlatform',
         ],
       },
-      deliveryMethod: ['http://purl.org/goodrelations/v1#DeliveryModePickUp', 'http://purl.org/goodrelations/v1#DeliveryModeDirect'],
     },
-  } : null;
+  }) : null;
 
   return (
-    <>
-      {jsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-      )}
-      {children}
-    </>
+    <html>
+      <head>
+        {jsonLd && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: jsonLd }}
+          />
+        )}
+      </head>
+      <body>{children}</body>
+    </html>
   );
 }
