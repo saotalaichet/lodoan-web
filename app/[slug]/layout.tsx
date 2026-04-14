@@ -58,6 +58,93 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default function SlugLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+async function getRestaurant(slug: string) {
+  try {
+    const res = await fetch(`${RAILWAY}/api/restaurants/${slug}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return res.json();
+  } catch { return null; }
+}
+
+export default async function SlugLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { slug: string };
+}) {
+  const r = await getRestaurant(params.slug);
+
+  const jsonLd = r ? {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: r.name,
+    description: r.address
+      ? `Đặt hàng online từ ${r.name} tại ${r.address}`
+      : `Đặt hàng online từ ${r.name}`,
+    url: `https://www.lodoan.vn/${params.slug}`,
+    image: r.banner || r.logo || undefined,
+    address: r.address ? {
+      '@type': 'PostalAddress',
+      streetAddress: r.address,
+      addressCountry: 'VN',
+    } : undefined,
+    telephone: r.phone || undefined,
+    servesCuisine: Array.isArray(r.cuisine_type)
+      ? r.cuisine_type
+      : r.cuisine_type
+      ? [r.cuisine_type]
+      : ['Vietnamese'],
+    priceRange: '₫₫',
+    currenciesAccepted: 'VND',
+    paymentAccepted: 'Cash, MoMo, ZaloPay, VNPay',
+    hasMenu: `https://www.lodoan.vn/${params.slug}`,
+    aggregateRating: r.average_rating && r.total_ratings > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: parseFloat(r.average_rating).toFixed(1),
+      reviewCount: r.total_ratings,
+      bestRating: '5',
+      worstRating: '1',
+    } : undefined,
+    openingHoursSpecification: r.hours ? Object.entries(r.hours)
+      .filter(([, v]) => v)
+      .map(([day, hours]: [string, any]) => {
+        const [open, close] = hours.split('-');
+        const dayMap: Record<string, string> = {
+          monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
+          thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday',
+        };
+        return {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: dayMap[day],
+          opens: open?.trim(),
+          closes: close?.trim(),
+        };
+      }) : undefined,
+    potentialAction: {
+      '@type': 'OrderAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `https://www.lodoan.vn/${params.slug}`,
+        inLanguage: 'vi',
+        actionPlatform: [
+          'http://schema.org/DesktopWebPlatform',
+          'http://schema.org/MobileWebPlatform',
+        ],
+      },
+      deliveryMethod: ['http://purl.org/goodrelations/v1#DeliveryModePickUp', 'http://purl.org/goodrelations/v1#DeliveryModeDirect'],
+    },
+  } : null;
+
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      {children}
+    </>
+  );
 }
