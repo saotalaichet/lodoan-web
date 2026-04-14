@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến',
-  description: 'Đặt đồ ăn trực tuyến từ các nhà hàng tại Việt Nam',
+  title: 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
+  description: 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Mang về hoặc giao hàng tận nơi. Nhanh chóng, tiện lợi!',
   icons: {
     icon: '/lodoan-favicon.ico',
     apple: '/lodoan-apple.jpg',

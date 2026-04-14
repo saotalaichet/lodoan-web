@@ -8,15 +8,30 @@ export async function generateMetadata(): Promise<Metadata> {
   const host = headersList.get('host') || '';
   if (host === 'ovenly.io' || host === 'www.ovenly.io') {
     return {
-      title: 'Ovenly — Công nghệ nhà hàng Việt Nam',
-      description: 'Ovenly giúp nhà hàng nhận đơn trực tuyến và tiếp cận khách hàng mới.',
+      title: 'Ovenly | Công nghệ dành cho nhà hàng, quán ăn uống tại Việt Nam',
+      description: 'Ovenly giúp các địa điểm ăn uống nhận đơn trực tuyến và tiếp cận khách hàng mới.',
       icons: { icon: '/ovenly-apple.jpg', apple: '/ovenly-apple.jpg' },
     };
   }
   return {
-    title: 'LÒ ĐỒ ĂN — Đặt Đồ Ăn Trực Tuyến',
-    description: 'Đặt đồ ăn trực tuyến từ các nhà hàng tại Việt Nam',
+    title: 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
+    description: 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Mang về hoặc giao hàng tận nơi. Nhanh chóng, tiện lợi!',
     icons: { icon: '/lodoan-favicon.ico', apple: '/lodoan-apple.jpg' },
+    alternates: {
+      canonical: 'https://www.lodoan.vn',
+      languages: {
+        'vi': 'https://www.lodoan.vn',
+        'en': 'https://www.lodoan.vn',
+      },
+    },
+    openGraph: {
+      title: 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
+      description: 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Giao hàng tận nơi & mang về.',
+      url: 'https://www.lodoan.vn',
+      siteName: 'LÒ ĐỒ ĂN',
+      locale: 'vi_VN',
+      type: 'website',
+    },
   };
 }
 
