@@ -5,13 +5,13 @@ const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Static pages
   const staticPages: MetadataRoute.Sitemap = [
-    { url: 'https://lodoan.vn', lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
-    { url: 'https://lodoan.vn/login', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: 'https://lodoan.vn/signup', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
-    { url: 'https://lodoan.vn/contact', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
-    { url: 'https://lodoan.vn/terms', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
-    { url: 'https://lodoan.vn/privacy', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
-    { url: 'https://lodoan.vn/claims', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
+    { url: 'https://www.lodoan.vn', lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
+    { url: 'https://www.lodoan.vn/login', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: 'https://www.lodoan.vn/signup', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
+    { url: 'https://www.lodoan.vn/contact', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.4 },
+    { url: 'https://www.lodoan.vn/terms', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
+    { url: 'https://www.lodoan.vn/privacy', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
+    { url: 'https://www.lodoan.vn/claims', lastModified: new Date(), changeFrequency: 'monthly', priority: 0.2 },
   ];
 
   // Dynamic restaurant pages
@@ -22,7 +22,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const restaurantPages: MetadataRoute.Sitemap = restaurants
       .filter((r: any) => r.slug && r.launch_status === 'launched')
       .map((r: any) => ({
-        url: `https://lodoan.vn/${r.slug}`,
+        url: `https://www.lodoan.vn/${r.slug}`,
         lastModified: new Date(r.updated_date || r.created_date || new Date()),
         changeFrequency: 'weekly' as const,
         priority: r.featured ? 0.9 : 0.8,

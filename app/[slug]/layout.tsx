@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     const description = r.address
       ? `Xem menu và đặt hàng online từ ${r.name} tại ${r.address}. Giao hàng tận nơi & mang về. Đặt ngay!`
       : `Xem menu và đặt hàng online từ ${r.name}. Giao hàng tận nơi & mang về. Đặt ngay!`;
-    const url = `https://lodoan.vn/${params.slug}`;
+    const url = `https://www.lodoan.vn/${params.slug}`;
 
     return {
       title,
