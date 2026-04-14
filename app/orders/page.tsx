@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { customerAuth } from '@/lib/customerAuth';
 
 const PRIMARY = '#8B1A1A';
-const BASE44_URL = `https://api.base44.app/api/apps/${process.env.NEXT_PUBLIC_BASE44_APP_ID}`;
-const HEADERS = { 'Content-Type': 'application/json', 'api-key': process.env.NEXT_PUBLIC_BASE44_API_KEY! };
+const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
@@ -44,10 +43,10 @@ export default function OrdersPage() {
 
   const fetchOrders = async (email: string) => {
     try {
-      const res = await fetch(
-        `${BASE44_URL}/entities/Order?customer_email=${encodeURIComponent(email)}&_sort=-created_date&_limit=50`,
-        { headers: HEADERS }
-      );
+      const token = customerAuth.getToken();
+      const res = await fetch(`${RAILWAY}/api/auth/customer/orders`, {
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      });
       if (!res.ok) throw new Error('Failed to fetch orders');
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : []);
