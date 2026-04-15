@@ -21,13 +21,13 @@ export const metadata: Metadata = {
     siteName: 'Ovenly',
     locale: 'vi_VN',
     type: 'website',
-    images: [{ url: 'https://i.postimg.cc/Mvp7DzmH/logo-3.png', width: 1200, height: 630, alt: 'Ovenly — Phần Mềm Nhận Đơn Online' }],
+    images: [{ url: 'https://www.ovenly.io/ovenly-og.png', width: 1200, height: 630, alt: 'Ovenly | Hệ Thống Nhận Đơn Online Trực Tiếp cho Ngành F&B Việt Nam' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Ovenly | Hệ Thống Nhận Đơn Online Trực Tiếp cho Ngành F&B Việt Nam',
     description: 'Ovenly giúp nhà hàng, quán ăn uống và các cơ sở F&B nhận đơn online trực tiếp từ khách hàng. Quản lý menu, theo dõi đơn hàng theo thời gian thực, tiếp cận khách mới. Đăng ký hôm nay để nhận ưu đãi.',
-    images: ['https://i.postimg.cc/Mvp7DzmH/logo-3.png'],
+    images: ['https://www.ovenly.io/ovenly-og.png'],
   },
   keywords: [
     'phần mềm nhà hàng',
