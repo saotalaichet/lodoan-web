@@ -696,7 +696,7 @@ export default function MarketplaceClient() {
               </div>
               <p className="text-sm text-gray-500 leading-relaxed mb-4">
                 {lang === 'vi'
-                  ? 'Nền tảng khám phá ẩm thực kết nối thực khách với các nhà hàng tuyệt vời tại Việt Nam.'
+                  ? 'Khám phá và đặt món online từ các địa điểm ăn uống quanh bạn.'
                   : 'Connecting diners with amazing restaurants across Vietnam.'}
               </p>
               <div className="flex gap-3">
