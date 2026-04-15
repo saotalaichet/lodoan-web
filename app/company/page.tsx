@@ -60,7 +60,7 @@ const T = {
     },
     cta: {
       h2: 'Sẵn sàng đưa quán lên trực tuyến',
-      sub: 'Miễn phí cài đặt. Chúng tôi hỗ trợ bạn trực tiếp và đưa lên sóng trong một tuần.',
+      sub: 'Miễn phí cài đặt, hỗ trợ trực tiếp và hoạt động trong vòng một tuần',
       btn1: 'Đăng ký',
       btn2: 'hello@ovenly.io',
     },
@@ -75,8 +75,8 @@ const T = {
   en: {
     nav: { cta: 'Get started free' },
     hero: {
-      h1: 'Sell more every day with online ordering',
-      sub: 'Ovenly helps restaurants take online orders, reach new customers through the LÒ ĐỒ ĂN marketplace, and get found more easily on Google.',
+      h1: 'Take orders directly from your customers',
+      sub: 'Online ordering built for F&B industry, easy to set up, easy to manage and customers order straight from you',
       cta1: 'Register your restaurant',
       cta2: 'Visit the marketplace',
     },
@@ -122,7 +122,7 @@ const T = {
     },
     cta: {
       h2: 'Ready to put your restaurant online',
-      sub: 'Free to start. We set everything up for you and have you live within a week.',
+      sub: 'Free to set up, direct support and live within a week',
       btn1: 'Register your restaurant',
       btn2: 'hello@ovenly.io',
     },
@@ -164,6 +164,10 @@ export default function CompanyPage() {
 
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, color: '#1a1a1a', lineHeight: 1.6 }}>
+      <script
+  type="application/ld+json"
+  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+/>
 
       <style>{`
         @media (max-width: 768px) {
