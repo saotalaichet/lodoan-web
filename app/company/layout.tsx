@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'Ovenly — Phần Mềm Nhận Đơn Online cho Nhà Hàng Việt Nam',
+    title: 'Ovenly | Phần Mềm Nhận Đơn Online cho Nhà Hàng Việt Nam',
     description: 'Ovenly giúp nhà hàng, quán ăn uống và các cơ sở F&B nhận đơn online trực tiếp từ khách hàng. Quản lý menu, theo dõi đơn hàng theo thời gian thực, tiếp cận khách mới. Đăng ký hôm nay để nhận ưu đãi.',
     url: 'https://www.ovenly.io',
     siteName: 'Ovenly',
