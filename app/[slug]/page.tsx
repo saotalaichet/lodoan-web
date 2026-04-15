@@ -1538,7 +1538,6 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
                         </div>
                       </div>
                       {r.comment && <p className="text-sm text-gray-700 leading-relaxed">{r.comment}</p>}
-                      <p className="text-xs text-green-600 font-medium mt-2">{lang === 'vi' ? '✓ Đã đặt hàng' : '✓ Verified order'}</p>
                     </div>
                   ))}
                 </div>
