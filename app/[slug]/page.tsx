@@ -1278,7 +1278,7 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
       </header>
 
       {/* Banner */}
-      <div className="w-full overflow-hidden" style={{ height: 'clamp(180px, 22vw, 280px)' }}>
+      <div className="w-full overflow-hidden" style={{ height: 'clamp(160px, 18vw, 220px)' }}>
         {restaurant.banner ? (
           <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" />
         ) : (
