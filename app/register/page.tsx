@@ -8,34 +8,44 @@ const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
 const T = {
   vi: {
-    title: 'Đăng Ký Nhà Hàng',
-    subtitle: 'Tham gia LÒ ĐỒ ĂN — Miễn phí',
-    nameLabel: 'Họ và Tên', businessNameLabel: 'Tên Nhà Hàng',
+    title: 'Đưa Quán Lên Online Cùng Ovenly',
+    subtitle: 'Điền thông tin bên dưới, đội ngũ Ovenly sẽ liên hệ và hỗ trợ bạn trực tiếp.',
+    nameLabel: 'Họ và Tên', businessNameLabel: 'Tên Quán',
     emailLabel: 'Email', phoneLabel: 'Số Điện Thoại',
-    cityLabel: 'Thành Phố', msgLabel: 'Tin nhắn thêm (tuỳ chọn)',
-    namePlaceholder: 'Nguyễn Văn A', businessPlaceholder: 'Phở Sài Gòn Heritage',
-    emailPlaceholder: 'owner@restaurant.com', phonePlaceholder: '0912 345 678',
+    cityLabel: 'Thành Phố', msgLabel: 'Ghi chú thêm (tuỳ chọn)',
+    namePlaceholder: 'Nguyễn Văn A', businessPlaceholder: 'Phở Sài Gòn',
+    emailPlaceholder: 'owner@quan.com', phonePlaceholder: '0912 345 678',
     cityPlaceholder: 'Hồ Chí Minh',
-    submit: 'Bắt Đầu — Miễn Phí', submitting: 'Đang gửi...',
-    backHome: 'Quay Lại Trang Chủ',
-    successTitle: 'Chúng tôi đã nhận được đăng ký!',
-    successMsg: 'Cảm ơn bạn đã đăng ký. Đội ngũ Ovenly sẽ liên hệ trong vòng 24 giờ.',
-    benefits: ['Không phí cài đặt', 'Hỗ trợ onboarding miễn phí', 'Quản lý đơn hàng real-time', 'Dashboard báo cáo doanh thu'],
+    submit: 'Gửi Đăng Ký', submitting: 'Đang gửi...',
+    backHome: 'Quay Lại',
+    successTitle: 'Đã nhận đăng ký!',
+    successMsg: 'Cảm ơn bạn đã đăng ký. Đội ngũ Ovenly sẽ liên hệ với bạn trong vòng 24 giờ.',
+    benefits: [
+      'Không mất phí cài đặt',
+      'Hỗ trợ onboarding trực tiếp',
+      'Nhận đơn và quản lý menu dễ dàng',
+      'Tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN',
+    ],
   },
   en: {
-    title: 'Register Your Restaurant',
-    subtitle: 'Join LÒ ĐỒ ĂN — Free to start',
+    title: 'Get Your Restaurant Online with Ovenly',
+    subtitle: 'Fill in your details and our team will reach out to get you set up.',
     nameLabel: 'Full Name', businessNameLabel: 'Restaurant Name',
     emailLabel: 'Email', phoneLabel: 'Phone Number',
-    cityLabel: 'City', msgLabel: 'Additional message (optional)',
-    namePlaceholder: 'John Doe', businessPlaceholder: 'Heritage Pho Restaurant',
+    cityLabel: 'City', msgLabel: 'Additional notes (optional)',
+    namePlaceholder: 'John Doe', businessPlaceholder: 'Heritage Pho',
     emailPlaceholder: 'owner@restaurant.com', phonePlaceholder: '0912 345 678',
     cityPlaceholder: 'Ho Chi Minh City',
-    submit: "Get Started — It's Free", submitting: 'Submitting...',
-    backHome: 'Back to Home',
+    submit: 'Submit Registration', submitting: 'Submitting...',
+    backHome: 'Go Back',
     successTitle: 'Registration received!',
     successMsg: 'Thank you for registering. The Ovenly team will contact you within 24 hours.',
-    benefits: ['No setup fee', 'Free onboarding support', 'Real-time order management', 'Revenue dashboard'],
+    benefits: [
+      'No setup fee',
+      'Direct onboarding support',
+      'Easy order and menu management',
+      'Reach new customers through LÒ ĐỒ ĂN',
+    ],
   },
 };
 
@@ -101,7 +111,7 @@ export default function RegisterPage() {
             <ArrowLeft className="w-4 h-4" /> {t.backHome}
           </Link>
           <div className="flex items-center bg-gray-100 rounded-full p-1 text-xs font-bold">
-            {['vi','en'].map(l => (
+            {['vi', 'en'].map(l => (
               <button key={l} onClick={() => setLang(l)}
                 className={`px-3 py-1 rounded-full transition-all ${lang === l ? 'bg-primary text-white' : 'text-gray-500'}`}>
                 {l.toUpperCase()}
@@ -113,7 +123,7 @@ export default function RegisterPage() {
         <div className="grid md:grid-cols-2 gap-10 items-start">
           {/* Left — benefits */}
           <div>
-            <Link href="/" className="font-heading font-black text-primary text-2xl block mb-6">LÒ ĐỒ ĂN</Link>
+            <Link href="/" className="font-heading font-black text-primary text-2xl block mb-6">Ovenly</Link>
             <h1 className="font-heading text-4xl font-bold text-gray-900 mb-4 leading-tight">{t.title}</h1>
             <p className="text-gray-500 text-lg mb-8">{t.subtitle}</p>
             <div className="space-y-3">
@@ -125,11 +135,6 @@ export default function RegisterPage() {
                   <span className="text-gray-700 font-medium">{b}</span>
                 </div>
               ))}
-            </div>
-            <div className="mt-8 p-4 bg-white rounded-2xl border border-gray-200">
-              <p className="text-sm text-gray-500">
-                {lang === 'vi' ? 'Hơn 7 nhà hàng đã tin tùng Ovenly' : 'Over 7 restaurants trust Ovenly'}
-              </p>
             </div>
           </div>
 
