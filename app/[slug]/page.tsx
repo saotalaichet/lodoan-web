@@ -73,7 +73,6 @@ interface CartItem {
   addons?: { name: string; price: number }[];
 }
 
-// FIX 3 support: localStorage cart persistence
 function useCart() {
   const [cart, setCart] = useState<CartItem[]>(() => {
     if (typeof window === 'undefined') return [];
@@ -293,7 +292,6 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
   );
 }
 
-// FIX 7: Added restaurant prop and min order warning
 function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, lang, restaurant }: {
   cart: CartItem[]; subtotal: number; totalQty: number;
   onSet: (id: string, qty: number) => void;
@@ -355,7 +353,6 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
               <p className="text-xs text-red-600">{lang === 'vi' ? 'Vui lòng liên hệ nhà hàng trực tiếp.' : 'Please contact the restaurant directly.'}</p>
             </div>
           ) : belowMin ? (
-            // FIX 7: Min order warning
             <div className="space-y-2">
               <div className="bg-orange-50 border border-orange-200 rounded-xl p-3">
                 <p className="text-xs font-semibold text-orange-700">
@@ -380,7 +377,6 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
   );
 }
 
-// FIX 6: State declarations are BEFORE the `if (!isOpen) return null` so address persists on reopen
 function DeliveryOptionsModal({ isOpen, onClose, onConfirm, restaurant, subtotal, lang }: {
   isOpen: boolean; onClose: () => void;
   onConfirm: (details: { orderType: string; address?: string; fee?: number }) => void;
@@ -521,6 +517,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
     finally { setPromoLoading(false); }
   };
 
+  // BUG 1 FIX: Added orderRes.ok check and order.id validation
   const handlePlace = async () => {
     if (placingRef.current) return;
     placingRef.current = true;
@@ -528,8 +525,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
     try {
       if (!name.trim() || !phone.trim() || !email.trim()) {
         alert(lang === 'vi' ? 'Vui lòng điền đầy đủ thông tin' : 'Please fill in all required fields');
-        // FIX 1: Reset placing state on validation failure so user can retry
-        setPlacing(false); placingRef.current = false;
+        setPlacing(false);
+        placingRef.current = false;
         return;
       }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
@@ -550,7 +547,20 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
           confirmed_at: new Date().toISOString(),
         }),
       });
+
+      // BUG 1 FIX: Check if order creation succeeded before proceeding
+      if (!orderRes.ok) {
+        const errData = await orderRes.json().catch(() => ({}));
+        throw new Error(errData?.message || 'Không thể tạo đơn hàng. Vui lòng thử lại.');
+      }
+
       const order = await orderRes.json();
+
+      // BUG 1 FIX: Validate that we got a valid order ID back
+      if (!order?.id) {
+        throw new Error('Không nhận được mã đơn hàng. Vui lòng thử lại.');
+      }
+
       if (ONLINE.includes(paymentMethod)) {
         const redirectUrl = `${window.location.origin}${window.location.pathname}?payment=success&orderId=${order.id}`;
         const result = await createPayment(paymentMethod as any, order.id, total, redirectUrl);
@@ -559,7 +569,12 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         return;
       }
       onSuccess(order.id, orderType, paymentMethod);
-    } finally { setPlacing(false); placingRef.current = false; }
+    } catch (err: any) {
+      alert(err?.message || (lang === 'vi' ? 'Có lỗi xảy ra. Vui lòng thử lại.' : 'An error occurred. Please try again.'));
+    } finally {
+      setPlacing(false);
+      placingRef.current = false;
+    }
   };
 
   if (!checkoutMode) {
@@ -969,6 +984,8 @@ export default function RestaurantPage() {
   const [allItems, setAllItems] = useState<any[]>([]);
   const [loadingRestaurant, setLoadingRestaurant] = useState(true);
   const [loadingItems, setLoadingItems] = useState(true);
+  // BUG 5 FIX: Added menu error state
+  const [menuError, setMenuError] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [lang, setLang] = useState('vi');
   const [customer, setCustomer] = useState<any>(null);
@@ -982,13 +999,8 @@ export default function RestaurantPage() {
   const [paymentReturnStatus, setPaymentReturnStatus] = useState<string | null>(null);
   const pollStartRef = useRef<number | null>(null);
   const [navOpen, setNavOpen] = useState(false);
+  // BUG 2 FIX: Always default to 'menu' tab, never read from URL path
   const [activeTab, setActiveTab] = useState<'menu' | 'location' | 'reviews'>('menu');
-  useEffect(() => {
-    const path = window.location.pathname;
-    if (path.endsWith('/location')) setActiveTab('location');
-    else if (path.endsWith('/reviews')) setActiveTab('reviews');
-    else setActiveTab('menu');
-  }, []);
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(false);
 
@@ -1029,25 +1041,33 @@ export default function RestaurantPage() {
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
     const lastSlug = sessionStorage.getItem('ovenly_cart_slug');
-if (lastSlug && lastSlug !== slug) clear();
-sessionStorage.setItem('ovenly_cart_slug', slug);
+    if (lastSlug && lastSlug !== slug) clear();
+    sessionStorage.setItem('ovenly_cart_slug', slug);
     const load = async () => {
       try {
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
         const data = await res.json();
         if (!data) { setLoadingRestaurant(false); setLoadingItems(false); return; }
         setRestaurant(data);
-        document.title = `${data.name} | Menu & Đặt Hàng Online`;
-        const menuRes = await fetch(`/api/menu?slug=${encodeURIComponent(slug)}`);
-        const menuData = await menuRes.json();
-        setCategories(menuData.categories || []);
-        setAllItems(menuData.items || []);
-      } catch (err) { console.error('Failed to load restaurant:', err); }
+        // BUG 3 FIX: Removed document.title override — SEO layout handles this
+
+        // BUG 5 FIX: Added try/catch and error state for menu fetch
+        try {
+          const menuRes = await fetch(`/api/menu?slug=${encodeURIComponent(slug)}`);
+          if (!menuRes.ok) throw new Error('Menu fetch failed');
+          const menuData = await menuRes.json();
+          setCategories(menuData.categories || []);
+          setAllItems(menuData.items || []);
+        } catch {
+          setMenuError(true);
+        }
+      } catch (err) {
+        console.error('Failed to load restaurant:', err);
+      }
       setLoadingRestaurant(false);
       setLoadingItems(false);
     };
     load();
-    // FIX 3: Poll only restaurant status every 30s — not the full menu
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
@@ -1130,8 +1150,9 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
   };
 
   const handleSuccess = (orderId: string, orderType: string, paymentMethod: string) => {
+    const savedAddress = deliveryDetails?.address || '';
     setCheckoutOrderType(null); setDeliveryDetails(null); clear();
-    setSuccessOrder({ id: orderId, status: 'pending', notes: '', orderType, paymentMethod, items: [], delivery_address: deliveryDetails?.address || '' });
+    setSuccessOrder({ id: orderId, status: 'pending', notes: '', orderType, paymentMethod, items: [], delivery_address: savedAddress });
   };
 
   if (!slug || slug === 'undefined') return (
@@ -1231,12 +1252,10 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
               <button onClick={() => setLang('vi')} className={`px-2.5 py-1 rounded-full transition-all ${lang === 'vi' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>VI</button>
               <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-full transition-all ${lang === 'en' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500'}`}>EN</button>
             </div>
-            {/* Cart button — icon only on mobile, shows price on desktop */}
             {activeTab === 'menu' && (
               <button onClick={() => setShowMobileCart(true)}
                 className="relative flex items-center gap-2 bg-primary text-white px-3 py-2 rounded-xl text-sm font-semibold hover:opacity-90 transition-all">
                 <ShoppingBag className="w-4 h-4" />
-                {/* FIX: hide subtotal on mobile to avoid denting logo */}
                 {totalQty > 0 && <span className="hidden md:inline text-sm font-bold">{fmt(subtotal)}</span>}
                 {totalQty > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-primary text-[10px] font-black rounded-full flex items-center justify-center shadow">
@@ -1245,7 +1264,6 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
                 )}
               </button>
             )}
-            {/* FIX 4 & 5: Profile → /profile click, name hidden on mobile; Login saves redirect + icon-only on mobile */}
             {customer ? (
               <div className="flex items-center gap-1.5">
                 <button
@@ -1371,7 +1389,18 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
                 <span className="text-2xl font-black text-gray-900 tracking-tight">Menu</span>
                 <div className="h-0.5 flex-1 rounded-full bg-primary" />
               </div>
-              {loadingItems ? (
+              {/* BUG 5 FIX: Show error state if menu fails to load */}
+              {menuError ? (
+                <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
+                  <p className="text-4xl mb-4">😕</p>
+                  <p className="font-bold text-gray-700 mb-2">{lang === 'vi' ? 'Không thể tải thực đơn' : 'Could not load menu'}</p>
+                  <p className="text-sm text-gray-500 mb-4">{lang === 'vi' ? 'Vui lòng thử lại sau' : 'Please try again later'}</p>
+                  <button onClick={() => { setMenuError(false); setLoadingItems(true); window.location.reload(); }}
+                    className="bg-primary text-white font-bold px-6 py-2 rounded-full hover:opacity-90 text-sm">
+                    {lang === 'vi' ? 'Thử lại' : 'Try Again'}
+                  </button>
+                </div>
+              ) : loadingItems ? (
                 <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Đang tải thực đơn...' : 'Loading menu...'}</div>
               ) : groupedItems.length === 0 ? (
                 <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Chưa có món ăn' : 'No items yet'}</div>
@@ -1388,7 +1417,6 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
                                 item={item}
-                                // FIX 2: match add-on items by base id prefix so qty shows correctly
                                 qty={cart.filter(c => c.id === item.id || c.id.startsWith(item.id)).reduce((s, i) => s + i.qty, 0)}
                                 onAdd={add} onSet={set}
                                 onOpen={(it, groups) => setSelectedItem({ item: it, groups })}
@@ -1546,7 +1574,7 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
           )}
         </div>
 
-        {/* Desktop cart — FIX 7: pass restaurant for min order check */}
+        {/* Desktop cart */}
         {activeTab === 'menu' && (
           <div className="hidden md:block w-72 flex-shrink-0">
             <div className="sticky top-[112px]">
@@ -1569,7 +1597,7 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
         </div>
       )}
 
-      {/* Mobile cart drawer — FIX 7: pass restaurant */}
+      {/* Mobile cart drawer */}
       {showMobileCart && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
@@ -1621,9 +1649,8 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
                     setActiveTab(item.id);
                     setNavOpen(false);
                     if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
-                    const pathMap: Record<string, string> = { menu: '/menu', location: '/location', reviews: '/reviews' };
-                    const base = window.location.pathname.split('/')[1];
-                    window.history.pushState({}, '', `/${base}${pathMap[item.id]}`);
+                    // BUG 2 FIX: Use replaceState with current pathname to avoid 404 on refresh
+                    window.history.replaceState({}, '', window.location.pathname);
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
                   <div>
@@ -1634,7 +1661,6 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
                 </button>
               ))}
             </nav>
-            {/* Logout option in nav drawer for mobile */}
             {customer && (
               <div className="px-3 pb-3 border-t border-gray-100 pt-3 space-y-1">
                 <button onClick={() => { window.location.href = '/profile'; setNavOpen(false); }}
