@@ -458,7 +458,6 @@ const PAYMENT_METHODS = [
   { key: 'momo', vi: 'Ví MoMo', en: 'MoMo Wallet', icon: '💜', for: ['pickup', 'delivery'] },
   { key: 'zalopay', vi: 'ZaloPay', en: 'ZaloPay', icon: '🔵', for: ['pickup', 'delivery'] },
   { key: 'vnpay', vi: 'VNPay', en: 'VNPay', icon: '🏦', for: ['pickup', 'delivery'] },
-  { key: 'creditcard', vi: '9Pay — Thẻ Tín Dụng / Ghi Nợ', en: '9Pay — Credit / Debit Card', icon: '💳', for: ['pickup', 'delivery'] },
 ];
 const ONLINE = ['momo', 'zalopay', 'vnpay'];
 
@@ -882,7 +881,6 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
     cash_or_transfer: lang === 'vi' ? 'Tiền mặt / Chuyển khoản' : 'Cash / Bank Transfer',
     cod: lang === 'vi' ? 'Tiền mặt khi giao' : 'Cash on Delivery',
     momo: 'MoMo', zalopay: 'ZaloPay', vnpay: 'VNPay',
-    creditcard: lang === 'vi' ? 'Thẻ tín dụng (9Pay)' : 'Credit Card (9Pay)',
   };
   const Logo = () => restaurant?.logo
     ? <img src={restaurant.logo} alt={restaurant.name} className="object-contain mx-auto mb-8" style={{ height: '90px', width: 'auto', maxWidth: '220px' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
