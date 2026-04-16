@@ -870,8 +870,8 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
     creditcard: lang === 'vi' ? 'Thẻ tín dụng (9Pay)' : 'Credit Card (9Pay)',
   };
   const Logo = () => restaurant?.logo
-    ? <img src={restaurant.logo} alt={restaurant.name} className="h-14 object-contain mx-auto mb-8" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-    : <p className="font-bold text-xl text-gray-900 mb-8">{restaurant?.name}</p>;
+    ? <img src={restaurant.logo} alt={restaurant.name} className="object-contain mx-auto mb-8" style={{ height: '90px', width: 'auto', maxWidth: '220px' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+    : <p className="font-bold text-2xl text-gray-900 mb-8">{restaurant?.name}</p>;
   const BackBtn = () => (
     <button onClick={onBack} className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:opacity-90 transition-colors w-full">
       {lang === 'vi' ? 'Quay lại thực đơn' : 'Back to Menu'}
@@ -1213,7 +1213,7 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center min-w-0 flex-shrink">
             {restaurant.logo ? (
-              <img src={restaurant.logo} alt={restaurant.name} className="object-contain flex-shrink-0" style={{ height: '44px', width: 'auto', maxWidth: '140px' }}
+              <img src={restaurant.logo} alt={restaurant.name} className="object-contain flex-shrink-0" style={{ height: '56px', width: 'auto', maxWidth: '180px' }}
                 onError={e => {
                   const img = e.target as HTMLImageElement;
                   img.style.display = 'none';
@@ -1594,7 +1594,7 @@ sessionStorage.setItem('ovenly_cart_slug', slug);
           <div className="relative ml-auto w-64 bg-white h-full flex flex-col shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               {restaurant.logo ? (
-                <img src={restaurant.logo} alt={restaurant.name} className="h-9 w-auto object-contain"
+                <img src={restaurant.logo} alt={restaurant.name} className="w-auto object-contain" style={{ height: '48px', maxWidth: '160px' }}
                   onError={e => {
                     const img = e.target as HTMLImageElement;
                     img.style.display = 'none';
