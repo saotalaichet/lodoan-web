@@ -15,8 +15,8 @@ const organizationSchema = {
   '@type': 'Organization',
   name: 'LÒ ĐỒ ĂN',
   alternateName: 'Lo Do An',
-  url: 'https://lodoan.vn',
-  logo: 'https://lodoan.vn/lodoan-favicon.ico',
+  url: 'https://www.lodoan.vn',
+  logo: 'https://www.lodoan.vn/lodoan-favicon.ico',
   sameAs: [],
 };
 
@@ -24,12 +24,12 @@ const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   name: 'LÒ ĐỒ ĂN',
-  url: 'https://lodoan.vn',
+  url: 'https://www.lodoan.vn',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://lodoan.vn/search?q={search_term_string}',
+      urlTemplate: 'https://www.lodoan.vn/search?q={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
   },
