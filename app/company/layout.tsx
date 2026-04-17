@@ -68,7 +68,7 @@ const organizationSchema = {
   name: 'Ovenly',
   alternateName: 'Ovenly Vietnam',
   url: 'https://www.ovenly.io',
-  logo: 'https://www.ovenly.io/ovenly-apple.jpg',
+  logo: 'https://www.ovenly.io/ovenly-og.png',
   sameAs: [],
 };
 

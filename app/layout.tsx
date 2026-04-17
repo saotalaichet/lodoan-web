@@ -16,7 +16,7 @@ const organizationSchema = {
   name: 'LÒ ĐỒ ĂN',
   alternateName: 'Lo Do An',
   url: 'https://www.lodoan.vn',
-  logo: 'https://www.lodoan.vn/lodoan-favicon.ico',
+  logo: 'https://www.lodoan.vn/lodoan-og.jpg',
   sameAs: [],
 };
 
