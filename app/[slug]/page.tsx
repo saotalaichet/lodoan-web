@@ -1209,17 +1209,6 @@ export default function RestaurantPage() {
     setSuccessOrder({ id: orderId, status: 'pending', notes: '', orderType, paymentMethod, items: [], delivery_address: savedAddress });
   };
 
-  // Dynamic brand color
-  useEffect(() => {
-    const color = restaurant?.primary_color;
-    if (color) {
-      document.documentElement.style.setProperty('--color-primary', color);
-    } else {
-      document.documentElement.style.removeProperty('--color-primary');
-    }
-    return () => { document.documentElement.style.removeProperty('--color-primary'); };
-  }, [restaurant?.primary_color]);
-
   if (!slug || slug === 'undefined') return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center"><p className="text-5xl mb-4">😕</p>
