@@ -247,7 +247,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
               ))}
             </div>
             <span style={{ fontSize: '11px', fontWeight: '600', color: '#1A1A1A' }}>{avgRating?.toFixed(1)}</span>
-            <span style={{ fontSize: '11px', color: '#888888' }}>({totalRatings} {lang === 'vi' ? 'đánh giá' : 'reviews'})</span>
+            <span style={{ fontSize: '11px', color: '#888888' }}>({totalRatings})</span>
           </div>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
