@@ -150,7 +150,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
     CUISINE_DISPLAY[c]?.[lang === 'vi' ? 'vi' : 'en'] ?? c
   );
 
-  const avgRating = restaurant.average_rating;
+  const avgRating = restaurant.average_rating ? parseFloat(restaurant.average_rating) : null;
   const totalRatings = restaurant.total_ratings;
 
   const safeSlug = restaurant.slug && restaurant.slug !== 'undefined' && restaurant.slug !== 'null'
@@ -420,7 +420,7 @@ export default function MarketplaceClient() {
       }
       const tierDiff = (tierOrder[a.subscription_tier] ?? 2) - (tierOrder[b.subscription_tier] ?? 2);
       if (tierDiff !== 0) return tierDiff;
-      return (b.average_rating || 0) - (a.average_rating || 0);
+      return (parseFloat(b.average_rating) || 0) - (parseFloat(a.average_rating) || 0);
     });
 
     return list;
