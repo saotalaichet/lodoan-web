@@ -1706,12 +1706,9 @@ export default function RestaurantPage() {
                     window.history.replaceState({}, '', item.path);
                   }}
                   className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-lg">{item.icon}</span>
-                    <div>
-                      <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
-                    </div>
+                  <div>
+                    <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
                   </div>
                   {activeTab === item.id && <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />}
                 </button>
