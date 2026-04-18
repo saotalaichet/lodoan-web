@@ -1710,7 +1710,7 @@ export default function RestaurantPage() {
                     <span className="text-lg">{item.icon}</span>
                     <div>
                       <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{item.path}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
                     </div>
                   </div>
                   {activeTab === item.id && <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />}
