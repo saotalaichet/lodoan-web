@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   if (!slug) return NextResponse.json(null, { status: 400 });
 
   try {
-    const res = await fetch(`${RAILWAY}/api/restaurants/${encodeURIComponent(slug)}`, {
+    const res = await fetch(`${RAILWAY}/api/restaurants/slug/${encodeURIComponent(slug)}`, {
       cache: 'no-store',
     });
     if (!res.ok) return NextResponse.json(null, { status: 404 });
