@@ -1266,7 +1266,15 @@ export default function RestaurantPage() {
   );
 
   // Dynamic brand color
-  const primaryColor = restaurant?.primary_color || null;
+  useEffect(() => {
+    const color = restaurant?.primary_color;
+    if (color) {
+      document.documentElement.style.setProperty('--color-primary', color);
+    } else {
+      document.documentElement.style.removeProperty('--color-primary');
+    }
+    return () => { document.documentElement.style.removeProperty('--color-primary'); };
+  }, [restaurant?.primary_color]);
 
   if (successOrder) return <SuccessScreen successOrder={successOrder} restaurant={restaurant} lang={lang} onBack={() => { setSuccessOrder(null); pollStartRef.current = null; }} />;
 
@@ -1286,9 +1294,6 @@ export default function RestaurantPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {primaryColor && (
-        <style dangerouslySetInnerHTML={{ __html: `:root { --color-primary: ${primaryColor}; }` }} />
-      )}
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
