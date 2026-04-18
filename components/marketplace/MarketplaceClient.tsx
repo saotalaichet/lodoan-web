@@ -61,34 +61,65 @@ function getStatusBadgeClass(status: string) {
 }
 
 const CUISINE_DISPLAY: Record<string, any> = {
+  // Vietnamese food types
   Vietnamese: { en: 'Vietnamese', vi: 'Việt Nam' },
+  Pho: { en: 'Phở', vi: 'Phở' },
+  BanhMi: { en: 'Bánh Mì', vi: 'Bánh Mì' },
+  Banh_Mi: { en: 'Bánh Mì', vi: 'Bánh Mì' },
+  HueFood: { en: 'Huế Food', vi: 'Ẩm Thực Huế' },
+  Southern: { en: 'Southern Viet', vi: 'Nam Bộ' },
+  Northern: { en: 'Northern Viet', vi: 'Bắc Bộ' },
+  CentralViet: { en: 'Central Viet', vi: 'Miền Trung' },
+  Vegetarian: { en: 'Vegetarian', vi: 'Chay' },
+  Vegan: { en: 'Vegan', vi: 'Thuần Chay' },
+  HotPot: { en: 'Hot Pot', vi: 'Lẩu' },
+  Hotpot: { en: 'Hot Pot', vi: 'Lẩu' },
+  BBQ: { en: 'BBQ', vi: 'Nướng' },
+  Grill: { en: 'Grill', vi: 'Nướng' },
+  Seafood: { en: 'Seafood', vi: 'Hải Sản' },
+  Noodles: { en: 'Noodles', vi: 'Mì & Bún' },
+  Rice: { en: 'Rice Dishes', vi: 'Cơm' },
+  Soup: { en: 'Soup', vi: 'Súp & Canh' },
+  StreetFood: { en: 'Street Food', vi: 'Đồ Ăn Vặt' },
+  FastFood: { en: 'Fast Food', vi: 'Đồ Ăn Nhanh' },
+  Snacks: { en: 'Snacks', vi: 'Ăn Vặt' },
+  // Asian cuisines
   Japanese: { en: 'Japanese', vi: 'Nhật Bản' },
+  Sushi: { en: 'Sushi', vi: 'Sushi' },
+  Ramen: { en: 'Ramen', vi: 'Ramen' },
   Korean: { en: 'Korean', vi: 'Hàn Quốc' },
   Chinese: { en: 'Chinese', vi: 'Trung Hoa' },
   Thai: { en: 'Thai', vi: 'Thái Lan' },
+  Indian: { en: 'Indian', vi: 'Ấn Độ' },
+  // Western
   Italian: { en: 'Italian', vi: 'Ý' },
+  Pizza: { en: 'Pizza', vi: 'Pizza' },
   American: { en: 'American', vi: 'Mỹ' },
-  Fusion: { en: 'Fusion', vi: 'Đa Phong Cách' },
-  Cafe: { en: 'Cafe', vi: 'Cafe' },
-  Dessert: { en: 'Dessert', vi: 'Tráng Miệng' },
+  Burger: { en: 'Burgers', vi: 'Burger' },
+  Sandwich: { en: 'Sandwich', vi: 'Bánh Sandwich' },
+  // Drinks & desserts
+  Cafe: { en: 'Café', vi: 'Cà Phê' },
+  Coffee: { en: 'Coffee', vi: 'Cà Phê' },
   BubbleTea: { en: 'Bubble Tea', vi: 'Trà Sữa' },
-  bubbletea: { en: 'Bubble Tea', vi: 'Trà Sữa' },
-  bubble_tea: { en: 'Bubble Tea', vi: 'Trà Sữa' },
-  Seafood: { en: 'Seafood', vi: 'Hải Sản' },
-  seafood: { en: 'Seafood', vi: 'Hải Sản' },
+  MilkTea: { en: 'Milk Tea', vi: 'Trà Sữa' },
+  Tea: { en: 'Tea', vi: 'Trà' },
+  Juice: { en: 'Juice', vi: 'Nước Ép' },
+  Smoothie: { en: 'Smoothie', vi: 'Sinh Tố' },
+  Dessert: { en: 'Dessert', vi: 'Tráng Miệng' },
+  IceCream: { en: 'Ice Cream', vi: 'Kem' },
+  Cake: { en: 'Cake & Bakery', vi: 'Bánh Ngọt' },
+  Bakery: { en: 'Bakery', vi: 'Tiệm Bánh' },
+  // Other
+  Fusion: { en: 'Fusion', vi: 'Đa Phong Cách' },
+  FineDining: { en: 'Fine Dining', vi: 'Nhà Hàng Cao Cấp' },
+  Buffet: { en: 'Buffet', vi: 'Buffet' },
   Other: { en: 'Other', vi: 'Khác' },
-  vietnamese: { en: 'Vietnamese', vi: 'Việt Nam' },
-  japanese: { en: 'Japanese', vi: 'Nhật Bản' },
-  korean: { en: 'Korean', vi: 'Hàn Quốc' },
-  chinese: { en: 'Chinese', vi: 'Trung Hoa' },
-  thai: { en: 'Thai', vi: 'Thái Lan' },
-  italian: { en: 'Italian', vi: 'Ý' },
-  american: { en: 'American', vi: 'Mỹ' },
-  fusion: { en: 'Fusion', vi: 'Đa Phong Cách' },
-  cafe: { en: 'Cafe', vi: 'Cafe' },
-  dessert: { en: 'Dessert', vi: 'Tráng Miệng' },
-  other: { en: 'Other', vi: 'Khác' },
 };
+// Auto-generate lowercase versions for all keys
+Object.keys(CUISINE_DISPLAY).forEach(k => {
+  const lower = k.toLowerCase();
+  if (!CUISINE_DISPLAY[lower]) CUISINE_DISPLAY[lower] = CUISINE_DISPLAY[k];
+});
 
 function HighlightText({ text, query }: { text: string; query: string }) {
   if (!query || !text) return <>{text}</>;
