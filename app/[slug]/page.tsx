@@ -1694,7 +1694,7 @@ export default function RestaurantPage() {
             </div>
             <nav className="flex-1 px-3 py-4 space-y-1">
               {([
-                { id: 'menu' as const, label: lang === 'vi' ? 'Menu' : 'Menu', sub: lang === 'vi' ? 'Xem thực đơn & đặt hàng' : 'Browse menu & order', icon: '🍽️', path: `/${slug}` },
+                { id: 'menu' as const, label: lang === 'vi' ? 'Menu' : 'Menu', sub: lang === 'vi' ? 'Xem thực đơn & đặt hàng' : 'Browse menu & order', icon: '🍽️', path: `/${slug}/menu` },
                 { id: 'location' as const, label: lang === 'vi' ? 'Vị Trí' : 'Location', sub: lang === 'vi' ? 'Địa chỉ & giờ mở cửa' : 'Address & hours', icon: '📍', path: `/${slug}/location` },
                 { id: 'reviews' as const, label: lang === 'vi' ? 'Đánh Giá' : 'Reviews', sub: lang === 'vi' ? 'Từ khách đã đặt hàng' : 'From verified orders', icon: '⭐', path: `/${slug}/reviews` },
               ]).map(item => (
