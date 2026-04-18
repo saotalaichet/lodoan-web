@@ -1265,16 +1265,6 @@ export default function RestaurantPage() {
     </div>
   );
 
-  // Dynamic brand color
-  useEffect(() => {
-    const color = restaurant?.primary_color;
-    if (color) {
-      document.documentElement.style.setProperty('--color-primary', color);
-    } else {
-      document.documentElement.style.removeProperty('--color-primary');
-    }
-    return () => { document.documentElement.style.removeProperty('--color-primary'); };
-  }, [restaurant?.primary_color]);
 
   if (successOrder) return <SuccessScreen successOrder={successOrder} restaurant={restaurant} lang={lang} onBack={() => { setSuccessOrder(null); pollStartRef.current = null; }} />;
 
