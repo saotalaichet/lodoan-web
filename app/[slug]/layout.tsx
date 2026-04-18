@@ -4,7 +4,7 @@ const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
 async function getRestaurant(slug: string) {
   try {
-    const res = await fetch(`${RAILWAY}/api/restaurants/${slug}`, { cache: 'no-store' });
+    const res = await fetch(`${RAILWAY}/api/restaurants/slug/${slug}`, { cache: 'no-store' });
     if (!res.ok) return null;
     return res.json();
   } catch { return null; }
