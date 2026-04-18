@@ -873,6 +873,33 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
 function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
   successOrder: any; restaurant: any; lang: string; onBack: () => void;
 }) {
+  const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const submitReview = async () => {
+    if (!reviewRating) return;
+    setReviewSubmitting(true);
+    try {
+      await fetch(`${RAILWAY}/api/reviews`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          order_id: successOrder.id,
+          restaurant_id: restaurant.id,
+          customer_name: successOrder.customer_name,
+          customer_email: successOrder.customer_email,
+          rating: reviewRating,
+          comment: reviewComment,
+          rating_token: successOrder.rating_token || successOrder.id,
+        }),
+      });
+      setReviewSubmitted(true);
+    } catch { setReviewSubmitted(true); }
+    setReviewSubmitting(false);
+  };
   const { id, status, notes, orderType, paymentMethod } = successOrder;
   const isWaiting = !['accepted', 'preparing', 'ready', 'delivering', 'completed', 'declined', 'timed_out'].includes(status);
   const declineReason = notes?.match(/Reason: (.+)/)?.[1] || '';
@@ -951,6 +978,35 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
         {orderType === 'delivery' && successOrder.delivery_address && (
           <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 mb-5 text-sm text-gray-700 flex items-start gap-2 text-left">
             <span className="text-lg flex-shrink-0">📍</span><span>{successOrder.delivery_address}</span>
+          </div>
+        )}
+        {!reviewSubmitted ? (
+          <div className="bg-white border border-gray-200 rounded-2xl p-4 mb-4 text-left">
+            <p className="text-sm font-bold text-gray-800 mb-3">{lang === 'vi' ? '⭐ Đánh giá nhà hàng' : '⭐ Rate your experience'}</p>
+            <div className="flex gap-2 justify-center mb-3">
+              {[1,2,3,4,5].map(s => (
+                <button key={s} type="button" onMouseEnter={() => setReviewHover(s)} onMouseLeave={() => setReviewHover(0)} onClick={() => setReviewRating(s)}>
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill={(reviewHover || reviewRating) >= s ? '#F59E0B' : '#E5E7EB'}>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </button>
+              ))}
+            </div>
+            {reviewRating > 0 && (
+              <>
+                <textarea value={reviewComment} onChange={e => setReviewComment(e.target.value)}
+                  placeholder={lang === 'vi' ? 'Nhận xét của bạn (tùy chọn)...' : 'Leave a comment (optional)...'}
+                  rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm outline-none resize-none mb-3" />
+                <button onClick={submitReview} disabled={reviewSubmitting}
+                  className="w-full bg-amber-500 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-amber-600 disabled:opacity-50">
+                  {reviewSubmitting ? (lang === 'vi' ? 'Đang gửi...' : 'Submitting...') : (lang === 'vi' ? 'Gửi đánh giá' : 'Submit Review')}
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 mb-4 text-center">
+            <p className="text-green-700 font-bold">{lang === 'vi' ? '🙏 Cảm ơn bạn đã đánh giá!' : '🙏 Thank you for your review!'}</p>
           </div>
         )}
         <BackBtn />
@@ -1557,7 +1613,7 @@ export default function RestaurantPage() {
                         </div>
                         <div className="flex gap-0.5">
                           {[1,2,3,4,5].map(s => (
-                            <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= r.star_rating ? '#F59E0B' : '#E5E7EB'}>
+                            <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= r.rating ? '#F59E0B' : '#E5E7EB'}>
                               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                             </svg>
                           ))}
