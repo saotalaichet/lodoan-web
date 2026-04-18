@@ -1173,6 +1173,17 @@ export default function RestaurantPage() {
     return () => clearInterval(interval);
   }, [successOrder?.id, successOrder?.status]);
 
+  // Dynamic brand color — must be before early returns
+  useEffect(() => {
+    const color = restaurant?.primary_color;
+    if (color) {
+      document.documentElement.style.setProperty('--color-primary', color);
+    } else {
+      document.documentElement.style.removeProperty('--color-primary');
+    }
+    return () => { document.documentElement.style.removeProperty('--color-primary'); };
+  }, [restaurant?.primary_color]);
+
   const status = getRestaurantStatus(restaurant);
   const isClosed = status !== 'OPEN';
   const todayHours = getTodayHours(restaurant);
