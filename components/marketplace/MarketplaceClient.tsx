@@ -544,7 +544,7 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-10 px-4 overflow-hidden">
+      <div className="relative text-white py-10 px-4 overflow-hidden" style={{background:"#A32020"}}>
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-2xl md:text-3xl font-black mb-2 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
