@@ -544,7 +544,7 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative bg-gradient-to-br from-primary/90 via-primary/75 to-primary/60 text-white py-10 px-4 overflow-hidden">
+      <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-10 px-4 overflow-hidden">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-2xl md:text-3xl font-black mb-2 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
@@ -612,9 +612,9 @@ export default function MarketplaceClient() {
           </div>
         </div>
         <div className="absolute top-4 right-4 w-40 h-32 rounded-2xl overflow-hidden shadow-2xl hidden md:block" style={{transform:'rotate(3deg)'}}>
-          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_256,c_fill/dumplings_uftyxf.png" alt="" className="w-full h-full object-cover" />
+          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_256,c_fill/pho_uaw9qx.png" alt="" className="w-full h-full object-cover" />
         </div>
-        <div className="absolute bottom-4 w-40 h-32 rounded-2xl overflow-hidden shadow-2xl hidden md:block" style={{transform:'rotate(-3deg)', left:'-20px'}}>
+        <div className="absolute bottom-4 left-4 w-40 h-32 rounded-2xl overflow-hidden shadow-2xl hidden md:block" style={{transform:'rotate(-3deg)'}}>
           <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_256,c_fill/banhmi_yvelxm.png" alt="" className="w-full h-full object-cover" />
         </div>
       </div>
