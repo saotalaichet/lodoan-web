@@ -544,25 +544,13 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-14 px-4 overflow-hidden">
-        <div className="absolute inset-0 grid grid-cols-5 pointer-events-none select-none">
-          {[
-            'https://res.cloudinary.com/dvnssii5h/image/upload/pho_uaw9qx.png',
-            'https://res.cloudinary.com/dvnssii5h/image/upload/pizza_rk3cau.png',
-            'https://res.cloudinary.com/dvnssii5h/image/upload/poke_s5txe1.png',
-            'https://res.cloudinary.com/dvnssii5h/image/upload/banhmi_yvelxm.png',
-            'https://res.cloudinary.com/dvnssii5h/image/upload/dumplings_uftyxf.png',
-          ].map((src, i) => (
-            <img key={i} src={src} alt="" className="w-full h-full object-cover object-center" />
-          ))}
-        </div>
-        <div className="absolute inset-0 bg-primary/60 pointer-events-none" />
+      <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-14 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-3xl md:text-5xl font-black mb-3 leading-tight">
-            {lang === 'vi' ? 'Khám phá địa điểm ăn uống online' : 'Order food online near you'}
+            {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
           </h1>
           <p className="text-white/80 mb-8 text-base md:text-lg">
-            {lang === 'vi' ? 'Đặt hàng trực tuyến, giao tận nơi hoặc mang về' : 'Delivery or pickup from restaurants, cafés, and bubble tea shops'}
+            {lang === 'vi' ? 'Đặt món online, giao tận nơi hoặc mang về' : 'Delivery or pickup from restaurants, cafés, and bubble tea shops'}
           </p>
           <div className="max-w-2xl mx-auto space-y-3">
             {/* Delivery address */}
