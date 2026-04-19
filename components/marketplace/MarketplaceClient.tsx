@@ -611,7 +611,7 @@ export default function MarketplaceClient() {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-48 h-40 overflow-hidden hidden md:block" style={{transform:'rotate(-3deg) translateX(-20px) translateY(10px)'}}>
+        <div className="absolute bottom-0 left-0 w-48 h-40 overflow-hidden hidden md:block" style={{transform:'rotate(-3deg) translateX(-64px) translateY(10px)'}}>
           <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_400,h_320,c_fill/L_4_etjzdo.png" alt="" className="w-full h-full object-cover" />
         </div>
       </div>
