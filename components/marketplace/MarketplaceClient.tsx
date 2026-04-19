@@ -614,7 +614,7 @@ export default function MarketplaceClient() {
               <span className="text-sm font-medium text-gray-800 truncate">{deliveryAddress}</span>
               {deliveryCoords && (
                 <span className="text-xs text-green-600 font-medium flex-shrink-0">
-                  ✓ {lang === 'vi' ? 'Đang lọc nhà hàng gần bạn' : 'Filtering nearby restaurants'}
+                  ✓ {lang === 'vi' ? 'Đang lọc địa điểm gần bạn' : 'Filtering nearby places'}
                 </span>
               )}
             </div>
@@ -645,7 +645,7 @@ export default function MarketplaceClient() {
           <div className="mb-10">
             <h2 className="font-bold text-gray-900 text-xl mb-4 flex items-center gap-2">
               <Crown className="w-5 h-5 text-yellow-500" />
-              {lang === 'vi' ? 'Nhà Hàng Nổi Bật' : 'Featured Restaurants'}
+              {lang === 'vi' ? 'Địa điểm nổi bật' : 'Featured Places'}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {featuredRestaurants.map(r => <RestaurantCard key={r.id} restaurant={r} lang={lang} search={search} />)}
@@ -655,10 +655,10 @@ export default function MarketplaceClient() {
 
         <div className="mb-4 flex items-center justify-between">
           <h2 className="font-bold text-gray-900 text-xl">
-            {lang === 'vi' ? 'Tất Cả Nhà Hàng' : 'All Restaurants'}
+            {lang === 'vi' ? 'Tất cả địa điểm' : 'All Places'}
           </h2>
           <span className="text-sm text-gray-500">
-            {loading ? '...' : `${filteredRestaurants.length} ${lang === 'vi' ? 'nhà hàng' : 'restaurants'}`}
+            {loading ? '...' : `${lang === 'vi' ? 'Hiển thị' : 'Showing'} ${filteredRestaurants.length} ${lang === 'vi' ? 'địa điểm' : 'places'}`}
           </span>
         </div>
 
@@ -680,10 +680,10 @@ export default function MarketplaceClient() {
             <p className="text-5xl mb-4">🍜</p>
             <p className="text-gray-700 text-lg font-semibold mb-2">
               {deliveryCoords && !search.trim()
-                ? (lang === 'vi' ? 'Chưa có nhà hàng giao đến địa chỉ này. Vui lòng thử địa chỉ khác.' : 'No restaurants deliver to this address yet.')
+                ? (lang === 'vi' ? 'Chưa có địa điểm giao đến địa chỉ này. Vui lòng thử địa chỉ khác.' : 'No places deliver to this address yet.')
                 : search.trim()
                 ? (lang === 'vi' ? `Không tìm thấy kết quả cho "${search}"` : `No results for "${search}"`)
-                : (lang === 'vi' ? 'Chưa có nhà hàng nào.' : 'No restaurants yet.')}
+                : (lang === 'vi' ? 'Chưa có địa điểm nào.' : 'No places yet.')}
             </p>
             {(search || deliveryCoords) && (
               <button
@@ -757,10 +757,10 @@ export default function MarketplaceClient() {
 
             <div>
               <h4 className="font-bold text-gray-900 text-sm mb-3 uppercase tracking-wide">
-                {lang === 'vi' ? 'Dành Cho Nhà Hàng' : 'For Merchants'}
+                {lang === 'vi' ? 'Dành cho đối tác' : 'For Partners'}
               </h4>
               <ul className="space-y-2">
-                <li><Link href="/contact" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Mở quán trên LÒ ĐỒ ĂN' : 'Become a Merchant'}</Link></li>
+                <li><Link href="/contact" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Mở quán trên LÒ ĐỒ ĂN' : 'Become a partner'}</Link></li>
                 <li><Link href="/about" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Tìm hiểu thêm' : 'Learn more'}</Link></li>
                 <li><a href="mailto:hello@ovenly.io" className="text-sm text-gray-500 hover:text-primary transition-colors">hello@ovenly.io</a></li>
               </ul>
