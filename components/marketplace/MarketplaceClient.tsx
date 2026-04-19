@@ -611,9 +611,14 @@ export default function MarketplaceClient() {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 w-48 h-40 overflow-hidden hidden md:block" style={{transform:'rotate(-3deg) translateX(-64px) translateY(10px)'}}>
-          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_400,h_320,c_fill/L_4_etjzdo.png" alt="" className="w-full h-full object-cover" />
+        <div className="absolute bottom-0 hidden md:block" style={{left:'-60px', width:'160px', height:'100px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.4)', transform:'rotate(-2deg)', zIndex:2}}>
+          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_200,c_fill/L_4_etjzdo.png" alt="" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}} />
         </div>
+        <div className="absolute bottom-0 hidden md:block" style={{left:'80px', width:'160px', height:'90px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.4)', transform:'rotate(1deg)', zIndex:2}}>
+          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_180,c_fill/L_5_rswtcx.png" alt="" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}} />
+        </div>
+        <div className="absolute top-0 left-0 bottom-0 hidden md:block pointer-events-none" style={{width:'160px', background:'linear-gradient(to right, #8B1A1A 20%, transparent 80%)', zIndex:3}} />
+        <div className="absolute bottom-0 left-0 hidden md:block pointer-events-none" style={{width:'320px', height:'25px', background:'linear-gradient(to top, #8B1A1A, transparent)', zIndex:3}} />
       </div>
 
       {/* Delivery address bar */}
