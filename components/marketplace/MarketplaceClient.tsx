@@ -550,7 +550,7 @@ export default function MarketplaceClient() {
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống online' : 'Order food online near you'}
           </h1>
           <p className="text-white/80 mb-8 text-base md:text-lg">
-            {lang === 'vi' ? 'Đặt món gần bạn, giao tận nơi hoặc mang về' : 'Delivery or pickup from restaurants, cafés, and bubble tea shops'}
+            {lang === 'vi' ? 'Đặt hàng trực tuyến, giao tận nơi hoặc mang về' : 'Delivery or pickup from restaurants, cafés, and bubble tea shops'}
           </p>
           <div className="max-w-2xl mx-auto space-y-3">
             {/* Delivery address */}
