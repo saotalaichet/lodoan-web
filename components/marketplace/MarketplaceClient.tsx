@@ -108,7 +108,6 @@ const CUISINE_DISPLAY: Record<string, any> = {
   Other: { en: 'Other', vi: 'Khác' },
 };
 
-// Auto-generate lowercase versions for all keys
 Object.keys(CUISINE_DISPLAY).forEach(k => {
   const lower = k.toLowerCase();
   if (!CUISINE_DISPLAY[lower]) CUISINE_DISPLAY[lower] = CUISINE_DISPLAY[k];
@@ -137,7 +136,6 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
   const isPremium = restaurant.subscription_tier === 'Premium';
   const firstLetter = restaurant.name?.charAt(0)?.toUpperCase() || '?';
 
-  // FIX 3 (cuisine array): always treat as array
   const cuisineTypes = Array.isArray(restaurant.cuisine_type)
     ? restaurant.cuisine_type
     : restaurant.cuisine_type ? [restaurant.cuisine_type] : [];
@@ -181,8 +179,6 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             </svg>
           </div>
         )}
-
-        {/* FIX 3 (badge overlap): left side for Premium + Featured, right side for status only */}
         <div className="absolute top-2 left-2 z-20 flex flex-col gap-1">
           {isPremium && (
             <span className="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -195,14 +191,11 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             </span>
           )}
         </div>
-
-        {/* Status badge — right side, never overlaps */}
         <div className="absolute top-2 right-2 z-20">
           <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${badgeClass}`}>
             {statusText}
           </span>
         </div>
-
         <div
           className="absolute flex items-center justify-center overflow-hidden"
           style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}
@@ -316,7 +309,6 @@ export default function MarketplaceClient() {
     localStorage.setItem('ovenly_language', lang);
   }, [lang]);
 
-  // FIX 1 & 5: Fetch restaurants via our own server proxy only — no Base44 direct call
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
@@ -331,13 +323,9 @@ export default function MarketplaceClient() {
       setLoading(false);
     };
     fetchRestaurants();
-    // Poll only restaurant status every 30s
     const interval = setInterval(fetchRestaurants, 30000);
     return () => clearInterval(interval);
   }, []);
-
-  // FIX 1: Removed allMenuItems fetch entirely — was exposing Base44 API key client-side
-  // and fetching 2000 items on every page load. Menu item search removed from filter.
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -368,7 +356,6 @@ export default function MarketplaceClient() {
     if (search.trim()) {
       const q = normalize(search);
       list = list.filter(r => {
-        // FIX 4: handle cuisine_type as array in search
         const cuisineStr = Array.isArray(r.cuisine_type)
           ? r.cuisine_type.map((c: string) => normalize(c)).join(' ')
           : normalize(r.cuisine_type || '');
@@ -544,7 +531,7 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative text-white py-10 px-4 overflow-hidden" style={{background:"#A32020"}}>
+      <div className="text-white py-14 px-4" style={{background: '#A32020'}}>
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-2xl md:text-3xl font-black mb-2 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
@@ -553,7 +540,6 @@ export default function MarketplaceClient() {
             {lang === 'vi' ? 'Đặt món online, giao tận nơi hoặc mang về' : 'Delivery or pickup from restaurants, cafés, and bubble tea shops'}
           </p>
           <div className="max-w-2xl mx-auto space-y-3">
-            {/* Delivery address */}
             <div className="bg-white rounded-2xl shadow-2xl p-2">
               <AddressInput
                 onAddressValidated={(isValid, address, coords) => {
@@ -571,7 +557,6 @@ export default function MarketplaceClient() {
                 heroMode={true}
               />
             </div>
-            {/* FIX 2: Search input — was wired to state but had no UI */}
             <div className="bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-2.5 flex items-center gap-3">
               <Search className="w-4 h-4 text-white/70 flex-shrink-0" />
               <input
@@ -611,6 +596,7 @@ export default function MarketplaceClient() {
             </div>
           </div>
         </div>
+      </div>
 
       {/* Delivery address bar */}
       {deliveryAddress && (
