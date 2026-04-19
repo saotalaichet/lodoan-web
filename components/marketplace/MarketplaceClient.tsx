@@ -533,9 +533,9 @@ export default function MarketplaceClient() {
       {/* HERO */}
       <div className="relative text-white py-16 md:py-24 px-4 overflow-hidden" style={{background: '#A32020'}}>
         <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/dumplings_uftyxf_p9dcdl.png" alt="" aria-hidden="true" className="hidden lg:block absolute top-[30%] left-0 w-32 xl:w-40 -translate-x-8 select-none pointer-events-none" />
-        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/pizza_rk3cau_e3p7vn.png" alt="" aria-hidden="true" className="hidden lg:block absolute top-0 right-0 w-32 xl:w-40 translate-x-4 -translate-y-1/3 select-none pointer-events-none" />
+        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/pizza_rk3cau_e3p7vn.png" alt="" aria-hidden="true" className="hidden lg:block absolute top-0 right-0 w-32 xl:w-40 translate-x-0 -translate-y-1/2 select-none pointer-events-none" />
         <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/banhmi_yvelxm_gclrh9.png" alt="" aria-hidden="true" className="hidden lg:block absolute bottom-0 left-0 w-40 xl:w-48 -translate-x-10 translate-y-2 select-none pointer-events-none" />
-        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/poke_s5txe1_ejikuz.png" alt="" aria-hidden="true" className="hidden lg:block absolute top-[35%] right-0 w-32 xl:w-40 translate-x-4 select-none pointer-events-none" />
+        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/poke_s5txe1_ejikuz.png" alt="" aria-hidden="true" className="hidden lg:block absolute top-[35%] right-0 w-32 xl:w-40 translate-x-1/2 select-none pointer-events-none" />
         <div className="relative z-10 max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-2xl md:text-3xl font-black mb-2 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
