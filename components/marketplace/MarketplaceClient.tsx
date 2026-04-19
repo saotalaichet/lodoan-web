@@ -544,7 +544,7 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative text-white py-10 px-4 overflow-hidden" style={{background:"#A32020"}}>
+      <div className="text-white py-14 px-4" style={{background:"#A32020"}}>
         <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-2xl md:text-3xl font-black mb-2 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
@@ -611,15 +611,6 @@ export default function MarketplaceClient() {
             </div>
           </div>
         </div>
-        <div className="absolute bottom-0 hidden md:block" style={{left:'-60px', width:'160px', height:'100px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.4)', transform:'rotate(-2deg)', zIndex:2}}>
-          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_200,c_fill/L_4_etjzdo.png" alt="" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}} />
-        </div>
-        <div className="absolute bottom-0 hidden md:block" style={{left:'80px', width:'160px', height:'90px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.4)', transform:'rotate(1deg)', zIndex:2}}>
-          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_180,c_fill/L_5_rswtcx.png" alt="" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}} />
-        </div>
-        <div className="absolute top-0 left-0 bottom-0 hidden md:block pointer-events-none" style={{width:'160px', background:'linear-gradient(to right, #8B1A1A 20%, transparent 80%)', zIndex:3}} />
-        <div className="absolute bottom-0 left-0 hidden md:block pointer-events-none" style={{width:'320px', height:'25px', background:'linear-gradient(to top, #8B1A1A, transparent)', zIndex:3}} />
-      </div>
 
       {/* Delivery address bar */}
       {deliveryAddress && (
