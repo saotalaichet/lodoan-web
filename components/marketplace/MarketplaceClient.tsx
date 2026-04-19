@@ -611,12 +611,6 @@ export default function MarketplaceClient() {
             </div>
           </div>
         </div>
-        <div className="absolute top-4 right-4 w-40 h-32 rounded-2xl overflow-hidden shadow-2xl hidden md:block" style={{transform:'rotate(3deg)'}}>
-          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_256,c_fill/pho_uaw9qx.png" alt="" className="w-full h-full object-cover" />
-        </div>
-        <div className="absolute bottom-4 left-4 w-40 h-32 rounded-2xl overflow-hidden shadow-2xl hidden md:block" style={{transform:'rotate(-3deg)'}}>
-          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_256,c_fill/banhmi_yvelxm.png" alt="" className="w-full h-full object-cover" />
-        </div>
       </div>
 
       {/* Delivery address bar */}
