@@ -113,11 +113,6 @@ Object.keys(CUISINE_DISPLAY).forEach(k => {
   const lower = k.toLowerCase();
   if (!CUISINE_DISPLAY[lower]) CUISINE_DISPLAY[lower] = CUISINE_DISPLAY[k];
 });
-// Auto-generate lowercase versions for all keys
-Object.keys(CUISINE_DISPLAY).forEach(k => {
-  const lower = k.toLowerCase();
-  if (!CUISINE_DISPLAY[lower]) CUISINE_DISPLAY[lower] = CUISINE_DISPLAY[k];
-});
 
 function HighlightText({ text, query }: { text: string; query: string }) {
   if (!query || !text) return <>{text}</>;
@@ -241,7 +236,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             <div className="flex items-center gap-0.5">
               {[1, 2, 3, 4, 5].map(star => (
                 <svg key={star} width="11" height="11" viewBox="0 0 24 24"
-                  fill={star <= Math.round(avgRating) ? '#F59E0B' : '#E5E7EB'}>
+                  fill={star <= Math.round(avgRating ?? 0) ? '#F59E0B' : '#E5E7EB'}>
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
                 </svg>
               ))}
@@ -251,7 +246,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
           </div>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
-          {restaurant.delivery_fee !== undefined && (
+          {restaurant.delivery_fee != null && (
             <span>{restaurant.delivery_fee === 0
               ? (lang === 'vi' ? 'Miễn phí ship' : 'Free delivery')
               : `${lang === 'vi' ? 'Phí ship' : 'Delivery'}: ${fmt(restaurant.delivery_fee)}`}
