@@ -296,9 +296,9 @@ function HeroPhotos() {
       'https://res.cloudinary.com/dvnssii5h/image/upload/w_300,h_230,c_fill/poke_s5txe1.png',
     ],
   ];
-  const [idx, setIdx] = React.useState(0);
-  const [visible, setVisible] = React.useState(true);
-  React.useEffect(() => {
+  const [idx, setIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+  useEffect(() => {
     const interval = setInterval(() => {
       setVisible(false);
       setTimeout(() => {
