@@ -545,15 +545,14 @@ export default function MarketplaceClient() {
 
       {/* HERO */}
       <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-14 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="max-w-2xl">
+        <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-3xl md:text-5xl font-black mb-3 leading-tight">
-            {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Discover Dining Spots Near You'}
+            {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
           </h1>
           <p className="text-white/80 mb-8 text-base md:text-lg">
-            {lang === 'vi' ? 'Đặt đồ ăn, đồ uống online từ các nhà hàng, quán ăn, cà phê, trà sữa. Giao tận nơi hoặc mang về.' : 'Order food and drinks online from restaurants, eateries, cafes, and bubble tea shops. Delivery or pickup.'}
+            {lang === 'vi' ? 'Đặt món online, giao tận nơi hoặc mang về' : 'Delivery or pickup from restaurants, cafés, and bubble tea shops'}
           </p>
-          <div className="space-y-3">
+          <div className="max-w-2xl mx-auto space-y-3">
             {/* Delivery address */}
             <div className="bg-white rounded-2xl shadow-2xl p-2">
               <AddressInput
@@ -587,7 +586,7 @@ export default function MarketplaceClient() {
                 </button>
               )}
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-start gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <button onClick={handleNearMe}
                 className="flex items-center gap-1.5 text-white/90 hover:text-white text-sm font-medium transition-colors">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -610,7 +609,6 @@ export default function MarketplaceClient() {
                 </>
               )}
             </div>
-          </div>
           </div>
         </div>
       </div>
