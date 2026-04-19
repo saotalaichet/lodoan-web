@@ -531,16 +531,8 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative text-white px-4 overflow-hidden flex items-center justify-center" style={{background: '#A32020', minHeight: '520px'}}>
-        {/* Top-left: dumplings */}
-        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_220,h_220,c_fit/dumplings_uftyxf.png" alt="" className="hidden md:block absolute top-0 left-0 select-none pointer-events-none" style={{width:'220px', transform:'translate(-48px, -32px)'}} />
-        {/* Top-right: pizza */}
-        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_220,h_220,c_fit/pizza_rk3cau.png" alt="" className="hidden md:block absolute top-0 right-0 select-none pointer-events-none" style={{width:'220px', transform:'translate(48px, -32px)'}} />
-        {/* Bottom-left: banh mi */}
-        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_220,h_220,c_fit/banhmi_yvelxm.png" alt="" className="hidden md:block absolute bottom-0 left-0 select-none pointer-events-none" style={{width:'220px', transform:'translate(-64px, 32px)'}} />
-        {/* Bottom-right: poke bowl */}
-        <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_220,h_220,c_fit/poke_s5txe1.png" alt="" className="hidden md:block absolute bottom-0 right-0 select-none pointer-events-none" style={{width:'220px', transform:'translate(48px, 32px)'}} />
-        <div className="relative z-10 max-w-3xl w-full mx-auto text-center py-16">
+      <div className="text-white py-14 px-4" style={{background: '#A32020'}}>
+        <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-2xl md:text-3xl font-black mb-2 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
           </h1>
