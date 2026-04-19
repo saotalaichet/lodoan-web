@@ -531,7 +531,7 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative text-white py-12 md:py-16 px-4 overflow-hidden" style={{background: '#A32020'}}>
+      <div className="relative text-white py-12 md:py-16 px-4 overflow-hidden bg-gradient-to-br from-primary via-primary/90 to-primary/75">
         <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/dumplings_uftyxf_p9dcdl.png" alt="" aria-hidden="true" className="absolute top-[30%] left-0 w-20 sm:w-24 lg:w-32 xl:w-40 -translate-x-10 sm:-translate-x-12 lg:-translate-x-8 select-none pointer-events-none" />
         <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/pizza_rk3cau_e3p7vn.png" alt="" aria-hidden="true" className="absolute top-0 right-0 w-20 sm:w-24 lg:w-32 xl:w-40 translate-x-8 sm:translate-x-10 lg:translate-x-0 -translate-y-1/2 select-none pointer-events-none" />
         <img src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_300/banhmi_yvelxm_gclrh9.png" alt="" aria-hidden="true" className="absolute bottom-0 left-0 w-24 sm:w-28 lg:w-32 xl:w-40 -translate-x-6 sm:-translate-x-8 lg:-translate-x-10 translate-y-2 select-none pointer-events-none" />
