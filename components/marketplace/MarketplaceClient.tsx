@@ -544,12 +544,12 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-14 px-4">
+      <div className="relative bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-10 px-4 overflow-hidden">
         <div className="max-w-3xl mx-auto text-center">
-          <h1 className="font-heading text-3xl md:text-5xl font-black mb-3 leading-tight">
+          <h1 className="font-heading text-2xl md:text-3xl font-black mb-2 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
           </h1>
-          <p className="text-white/80 mb-8 text-base md:text-lg">
+          <p className="text-white/80 mb-6 text-sm md:text-base">
             {lang === 'vi' ? 'Đặt món online, giao tận nơi hoặc mang về' : 'Delivery or pickup from restaurants, cafés, and bubble tea shops'}
           </p>
           <div className="max-w-2xl mx-auto space-y-3">
@@ -610,6 +610,12 @@ export default function MarketplaceClient() {
               )}
             </div>
           </div>
+        </div>
+        <div className="absolute top-4 right-4 w-40 h-32 rounded-2xl overflow-hidden shadow-2xl hidden md:block" style={{transform:'rotate(3deg)'}}>
+          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_256,c_fill/pho_uaw9qx.png" alt="" className="w-full h-full object-cover" />
+        </div>
+        <div className="absolute bottom-4 left-4 w-40 h-32 rounded-2xl overflow-hidden shadow-2xl hidden md:block" style={{transform:'rotate(-3deg)'}}>
+          <img src="https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_256,c_fill/banhmi_yvelxm.png" alt="" className="w-full h-full object-cover" />
         </div>
       </div>
 
