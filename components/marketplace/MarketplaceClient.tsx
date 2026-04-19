@@ -284,43 +284,6 @@ const NAV_LINKS = [
   { href: '/contact', vi: 'Liên Hệ', en: 'Contact' },
 ];
 
-
-function HeroPhotos() {
-  const pairs = [
-    [
-      'https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_240,c_fill/pho_uaw9qx.png',
-      'https://res.cloudinary.com/dvnssii5h/image/upload/w_300,h_230,c_fill/banhmi_yvelxm.png',
-    ],
-    [
-      'https://res.cloudinary.com/dvnssii5h/image/upload/w_320,h_240,c_fill/dumplings_uftyxf.png',
-      'https://res.cloudinary.com/dvnssii5h/image/upload/w_300,h_230,c_fill/poke_s5txe1.png',
-    ],
-  ];
-  const [idx, setIdx] = useState(0);
-  const [visible, setVisible] = useState(true);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisible(false);
-      setTimeout(() => {
-        setIdx(i => (i + 1) % pairs.length);
-        setVisible(true);
-      }, 600);
-    }, 3500);
-    return () => clearInterval(interval);
-  }, []);
-  return (
-    <>
-      <div className="absolute inset-0 pointer-events-none" style={{background: 'linear-gradient(to left, rgba(100,0,0,0.25), transparent)', zIndex: 1}} />
-      <div style={{position:'absolute', right:'24px', top:'16px', width:'160px', height:'120px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.35)', transform:'rotate(2deg)', zIndex:3, opacity: visible ? 1 : 0, transition:'opacity 0.6s ease'}}>
-        <img src={pairs[idx][0]} alt="" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}} />
-      </div>
-      <div style={{position:'absolute', right:'80px', bottom:'14px', width:'150px', height:'115px', borderRadius:'16px', overflow:'hidden', boxShadow:'0 8px 24px rgba(0,0,0,0.35)', transform:'rotate(-2deg)', zIndex:3, opacity: visible ? 1 : 0, transition:'opacity 0.6s ease'}}>
-        <img src={pairs[idx][1]} alt="" style={{width:'100%', height:'100%', objectFit:'cover', display:'block'}} />
-      </div>
-    </>
-  );
-}
-
 export default function MarketplaceClient() {
   const [lang, setLang] = useState('vi');
   const [restaurants, setRestaurants] = useState<any[]>([]);
@@ -581,9 +544,8 @@ export default function MarketplaceClient() {
       </header>
 
       {/* HERO */}
-      <div className="relative text-white overflow-hidden" style={{background: 'linear-gradient(135deg, #8B1A1A 0%, #cc2200 100%)'}}>
-        <HeroPhotos />
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-14 flex flex-col justify-center" style={{minHeight: '260px'}}>
+      <div className="bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white py-14 px-4">
+        <div className="max-w-3xl mx-auto text-center">
           <h1 className="font-heading text-3xl md:text-5xl font-black mb-3 leading-tight">
             {lang === 'vi' ? 'Khám phá địa điểm ăn uống gần bạn' : 'Order food online near you'}
           </h1>
