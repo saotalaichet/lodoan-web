@@ -311,9 +311,9 @@ export default function CompanyPage() {
                   {p.cta} →
                 </Link>
               </div>
-              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative', background: '#FFF0ED', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '32px 24px 0 24px' }}>
+              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative', background: '#FDEEEA', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 32px' }}>
                 {i === 0 ? (
-                  <div style={{ width: '100%', borderRadius: '12px 12px 0 0', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.2)', border: '1px solid #ddd' }}>
+                  <div style={{ width: '100%', maxWidth: 600, borderRadius: 12, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.18)', border: '1px solid #ddd' }}>
                     {/* Browser chrome */}
                     <div style={{ background: '#e8e8e8', padding: '0 12px', borderBottom: '1px solid #c8c8c8' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 40 }}>
