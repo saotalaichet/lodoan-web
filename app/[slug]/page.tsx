@@ -1365,7 +1365,10 @@ export default function RestaurantPage() {
       {/* Banner */}
       <div className="relative w-full overflow-hidden" style={{ height: 'clamp(160px, 18vw, 220px)' }}>
         {restaurant.banner ? (
-          <Image src={restaurant.banner} alt={restaurant.name} fill sizes="100vw" style={{objectFit:'cover', objectPosition:'top'}} priority />
+          <>
+            <Image src={restaurant.banner} alt={restaurant.name} fill sizes="100vw" style={{objectFit:'cover', objectPosition:'center'}} priority />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20" />
+          </>
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary to-primary/75" />
         )}
