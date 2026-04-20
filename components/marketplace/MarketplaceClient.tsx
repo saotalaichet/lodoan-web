@@ -239,6 +239,17 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
           </div>
         )}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
+          {restaurant._distance != null && restaurant._distance < 9999 && (
+            <span className="flex items-center gap-1 font-semibold" style={{ color: '#8B1A1A' }}>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              {restaurant._distance < 1
+                ? `${Math.round(restaurant._distance * 1000)}m`
+                : `${restaurant._distance.toFixed(1)} km`}
+            </span>
+          )}
           {restaurant.delivery_fee != null && (
             <span>{restaurant.delivery_fee === 0
               ? (lang === 'vi' ? 'Miễn phí ship' : 'Free delivery')
