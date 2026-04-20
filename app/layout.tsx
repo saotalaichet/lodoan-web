@@ -6,12 +6,14 @@ export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
   const host = headersList.get('host') || '';
   const isOvenly = host.includes('ovenly.io');
+  const lodoanVerification = 'fj1muVSdheopigTSuzIhmQ26HUK7mBor7JTEJ2rBD6Q';
   const canonical = isOvenly ? 'https://www.ovenly.io' : 'https://www.lodoan.vn';
   return {
     metadataBase: new URL(canonical),
     title: isOvenly ? 'Ovenly | Food Ordering SaaS for Vietnam' : 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
     description: isOvenly ? 'Ovenly helps restaurants in Vietnam accept online orders with ease.' : 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Mang về hoặc giao hàng tận nơi. Nhanh chóng, tiện lợi!',
     alternates: { canonical },
+    verification: { google: isOvenly ? undefined : lodoanVerification },
     icons: {
       icon: isOvenly ? '/favicon.ico' : '/lodoan-favicon.ico',
       apple: isOvenly ? '/ovenly-apple.jpg' : '/lodoan-apple.jpg',
