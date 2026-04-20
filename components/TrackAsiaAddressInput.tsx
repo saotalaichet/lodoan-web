@@ -84,7 +84,7 @@ export default function TrackAsiaAddressInput({
       const data = await res.json();
       const roadKm: number | null = data.road_distance_km ?? null;
       if (roadKm === null) { reject(lang === 'vi' ? 'Không thể tính khoảng cách đường bộ. Thử địa chỉ khác.' : 'Could not calculate road distance. Try another address.'); return; }
-      if (roadKm > MAX_ROAD_KM) { reject(lang === 'vi' ? `Quá xa (${roadKm.toFixed(1)} km đường bộ). Chỉ giao trong ${MAX_ROAD_KM} km.` : `Too far (${roadKm.toFixed(1)} km by road). Max ${MAX_ROAD_KM} km.`); return; }
+      if (roadKm > MAX_ROAD_KM) { reject(lang === 'vi' ? `Quá xa (${roadKm.toFixed(1)} km). Chỉ giao trong ${MAX_ROAD_KM} km.` : `Too far (${roadKm.toFixed(1)} km). Max ${MAX_ROAD_KM} km.`); return; }
       setStatus('valid'); setErrorMsg(''); onAddressValidated(true, s.label, { lat: s.latitude, lon: s.longitude });
     } catch { reject(lang === 'vi' ? 'Lỗi kiểm tra khoảng cách. Thử lại.' : 'Distance check failed. Try again.'); }
   };
@@ -116,7 +116,7 @@ export default function TrackAsiaAddressInput({
           </button>
         )}
       </div>
-      {!heroMode && status === 'valid' && <p className="text-xs text-green-600 font-medium">✅ {lang === 'vi' ? 'Địa chỉ hợp lệ — trong vùng giao hàng (đường bộ)' : 'Address valid — within delivery range (by road)'}</p>}
+      {!heroMode && status === 'valid' && <p className="text-xs text-green-600 font-medium">✅ {lang === 'vi' ? 'Địa chỉ hợp lệ, trong vùng giao hàng' : 'Address valid, within delivery range'}</p>}
       {!heroMode && status === 'invalid' && errorMsg && <p className="text-xs text-red-600 font-medium">⚠️ {errorMsg}</p>}
     </div>
   );
