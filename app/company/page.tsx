@@ -311,13 +311,24 @@ export default function CompanyPage() {
                   {p.cta} →
                 </Link>
               </div>
-              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative', background: '#FDF0EE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative', background: '#F0F2F5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 28px' }}>
                 {i === 0 ? (
-                  <img
-                    src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_800/LO_DO_AN_anmxjf.png"
-                    alt="LÒ ĐỒ ĂN marketplace"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '32px' }}
-                  />
+                  <div style={{ width: '100%', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', border: '1px solid #ddd' }}>
+                    {/* Browser chrome */}
+                    <div style={{ background: '#e8e8e8', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #ccc' }}>
+                      <div style={{ display: 'flex', gap: 5 }}>
+                        <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#FF5F57' }} />
+                        <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#FFBD2E' }} />
+                        <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#28C840' }} />
+                      </div>
+                      <div style={{ flex: 1, background: '#fff', borderRadius: 5, padding: '3px 10px', fontSize: 11, color: '#888', border: '1px solid #ccc' }}>lodoan.vn</div>
+                    </div>
+                    <img
+                      src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_900/LO_DO_AN_anmxjf.png"
+                      alt="LÒ ĐỒ ĂN marketplace"
+                      style={{ width: '100%', display: 'block' }}
+                    />
+                  </div>
                 ) : (
                   <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
                     <img className="ov-slide" src="/drinks/bt1.jpg" alt="Bubble tea 1" />
