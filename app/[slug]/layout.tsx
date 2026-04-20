@@ -23,9 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   const title = `${r.name} | Menu & Đặt Hàng Online`;
-  const description = r.address
-    ? `Xem menu và đặt hàng online từ ${r.name} tại ${r.address}. Giao hàng tận nơi & mang về. Đặt ngay!`
-    : `Xem menu và đặt hàng online từ ${r.name}. Giao hàng tận nơi & mang về. Đặt ngay!`;
+  const description = r.meta_description ||
+    (r.address
+      ? `Xem menu và đặt hàng online từ ${r.name} tại ${r.address}. Giao hàng tận nơi & mang về. Đặt ngay!`
+      : `Xem menu và đặt hàng online từ ${r.name}. Giao hàng tận nơi & mang về. Đặt ngay!`);
   const url = `https://www.lodoan.vn/${slug}`;
 
   return {
