@@ -311,15 +311,13 @@ export default function CompanyPage() {
                   {p.cta} →
                 </Link>
               </div>
-              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative' }}>
+              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative', background: '#FDF0EE', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {i === 0 ? (
-                  <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
-                    <img className="ov-slide" src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&q=80" alt="Vietnamese food 1" />
-                    <img className="ov-slide" src="https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80" alt="Vietnamese food 2" />
-                    <img className="ov-slide" src="https://images.unsplash.com/photo-1555126634-323283e090fa?w=800&q=80" alt="Vietnamese food 3" />
-                    <img className="ov-slide" src="https://images.unsplash.com/photo-1559847844-5315695dadae?w=800&q=80" alt="Vietnamese food 4" />
-                    <img className="ov-slide" src="https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=800&q=80" alt="Vietnamese food 5" />
-                  </div>
+                  <img
+                    src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_800/LO_DO_AN_anmxjf.png"
+                    alt="LÒ ĐỒ ĂN marketplace"
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '32px' }}
+                  />
                 ) : (
                   <div className="ov-slide-wrap" style={{ height: '100%', minHeight: 420 }}>
                     <img className="ov-slide" src="/drinks/bt1.jpg" alt="Bubble tea 1" />
