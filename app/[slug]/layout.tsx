@@ -101,8 +101,42 @@ export default async function SlugLayout({
     },
   } : null;
 
+  const restaurantSchema = r ? {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: r.name,
+    image: r.banner || r.logo || undefined,
+    url: `https://www.lodoan.vn/${slug}`,
+    hasMenu: `https://www.lodoan.vn/${slug}#menu`,
+    servesCuisine: Array.isArray(r.cuisine_type) ? r.cuisine_type : r.cuisine_type ? [r.cuisine_type] : undefined,
+    address: r.address ? {
+      '@type': 'PostalAddress',
+      streetAddress: r.address,
+      addressLocality: r.district || r.city || 'Việt Nam',
+      addressCountry: 'VN',
+    } : undefined,
+    telephone: r.phone && r.phone !== 'N/A' ? r.phone : undefined,
+    priceRange: '$$',
+    aggregateRating: r.total_ratings >= 3 ? {
+      '@type': 'AggregateRating',
+      ratingValue: parseFloat(r.average_rating).toFixed(1),
+      reviewCount: r.total_ratings,
+    } : undefined,
+    acceptsReservations: false,
+    potentialAction: {
+      '@type': 'OrderAction',
+      target: `https://www.lodoan.vn/${slug}`,
+    },
+  } : null;
+
   return (
     <>
+      {restaurantSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantSchema) }}
+        />
+      )}
       {jsonLd && (
         <script
           type="application/ld+json"
