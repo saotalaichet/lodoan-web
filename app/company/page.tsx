@@ -311,17 +311,20 @@ export default function CompanyPage() {
                   {p.cta} →
                 </Link>
               </div>
-              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative', background: '#F0F2F5', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 28px' }}>
+              <div className="ov-card-photo" style={{ order: p.flip ? 0 : 1, minHeight: 420, overflow: 'hidden', position: 'relative', background: 'linear-gradient(135deg, #A32020 0%, #cc2200 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '32px 24px 0 24px' }}>
                 {i === 0 ? (
-                  <div style={{ width: '100%', borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', border: '1px solid #ddd' }}>
-                    {/* Browser chrome */}
-                    <div style={{ background: '#e8e8e8', padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #ccc' }}>
+                  <div style={{ width: '100%', borderRadius: '12px 12px 0 0', overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.35)', border: '1px solid #bbb', transform: 'translateY(8px)' }}>
+                    {/* Browser chrome — Chrome style */}
+                    <div style={{ background: '#dee1e6', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid #c0c0c0' }}>
                       <div style={{ display: 'flex', gap: 5 }}>
                         <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#FF5F57' }} />
                         <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#FFBD2E' }} />
                         <div style={{ width: 11, height: 11, borderRadius: '50%', background: '#28C840' }} />
                       </div>
-                      <div style={{ flex: 1, background: '#fff', borderRadius: 5, padding: '3px 10px', fontSize: 11, color: '#888', border: '1px solid #ccc' }}>lodoan.vn</div>
+                      <div style={{ flex: 1, background: '#fff', borderRadius: 20, padding: '3px 12px', fontSize: 11, color: '#555', border: '1px solid #c8c8c8', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span>https://lodoan.vn</span>
+                      </div>
                     </div>
                     <img
                       src="https://res.cloudinary.com/dvnssii5h/image/upload/f_auto,q_auto,w_900/LO_DO_AN_anmxjf.png"
