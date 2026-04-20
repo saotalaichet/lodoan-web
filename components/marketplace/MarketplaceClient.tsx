@@ -563,7 +563,7 @@ export default function MarketplaceClient() {
                       setDeliveryCoords(coords);
                       sessionStorage.setItem('marketplace_delivery_coords', JSON.stringify(coords));
                     }
-                    window.scrollTo({ top: 620, behavior: 'smooth' });
+                    
                   }
                 }}
                 lang={lang}
