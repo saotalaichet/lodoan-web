@@ -211,7 +211,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         </div>
       </div>
 
-      <div className="flex flex-col flex-1" style={{ padding: '16px 12px 12px 12px' }}>
+      <div className="flex flex-col flex-1" style={{ padding: '12px 12px 10px 12px' }}>
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="font-bold leading-tight flex-1 min-w-0" style={{ fontSize: '15px', color: '#1A1A1A' }}>
             <HighlightText text={restaurant.name} query={search} />
@@ -225,7 +225,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
           )}
         </div>
         {cuisineLabels.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1 mb-1">
             {cuisineLabels.map((label: string, i: number) => (
               <span key={i} className="inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full"
                 style={{ background: '#FFF0ED', color: '#8B1A1A' }}>
@@ -235,7 +235,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
           </div>
         )}
         {totalRatings >= 3 && (
-          <div className="flex items-center gap-1 mb-2">
+          <div className="flex items-center gap-1 mb-1">
             <div className="flex items-center gap-0.5">
               {[1, 2, 3, 4, 5].map(star => (
                 <svg key={star} width="11" height="11" viewBox="0 0 24 24"
@@ -248,7 +248,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             <span style={{ fontSize: '11px', color: '#888888' }}>({totalRatings})</span>
           </div>
         )}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2 flex-1" style={{ fontSize: '12px', color: '#888888' }}>
           {restaurant.delivery_fee != null && (
             <span>{restaurant.delivery_fee === 0
               ? (lang === 'vi' ? 'Miễn phí ship' : 'Free delivery')
@@ -262,7 +262,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         <button
           onClick={handleOrderNow}
           disabled={!hasSlug || isOrderingDisabled}
-          className="w-full h-9 font-bold rounded-lg text-sm transition-opacity mt-auto"
+          className="w-full h-8 font-bold rounded-lg text-sm transition-opacity mt-auto"
           style={
             isOrderingDisabled
               ? { background: '#D3D3D3', color: '#666', cursor: 'not-allowed' }
