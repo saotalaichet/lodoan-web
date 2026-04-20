@@ -1,18 +1,23 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import './globals.css';
 
-export const metadata: Metadata = {
-  metadataBase: new URL('https://www.lodoan.vn'),
-  title: 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
-  description: 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Mang về hoặc giao hàng tận nơi. Nhanh chóng, tiện lợi!',
-  alternates: {
-    canonical: 'https://www.lodoan.vn',
-  },
-  icons: {
-    icon: '/lodoan-favicon.ico',
-    apple: '/lodoan-apple.jpg',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const isOvenly = host.includes('ovenly.io');
+  const canonical = isOvenly ? 'https://www.ovenly.io' : 'https://www.lodoan.vn';
+  return {
+    metadataBase: new URL(canonical),
+    title: isOvenly ? 'Ovenly | Food Ordering SaaS for Vietnam' : 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
+    description: isOvenly ? 'Ovenly helps restaurants in Vietnam accept online orders with ease.' : 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Mang về hoặc giao hàng tận nơi. Nhanh chóng, tiện lợi!',
+    alternates: { canonical },
+    icons: {
+      icon: isOvenly ? '/favicon.ico' : '/lodoan-favicon.ico',
+      apple: isOvenly ? '/ovenly-apple.jpg' : '/lodoan-apple.jpg',
+    },
+  };
+}
 
 const organizationSchema = {
   '@context': 'https://schema.org',
