@@ -168,7 +168,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.10)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; }}
     >
-      <div className="relative flex-shrink-0" style={{ height: '140px' }}>
+      <div className="relative flex-shrink-0 h-[180px] sm:h-[140px]">
         {restaurant.banner ? (
           <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
