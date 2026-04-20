@@ -309,8 +309,8 @@ export default function MarketplaceClient() {
     const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
     setLang(stored);
     customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
-    const savedAddr = localStorage.getItem('marketplace_delivery_address');
-    const savedCoords = localStorage.getItem('marketplace_delivery_coords');
+    const savedAddr = sessionStorage.getItem('marketplace_delivery_address');
+    const savedCoords = sessionStorage.getItem('marketplace_delivery_coords');
     if (savedAddr) setDeliveryAddress(savedAddr);
     if (savedCoords) { try { setDeliveryCoords(JSON.parse(savedCoords)); } catch {} }
   }, []);
@@ -560,10 +560,10 @@ export default function MarketplaceClient() {
                 onAddressValidated={(isValid, address, coords) => {
                   if (isValid && address) {
                     setDeliveryAddress(address);
-                    localStorage.setItem('marketplace_delivery_address', address);
+                    sessionStorage.setItem('marketplace_delivery_address', address);
                     if (coords?.lat && coords?.lon) {
                       setDeliveryCoords(coords);
-                      localStorage.setItem('marketplace_delivery_coords', JSON.stringify(coords));
+                      sessionStorage.setItem('marketplace_delivery_coords', JSON.stringify(coords));
                     }
                     window.scrollTo({ top: 620, behavior: 'smooth' });
                   }
@@ -629,8 +629,8 @@ export default function MarketplaceClient() {
               onClick={() => {
                 setDeliveryAddress('');
                 setDeliveryCoords(null);
-                localStorage.removeItem('marketplace_delivery_address');
-                localStorage.removeItem('marketplace_delivery_coords');
+                sessionStorage.removeItem('marketplace_delivery_address');
+                sessionStorage.removeItem('marketplace_delivery_coords');
               }}
               className="flex-shrink-0 text-xs text-gray-400 hover:text-gray-600 transition-colors font-medium">
               {lang === 'vi' ? 'Xóa' : 'Clear'}
@@ -694,7 +694,7 @@ export default function MarketplaceClient() {
             </p>
             {(search || deliveryCoords) && (
               <button
-                onClick={() => { setSearch(''); setDeliveryCoords(null); setDeliveryAddress(''); localStorage.removeItem('marketplace_delivery_coords'); localStorage.removeItem('marketplace_delivery_address'); }}
+                onClick={() => { setSearch(''); setDeliveryCoords(null); setDeliveryAddress(''); sessionStorage.removeItem('marketplace_delivery_coords'); sessionStorage.removeItem('marketplace_delivery_address'); }}
                 className="mt-3 px-5 py-2 rounded-lg border border-primary text-primary font-semibold text-sm hover:bg-red-50 transition-colors">
                 {lang === 'vi' ? 'Xóa tìm kiếm' : 'Clear search'}
               </button>
