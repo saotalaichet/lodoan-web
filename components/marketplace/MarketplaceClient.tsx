@@ -623,11 +623,7 @@ export default function MarketplaceClient() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
               </svg>
               <span className="text-sm font-medium text-gray-800 truncate">{deliveryAddress}</span>
-              {deliveryCoords && (
-                <span className="text-xs text-green-600 font-medium flex-shrink-0">
-                  ✓ {lang === 'vi' ? 'Đang lọc địa điểm gần bạn' : 'Filtering nearby places'}
-                </span>
-              )}
+
             </div>
             <button
               onClick={() => {
