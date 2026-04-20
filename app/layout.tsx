@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: isOvenly ? 'Ovenly | Food Ordering SaaS for Vietnam' : 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
     description: isOvenly ? 'Ovenly helps restaurants in Vietnam accept online orders with ease.' : 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Mang về hoặc giao hàng tận nơi. Nhanh chóng, tiện lợi!',
     alternates: { canonical },
-    verification: { google: isOvenly ? undefined : lodoanVerification },
+    verification: { google: isOvenly ? 'RUqDDflXwzoNSVLXNhAgLhpyk5jUwRMGUm9aesgmwDU' : lodoanVerification },
     icons: {
       icon: isOvenly ? '/favicon.ico' : '/lodoan-favicon.ico',
       apple: isOvenly ? '/ovenly-apple.jpg' : '/lodoan-apple.jpg',
