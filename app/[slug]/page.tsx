@@ -1365,7 +1365,7 @@ export default function RestaurantPage() {
       {/* Banner */}
       <div className="w-full overflow-hidden" style={{ height: 'clamp(160px, 18vw, 220px)' }}>
         {restaurant.banner ? (
-          <Image src={restaurant.banner} alt={restaurant.name} fill className="object-cover" sizes="100vw" />
+          <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-primary to-primary/75" />
         )}
