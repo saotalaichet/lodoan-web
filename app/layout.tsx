@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
+import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -67,6 +68,7 @@ export default function RootLayout({
         />
         {children}
       </body>
+      <GoogleAnalytics gaId="G-18CY2R4DY0" />
     </html>
   );
 }
