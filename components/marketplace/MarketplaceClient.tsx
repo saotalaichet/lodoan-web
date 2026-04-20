@@ -170,7 +170,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
     >
       <div className="relative flex-shrink-0" style={{ height: '180px' }}>
         {restaurant.banner ? (
-          <Image src={restaurant.banner} alt={restaurant.name} fill className="object-cover" sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" />
+          <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="w-full h-full flex items-center justify-center" style={{ background: '#F5F0EE' }}>
             <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#D4C5C0" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
