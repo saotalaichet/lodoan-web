@@ -13,6 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
     metadataBase: new URL(canonical),
     title: isOvenly ? 'Ovenly | Food Ordering SaaS for Vietnam' : 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
     description: isOvenly ? 'Ovenly helps restaurants in Vietnam accept online orders with ease.' : 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Mang về hoặc giao hàng tận nơi. Nhanh chóng, tiện lợi!',
+    keywords: isOvenly
+      ? ['food ordering saas', 'restaurant ordering system vietnam', 'ovenly', 'online ordering vietnam', 'f&b saas vietnam']
+      : ['đặt đồ ăn online', 'giao đồ ăn', 'mang về', 'nhà hàng gần đây', 'trà sữa', 'cà phê', 'đặt món online', 'lò đồ ăn', 'lodoan', 'ẩm thực việt nam'],
     alternates: { canonical },
     verification: { google: isOvenly ? 'RUqDDflXwzoNSVLXNhAgLhpyk5jUwRMGUm9aesgmwDU' : lodoanVerification },
     icons: {
