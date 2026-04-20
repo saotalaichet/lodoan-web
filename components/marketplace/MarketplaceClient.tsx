@@ -199,7 +199,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         </div>
         <div
           className="absolute flex items-center justify-center overflow-hidden"
-          style={{ bottom: '-16px', left: '12px', width: '40px', height: '40px', borderRadius: '50%', border: '2px solid white', background: 'white', boxShadow: '0 1px 4px rgba(0,0,0,0.12)', zIndex: 10 }}
+          style={{ bottom: '-22px', left: '12px', width: '52px', height: '52px', borderRadius: '50%', border: '3px solid white', background: 'white', boxShadow: '0 2px 8px rgba(0,0,0,0.15)', zIndex: 10 }}
         >
           {restaurant.logo ? (
             <img src={restaurant.logo} alt="" className="w-full h-full object-cover rounded-full" />
@@ -211,7 +211,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         </div>
       </div>
 
-      <div className="flex flex-col flex-1" style={{ padding: '20px 12px 10px 12px' }}>
+      <div className="flex flex-col flex-1" style={{ padding: '28px 12px 10px 12px' }}>
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="font-bold leading-tight flex-1 min-w-0" style={{ fontSize: '15px', color: '#1A1A1A' }}>
             <HighlightText text={restaurant.name} query={search} />
