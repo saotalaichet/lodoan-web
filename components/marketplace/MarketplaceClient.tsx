@@ -211,7 +211,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         </div>
       </div>
 
-      <div className="flex flex-col flex-1" style={{ padding: '12px 12px 10px 12px' }}>
+      <div className="flex flex-col flex-1" style={{ padding: '20px 12px 10px 12px' }}>
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="font-bold leading-tight flex-1 min-w-0" style={{ fontSize: '15px', color: '#1A1A1A' }}>
             <HighlightText text={restaurant.name} query={search} />
