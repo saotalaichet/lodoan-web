@@ -168,7 +168,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
       onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 12px rgba(0,0,0,0.10)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)'; }}
       onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.06)'; (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)'; }}
     >
-      <div className="relative flex-shrink-0" style={{ height: '180px' }}>
+      <div className="relative flex-shrink-0" style={{ height: '140px' }}>
         {restaurant.banner ? (
           <img src={restaurant.banner} alt={restaurant.name} className="w-full h-full object-cover" loading="lazy" />
         ) : (
@@ -211,7 +211,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         </div>
       </div>
 
-      <div className="flex flex-col flex-1" style={{ padding: '24px 14px 14px 14px' }}>
+      <div className="flex flex-col flex-1" style={{ padding: '16px 12px 12px 12px' }}>
         <div className="flex items-start justify-between gap-2 mb-1.5">
           <h3 className="font-bold leading-tight flex-1 min-w-0" style={{ fontSize: '15px', color: '#1A1A1A' }}>
             <HighlightText text={restaurant.name} query={search} />
