@@ -95,6 +95,28 @@ export default async function SlugLayout({
       bestRating: '5',
       worstRating: '1',
     } : undefined,
+    geo: r.latitude && r.longitude ? {
+      '@type': 'GeoCoordinates',
+      latitude: parseFloat(r.latitude),
+      longitude: parseFloat(r.longitude),
+    } : undefined,
+    openingHoursSpecification: r.hours ? (() => {
+      const DAYS: Record<string, string> = {
+        sunday: 'Sunday', monday: 'Monday', tuesday: 'Tuesday',
+        wednesday: 'Wednesday', thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday',
+      };
+      return Object.entries(r.hours)
+        .filter(([, h]) => h && typeof h === 'string' && (h as string).includes('-'))
+        .map(([day, h]) => {
+          const [open, close] = (h as string).split('-').map((s: string) => s.trim());
+          return {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: `https://schema.org/${DAYS[day]}`,
+            opens: open,
+            closes: close === '00:00' ? '23:59' : close,
+          };
+        });
+    })() : undefined,
     acceptsReservations: false,
     potentialAction: {
       '@type': 'OrderAction',
