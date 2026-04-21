@@ -10,6 +10,14 @@ async function getRestaurant(slug: string) {
   } catch { return null; }
 }
 
+async function getMenu(slug: string) {
+  try {
+    const res = await fetch(`${RAILWAY}/api/menu?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+    if (!res.ok) return null;
+    return res.json();
+  } catch { return null; }
+}
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const r = await getRestaurant(slug);
@@ -151,6 +159,55 @@ export default async function SlugLayout({
     ],
   };
 
+  const menu = await getMenu(slug);
+  const menuSchema = menu?.items?.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'Menu',
+    name: r ? `Menu — ${r.name}` : 'Menu',
+    url: `https://www.lodoan.vn/${slug}`,
+    hasMenuSection: (() => {
+      const categories = menu.categories || [];
+      const items = menu.items || [];
+      if (categories.length > 0) {
+        return categories.map((cat: any) => ({
+          '@type': 'MenuSection',
+          name: cat.name,
+          hasMenuItem: items
+            .filter((item: any) => item.category_id === cat.id && item.is_available !== false)
+            .slice(0, 10)
+            .map((item: any) => ({
+              '@type': 'MenuItem',
+              name: item.name,
+              description: item.description || undefined,
+              offers: {
+                '@type': 'Offer',
+                price: parseFloat(item.price).toFixed(0),
+                priceCurrency: 'VND',
+                availability: 'https://schema.org/InStock',
+              },
+              image: item.image_url || undefined,
+            })),
+        })).filter((s: any) => s.hasMenuItem.length > 0);
+      }
+      return [{
+        '@type': 'MenuSection',
+        name: 'Menu',
+        hasMenuItem: items.slice(0, 20).map((item: any) => ({
+          '@type': 'MenuItem',
+          name: item.name,
+          description: item.description || undefined,
+          offers: {
+            '@type': 'Offer',
+            price: parseFloat(item.price).toFixed(0),
+            priceCurrency: 'VND',
+            availability: 'https://schema.org/InStock',
+          },
+          image: item.image_url || undefined,
+        })),
+      }];
+    })(),
+  } : null;
+
   return (
     <>
       {restaurantSchema && (
@@ -163,6 +220,12 @@ export default async function SlugLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
+      {menuSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(menuSchema) }}
+        />
+      )}
       {children}
     </>
   );
