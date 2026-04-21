@@ -11,7 +11,6 @@ import {
 import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 import TrackAsiaAddressInput from '@/components/TrackAsiaAddressInput';
-import dynamic from 'next/dynamic';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -1430,8 +1429,7 @@ export default function RestaurantPage() {
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
         <div className="flex-1 min-w-0">
           {/* MENU TAB */}
-          {/* MENU TAB */
-              <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-6">
                 <span className="text-2xl font-black text-gray-900 tracking-tight">Menu</span>
                 <div className="h-0.5 flex-1 rounded-full bg-primary" />
               </div>
