@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-
-const TrackAsiaMap = dynamic(() => import('@/components/TrackAsiaMap'), { ssr: false });
+import MapWrapper from '@/components/MapWrapper';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const DAYS_VI = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
@@ -83,11 +81,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
             {r.address && (
               <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                 {r.latitude && r.longitude ? (
-                  <TrackAsiaMap
-                    latitude={parseFloat(r.latitude)}
-                    longitude={parseFloat(r.longitude)}
-                    name={r.name}
-                  />
+                  <MapWrapper latitude={parseFloat(r.latitude)} longitude={parseFloat(r.longitude)} name={r.name} />
                 ) : (
                   <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-3">
                     <p className="text-sm text-gray-500">Chưa có tọa độ bản đồ</p>
