@@ -1720,6 +1720,7 @@ export default function RestaurantPage() {
                     <p className="text-sm font-semibold text-gray-900">{item.label}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
                   </div>
+                </Link>
               ))}
             </nav>
             {customer && (
