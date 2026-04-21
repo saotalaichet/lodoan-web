@@ -1429,7 +1429,7 @@ export default function RestaurantPage() {
       {/* Main content */}
       <div className="flex-1 max-w-6xl mx-auto w-full px-4 py-6 flex gap-6">
         <div className="flex-1 min-w-0">
-
+          {/* MENU TAB */}
           {/* MENU TAB */
               <div className="flex items-center gap-3 mb-6">
                 <span className="text-2xl font-black text-gray-900 tracking-tight">Menu</span>
