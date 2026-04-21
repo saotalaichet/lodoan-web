@@ -332,7 +332,7 @@ export default function CompanyPage() {
                     />
                   </div>
                 ) : (
-                  <div style={{ position: 'relative', width: 180, flexShrink: 0 }}><div style={{ width: '100%', background: '#0a0a0a', borderRadius: 30, padding: 4, boxShadow: '0 0 0 0.5px #333, 0 20px 50px rgba(0,0,0,0.4)' }}><div style={{ position: 'absolute', right: -2, top: 90, width: 2, height: 50, background: '#1a1a1a', borderRadius: '0 2px 2px 0' }} /><div style={{ position: 'absolute', left: -2, top: 80, width: 2, height: 28, background: '#1a1a1a', borderRadius: '2px 0 0 2px' }} /><div style={{ position: 'absolute', left: -2, top: 118, width: 2, height: 28, background: '#1a1a1a', borderRadius: '2px 0 0 2px' }} /><div style={{ borderRadius: 27, overflow: 'hidden' }}>
+                  <div style={{ position: 'relative', width: 150, flexShrink: 0 }}><div style={{ width: '100%', background: '#0a0a0a', borderRadius: 38, padding: 3, boxShadow: '0 0 0 0.5px #222, 0 20px 50px rgba(0,0,0,0.4)' }}><div style={{ position: 'absolute', right: -2, top: 80, width: 2, height: 44, background: '#1a1a1a', borderRadius: '0 2px 2px 0' }} /><div style={{ position: 'absolute', left: -2, top: 70, width: 2, height: 24, background: '#1a1a1a', borderRadius: '2px 0 0 2px' }} /><div style={{ position: 'absolute', left: -2, top: 104, width: 2, height: 24, background: '#1a1a1a', borderRadius: '2px 0 0 2px' }} /><div style={{ borderRadius: 36, overflow: 'hidden' }}>
                     <video
                       src="https://res.cloudinary.com/dvnssii5h/video/upload/q_auto,f_mp4/v1776810821/online__order_store_oqrmd4.mp4"
                       autoPlay
