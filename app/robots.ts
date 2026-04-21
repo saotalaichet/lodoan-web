@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/owner/', '/profile/', '/orders/', '/api/'],
       },
     ],
-    sitemap: 'https://lodoan.vn/sitemap.xml',
+    sitemap: 'https://www.lodoan.vn/sitemap.xml',
   };
 }
