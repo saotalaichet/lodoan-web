@@ -332,26 +332,10 @@ export default function CompanyPage() {
                     />
                   </div>
                 ) : (
-                  <div style={{ width: '100%', maxWidth: 600, borderRadius: 12, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.18)', border: '1px solid #ddd' }}>
-                    {/* Safari chrome */}
-                    <div style={{ background: '#f0f0f0', padding: '0 16px', borderBottom: '1px solid #d0d0d0' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 44 }}>
-                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#FF5F57' }} />
-                          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#FFBD2E' }} />
-                          <div style={{ width: 12, height: 12, borderRadius: '50%', background: '#28C840' }} />
-                        </div>
-                        <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                          <div style={{ background: '#fff', borderRadius: 8, padding: '5px 14px', fontSize: 11, color: '#555', border: '1px solid #d0d0d0', display: 'flex', alignItems: 'center', gap: 5, minWidth: 200, justifyContent: 'center' }}>
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <span>lodoan.vn/your-restaurant</span>
-                          </div>
-                        </div>
-                        <div style={{ width: 60 }} />
-                      </div>
-                    </div>
+                ) : (
+                  <div style={{ width: '100%', maxWidth: 600, borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.18)' }}>
                     <video
-                      src="https://res.cloudinary.com/dvnssii5h/video/upload/f_auto,q_auto/online_order_store_oqrmd4.mp4"
+                      src="https://res.cloudinary.com/dvnssii5h/video/upload/q_auto,f_mp4/online_order_store_oqrmd4"
                       autoPlay
                       loop
                       muted
@@ -360,13 +344,6 @@ export default function CompanyPage() {
                     />
                   </div>
                 )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
       <div style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
         <section className="ov-section" style={{ maxWidth: 1100, margin: '0 auto', padding: '88px 40px' }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase' as const, marginBottom: 14 }}>{t.how.tag}</p>
