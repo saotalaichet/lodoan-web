@@ -1710,24 +1710,16 @@ export default function RestaurantPage() {
             </div>
             <nav className="flex-1 px-3 py-4 space-y-1">
               {([
-                { id: 'menu' as const, label: lang === 'vi' ? 'Menu' : 'Menu', sub: lang === 'vi' ? 'Xem thực đơn & đặt hàng' : 'Browse menu & order', icon: '🍽️', path: `/${slug}/menu` },
-                { id: 'location' as const, label: lang === 'vi' ? 'Vị Trí' : 'Location', sub: lang === 'vi' ? 'Địa chỉ & giờ mở cửa' : 'Address & hours', icon: '📍', path: `/${slug}/location` },
-                { id: 'reviews' as const, label: lang === 'vi' ? 'Đánh Giá' : 'Reviews', sub: lang === 'vi' ? 'Từ khách đã đặt hàng' : 'From verified orders', icon: '⭐', path: `/${slug}/reviews` },
+                { label: lang === 'vi' ? 'Menu' : 'Menu', sub: lang === 'vi' ? 'Xem thực đơn & đặt hàng' : 'Browse menu & order', path: `/${slug}` },
+                { label: lang === 'vi' ? 'Vị Trí' : 'Location', sub: lang === 'vi' ? 'Địa chỉ & giờ mở cửa' : 'Address & hours', path: `/${slug}/location` },
+                { label: lang === 'vi' ? 'Đánh Giá' : 'Reviews', sub: lang === 'vi' ? 'Từ khách đã đặt hàng' : 'From verified orders', path: `/${slug}/reviews` },
               ]).map(item => (
-                <button key={item.id}
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    setNavOpen(false);
-                    if (item.id === 'reviews' && restaurant?.id) loadReviews(restaurant.id);
-                    window.history.replaceState({}, '', item.path);
-                  }}
-                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left ${activeTab === item.id ? 'bg-primary/10' : 'hover:bg-gray-50'}`}>
+                <Link key={item.path} href={item.path} onClick={() => setNavOpen(false)}
+                  className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl transition-all text-left hover:bg-gray-50">
                   <div>
-                    <p className={`text-sm font-semibold ${activeTab === item.id ? 'text-primary' : 'text-gray-900'}`}>{item.label}</p>
+                    <p className="text-sm font-semibold text-gray-900">{item.label}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
                   </div>
-                  {activeTab === item.id && <div className="w-1.5 h-1.5 bg-primary rounded-full flex-shrink-0" />}
-                </button>
               ))}
             </nav>
             {customer && (

@@ -52,8 +52,11 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
     geo: r.latitude && r.longitude ? { '@type': 'GeoCoordinates', latitude: parseFloat(r.latitude), longitude: parseFloat(r.longitude) } : undefined,
   };
 
+  const primaryColor = r.primary_color || '#8B1A1A';
+
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `:root { --color-primary: ${primaryColor}; }` }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <div className="min-h-screen bg-gray-50">
         <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
