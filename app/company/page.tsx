@@ -334,7 +334,7 @@ export default function CompanyPage() {
                 ) : (
                   <div style={{ width: '100%', maxWidth: 600, borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.18)' }}>
                     <video
-                      src="https://res.cloudinary.com/dvnssii5h/video/upload/q_auto,f_mp4/online_order_store_oqrmd4"
+                      src="https://res.cloudinary.com/dvnssii5h/video/upload/q_auto,f_mp4/v1776810821/online__order_store_oqrmd4.mp4"
                       autoPlay
                       loop
                       muted
