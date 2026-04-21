@@ -72,7 +72,7 @@ export default async function HomePage() {
     image: 'https://www.lodoan.vn/lodoan-og.jpg',
     telephone: '+84938462654',
     priceRange: '₫₫',
-    servesCuisine: ['Vietnamese', 'Café', 'Bubble Tea', 'Dessert', 'Asian'],
+    servesCuisine: ['Vietnamese', 'Café', 'Bubble Tea', 'Dessert', 'Asian', 'Japanese', 'Korean', 'Chinese', 'Thai', 'Fusion', 'Fast Food', 'Fried Chicken', 'Snacks', 'Pizza', 'Noodles', 'Seafood', 'Hotpot', 'Bánh Mì', 'Rice', 'Vegetarian', 'BBQ'],
     address: {
       '@type': 'PostalAddress',
       streetAddress: 'Hồ Chí Minh',
