@@ -66,7 +66,9 @@ const ovelyOrganizationSchema = {
   description: 'Ovenly là nền tảng SaaS giúp quán ăn, nhà hàng và cơ sở F&B tại Việt Nam nhận đơn hàng online trực tiếp.',
   address: {
     '@type': 'PostalAddress',
+    streetAddress: 'Thành phố Hồ Chí Minh',
     addressLocality: 'Thành phố Hồ Chí Minh',
+    postalCode: '700000',
     addressCountry: 'VN',
   },
   areaServed: { '@type': 'Country', name: 'Vietnam' },
