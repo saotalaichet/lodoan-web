@@ -155,11 +155,7 @@ export default function CompanyPage() {
       description: 'Miễn phí đăng ký',
     },
     provider: {
-      '@type': 'Organization',
-      name: 'Ovenly',
-      url: 'https://www.ovenly.io',
-      email: 'hello@ovenly.io',
-      areaServed: 'VN',
+      '@id': 'https://www.ovenly.io/#organization',
     },
   };
 
