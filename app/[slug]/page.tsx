@@ -1311,7 +1311,6 @@ export default function RestaurantPage() {
                   </span>
                 )}
               </button>
-            )}
             {customer ? (
               <div className="flex items-center gap-1.5">
                 <button
