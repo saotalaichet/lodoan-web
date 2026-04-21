@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import RestaurantNav from '@/components/RestaurantNav';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
@@ -73,25 +74,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ slug: 
       <style dangerouslySetInnerHTML={{ __html: `:root { --color-primary: ${primaryColor}; }` }} />
       {reviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchema) }} />}
       <div className="min-h-screen bg-gray-50">
-        <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
-          <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-4">
-            <Link href={`/${slug}`} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200">
-              <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7"/>
-              </svg>
-            </Link>
-            {r.logo
-              ? <img src={r.logo} alt={r.name} style={{ height: '40px', width: 'auto', maxWidth: '160px' }} className="object-contain" />
-              : <span className="font-bold text-gray-900 text-sm">{r.name}</span>}
-          </div>
-        </header>
-        <nav className="bg-white border-b border-gray-200">
-          <div className="max-w-6xl mx-auto px-4 flex gap-1 py-2">
-            <Link href={`/${slug}`} className="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100">Menu</Link>
-            <Link href={`/${slug}/location`} className="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100">Vị Trí</Link>
-            <Link href={`/${slug}/reviews`} className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-white">Đánh Giá</Link>
-          </div>
-        </nav>
+        <RestaurantNav restaurant={r} slug={slug} />
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="space-y-4 max-w-2xl">
             <div className="flex items-center justify-between">
