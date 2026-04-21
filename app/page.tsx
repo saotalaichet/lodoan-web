@@ -63,21 +63,6 @@ export default async function HomePage() {
     return <CompanyPage />;
   }
 
-  const websiteSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: 'LÒ ĐỒ ĂN',
-    url: 'https://www.lodoan.vn',
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: 'https://www.lodoan.vn/?q={search_term_string}',
-      },
-      'query-input': 'required name=search_term_string',
-    },
-  };
-
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'FoodEstablishment',
@@ -113,7 +98,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
       <MarketplaceClient />
     </>
