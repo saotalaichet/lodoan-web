@@ -343,6 +343,13 @@ export default function CompanyPage() {
                     />
                   </div>
                 )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
       <div style={{ background: '#fff', borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
         <section className="ov-section" style={{ maxWidth: 1100, margin: '0 auto', padding: '88px 40px' }}>
           <p style={{ fontSize: 13, fontWeight: 600, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase' as const, marginBottom: 14 }}>{t.how.tag}</p>
