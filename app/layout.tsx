@@ -54,6 +54,43 @@ const websiteSchema = {
   },
 };
 
+const ovelyOrganizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': 'https://www.ovenly.io/#organization',
+  name: 'Ovenly',
+  url: 'https://www.ovenly.io',
+  logo: 'https://www.ovenly.io/ovenly-og.png',
+  email: 'hello@ovenly.io',
+  telephone: '+84938462654',
+  description: 'Ovenly là nền tảng SaaS giúp quán ăn, nhà hàng và cơ sở F&B tại Việt Nam nhận đơn hàng online trực tiếp.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Thành phố Hồ Chí Minh',
+    addressCountry: 'VN',
+  },
+  areaServed: { '@type': 'Country', name: 'Vietnam' },
+  sameAs: ['https://www.lodoan.vn'],
+};
+
+const ovelyWebsiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': 'https://www.ovenly.io/#website',
+  name: 'Ovenly',
+  alternateName: ['Ovenly Vietnam', 'Ovenly F&B'],
+  url: 'https://www.ovenly.io',
+  inLanguage: ['vi-VN', 'en'],
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: 'https://www.ovenly.io/?q={search_term_string}',
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+
 export default async function RootLayout({
   children,
 }: {
@@ -78,6 +115,18 @@ export default async function RootLayout({
             <script
               type="application/ld+json"
               dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+            />
+          </>
+        )}
+        {isOvenly && (
+          <>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(ovelyOrganizationSchema) }}
+            />
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(ovelyWebsiteSchema) }}
             />
           </>
         )}
