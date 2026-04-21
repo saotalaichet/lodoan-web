@@ -70,8 +70,14 @@ export default async function HomePage() {
     url: 'https://www.lodoan.vn',
     description: 'Khám phá và đặt món từ các quán ăn, địa điểm ăn uống, quán cà phê tại Việt Nam. Giao hàng tận nơi & mang về.',
     image: 'https://www.lodoan.vn/lodoan-og.jpg',
+    telephone: '+84-28-0000-0000',
+    priceRange: '₫₫',
+    servesCuisine: ['Vietnamese', 'Café', 'Bubble Tea', 'Dessert', 'Asian'],
     address: {
       '@type': 'PostalAddress',
+      streetAddress: 'Hồ Chí Minh',
+      addressLocality: 'Thành phố Hồ Chí Minh',
+      postalCode: '700000',
       addressCountry: 'VN',
     },
     areaServed: {
