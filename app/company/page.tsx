@@ -163,51 +163,12 @@ export default function CompanyPage() {
     },
   };
 
-  const organizationSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    '@id': 'https://www.ovenly.io/#organization',
-    name: 'Ovenly',
-    url: 'https://www.ovenly.io',
-    logo: 'https://www.ovenly.io/ovenly-og.png',
-    email: 'hello@ovenly.io',
-    telephone: '+84938462654',
-    description: 'Ovenly là nền tảng SaaS giúp quán ăn, nhà hàng và cơ sở F&B tại Việt Nam nhận đơn hàng online trực tiếp.',
-    address: {
-      '@type': 'PostalAddress',
-      addressLocality: 'Thành phố Hồ Chí Minh',
-      addressCountry: 'VN',
-    },
-    areaServed: {
-      '@type': 'Country',
-      name: 'Vietnam',
-    },
-    sameAs: ['https://www.lodoan.vn'],
-  };
 
-  const websiteSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    '@id': 'https://www.ovenly.io/#website',
-    name: 'Ovenly',
-    alternateName: ['Ovenly Vietnam', 'Ovenly F&B'],
-    url: 'https://www.ovenly.io',
-    inLanguage: ['vi-VN', 'en'],
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: 'https://www.ovenly.io/?q={search_term_string}',
-      },
-      'query-input': 'required name=search_term_string',
-    },
-  };
 
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, color: '#1a1a1a', lineHeight: 1.6 }}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+
 
       <style>{`
         @media (max-width: 768px) {
