@@ -18,6 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
       : ['đặt đồ ăn online', 'giao đồ ăn', 'mang về', 'nhà hàng gần đây', 'trà sữa', 'cà phê', 'đặt món online', 'lò đồ ăn', 'lodoan', 'ẩm thực việt nam'],
     alternates: { canonical },
     verification: { google: isOvenly ? 'RUqDDflXwzoNSVLXNhAgLhpyk5jUwRMGUm9aesgmwDU' : lodoanVerification },
+    applicationName: isOvenly ? 'Ovenly' : 'LÒ ĐỒ ĂN',
     icons: {
       icon: isOvenly ? '/favicon.ico' : '/lodoan-favicon.ico',
       apple: isOvenly ? '/ovenly-apple.jpg' : '/lodoan-apple.jpg',
@@ -38,37 +39,48 @@ const organizationSchema = {
 const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
+  '@id': 'https://www.lodoan.vn/#website',
   name: 'LÒ ĐỒ ĂN',
+  alternateName: ['Lò Đồ Ăn', 'LoDoAn', 'lodoan.vn'],
   url: 'https://www.lodoan.vn',
+  inLanguage: 'vi-VN',
   potentialAction: {
     '@type': 'SearchAction',
     target: {
       '@type': 'EntryPoint',
-      urlTemplate: 'https://www.lodoan.vn/search?q={search_term_string}',
+      urlTemplate: 'https://www.lodoan.vn/?q={search_term_string}',
     },
     'query-input': 'required name=search_term_string',
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const host = headersList.get('host') || '';
+  const isOvenly = host.includes('ovenly.io');
+
   return (
     <html lang="vi">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-        />
+        {!isOvenly && (
+          <>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+            />
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+            />
+          </>
+        )}
         {children}
       </body>
       <GoogleAnalytics gaId="G-18CY2R4DY0" />
