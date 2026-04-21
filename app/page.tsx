@@ -40,6 +40,7 @@ export async function generateMetadata(): Promise<Metadata> {
       languages: {
         'vi': 'https://www.lodoan.vn',
         'en': 'https://www.lodoan.vn',
+        'x-default': 'https://www.lodoan.vn',
       },
     },
     openGraph: {
