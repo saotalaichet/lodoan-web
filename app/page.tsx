@@ -45,7 +45,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     openGraph: {
       title: 'LÒ ĐỒ ĂN | Khám phá địa điểm ăn uống | Đặt và giao đồ ăn trực tuyến tại Việt Nam',
-      description: 'Đặt đồ ăn online từ các địa điểm ăn uống tại Việt Nam. Giao hàng tận nơi & mang về.',
+      description: 'Khám phá và đặt món từ các quán ăn, địa điểm ăn uống, quán cà phê tại Việt Nam. Giao hàng tận nơi & mang về.',
       url: 'https://www.lodoan.vn',
       siteName: 'LÒ ĐỒ ĂN',
       locale: 'vi_VN',
@@ -63,5 +63,59 @@ export default async function HomePage() {
     return <CompanyPage />;
   }
 
-  return <MarketplaceClient />;
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'LÒ ĐỒ ĂN',
+    url: 'https://www.lodoan.vn',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://www.lodoan.vn/?q={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
+  const localBusinessSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FoodEstablishment',
+    name: 'LÒ ĐỒ ĂN',
+    url: 'https://www.lodoan.vn',
+    description: 'Khám phá và đặt món từ các quán ăn, địa điểm ăn uống, quán cà phê tại Việt Nam. Giao hàng tận nơi & mang về.',
+    image: 'https://www.lodoan.vn/lodoan-og.jpg',
+    address: {
+      '@type': 'PostalAddress',
+      addressCountry: 'VN',
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Vietnam',
+    },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Quán ăn & địa điểm ăn uống trên LÒ ĐỒ ĂN',
+    },
+    potentialAction: {
+      '@type': 'OrderAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://www.lodoan.vn',
+        inLanguage: 'vi',
+        actionPlatform: [
+          'http://schema.org/DesktopWebPlatform',
+          'http://schema.org/MobileWebPlatform',
+        ],
+      },
+    },
+  };
+
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
+      <MarketplaceClient />
+    </>
+  );
 }
