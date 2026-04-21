@@ -140,34 +140,74 @@ export default function CompanyPage() {
   const [lang, setLang] = useState<'vi' | 'en'>('vi');
   const t = T[lang];
   const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'Ovenly',
-  applicationCategory: 'BusinessApplication',
-  operatingSystem: 'Web, Android, IOS',
-  description: 'Phần mềm nhận đơn online và quản lý nhà hàng tại Việt Nam',
-  url: 'https://www.ovenly.io',
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'VND',
-    description: 'Miễn phí đăng ký',
-  },
-  provider: {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: 'Ovenly',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web, Android, iOS',
+    description: 'Phần mềm nhận đơn online và quản lý nhà hàng tại Việt Nam. Giúp quán ăn, nhà hàng, cà phê nhận đơn trực tuyến, quản lý menu và tiếp cận khách hàng mới.',
+    url: 'https://www.ovenly.io',
+    applicationSubCategory: 'Restaurant Management',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'VND',
+      description: 'Miễn phí đăng ký',
+    },
+    provider: {
+      '@type': 'Organization',
+      name: 'Ovenly',
+      url: 'https://www.ovenly.io',
+      email: 'hello@ovenly.io',
+      areaServed: 'VN',
+    },
+  };
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
     '@type': 'Organization',
+    '@id': 'https://www.ovenly.io/#organization',
     name: 'Ovenly',
     url: 'https://www.ovenly.io',
+    logo: 'https://www.ovenly.io/ovenly-og.png',
     email: 'hello@ovenly.io',
-    areaServed: 'VN',
-  },
-};
+    telephone: '+84938462654',
+    description: 'Ovenly là nền tảng SaaS giúp quán ăn, nhà hàng và cơ sở F&B tại Việt Nam nhận đơn hàng online trực tiếp.',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Thành phố Hồ Chí Minh',
+      addressCountry: 'VN',
+    },
+    areaServed: {
+      '@type': 'Country',
+      name: 'Vietnam',
+    },
+    sameAs: ['https://www.lodoan.vn'],
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    '@id': 'https://www.ovenly.io/#website',
+    name: 'Ovenly',
+    alternateName: ['Ovenly Vietnam', 'Ovenly F&B'],
+    url: 'https://www.ovenly.io',
+    inLanguage: ['vi-VN', 'en'],
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: 'https://www.ovenly.io/?q={search_term_string}',
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
 
   return (
     <div style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', background: BG, color: '#1a1a1a', lineHeight: 1.6 }}>
-      <script
-  type="application/ld+json"
-  dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-/>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
 
       <style>{`
         @media (max-width: 768px) {
