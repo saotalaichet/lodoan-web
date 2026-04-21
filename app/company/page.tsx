@@ -332,15 +332,23 @@ export default function CompanyPage() {
                     />
                   </div>
                 ) : (
-                  <div style={{ width: '100%', maxWidth: 320, borderRadius: 32, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', border: '6px solid #1a1a1a', background: '#1a1a1a' }}>
-                    <video
-                      src="https://res.cloudinary.com/dvnssii5h/video/upload/q_auto,f_mp4/v1776810821/online__order_store_oqrmd4.mp4"
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      style={{ width: '100%', display: 'block' }}
-                    /></div>
+                  <div style={{ position: 'relative', width: '100%', maxWidth: 280, flexShrink: 0 }}>
+                    <div style={{ background: '#0a0a0a', borderRadius: 44, padding: 6, boxShadow: '0 0 0 0.5px #333, 0 24px 60px rgba(0,0,0,0.45)', position: 'relative' }}>
+                      <div style={{ position: 'absolute', right: -3, top: 100, width: 3, height: 64, background: '#1a1a1a', borderRadius: '0 2px 2px 0' }} />
+                      <div style={{ position: 'absolute', left: -3, top: 90, width: 3, height: 36, background: '#1a1a1a', borderRadius: '2px 0 0 2px' }} />
+                      <div style={{ position: 'absolute', left: -3, top: 136, width: 3, height: 36, background: '#1a1a1a', borderRadius: '2px 0 0 2px' }} />
+                      <div style={{ borderRadius: 38, overflow: 'hidden' }}>
+                        <video
+                          src="https://res.cloudinary.com/dvnssii5h/video/upload/q_auto,f_mp4/v1776810821/online__order_store_oqrmd4.mp4"
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          style={{ width: '100%', display: 'block' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
