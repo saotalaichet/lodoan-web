@@ -178,7 +178,7 @@ export default function CompanyPage() {
           .ov-section { padding: 56px 20px !important; }
           .ov-card-grid { grid-template-columns: 1fr !important; }
           .ov-card-text { order: 0 !important; padding: 32px 24px !important; }
-          .ov-card-photo { order: 1 !important; min-height: 260px !important; }
+          .ov-card-photo { order: 1 !important; min-height: 360px !important; }
           .ov-how-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
           .ov-cta-grid { grid-template-columns: 1fr !important; }
           .ov-cta-photo { display: none !important; }
@@ -332,7 +332,7 @@ export default function CompanyPage() {
                     />
                   </div>
                 ) : (
-                  <div style={{ width: '100%', maxWidth: 600, borderRadius: 16, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.18)' }}>
+                  <div style={{ width: '100%', maxWidth: 280, borderRadius: 32, overflow: 'hidden', boxShadow: '0 24px 80px rgba(0,0,0,0.25)', border: '8px solid #1a1a1a', background: '#1a1a1a' }}>
                     <video
                       src="https://res.cloudinary.com/dvnssii5h/video/upload/q_auto,f_mp4/v1776810821/online__order_store_oqrmd4.mp4"
                       autoPlay
