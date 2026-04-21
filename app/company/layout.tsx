@@ -62,35 +62,6 @@ export const metadata: Metadata = {
   ],
 };
 
-const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'Ovenly',
-  alternateName: 'Ovenly Vietnam',
-  url: 'https://www.ovenly.io',
-  logo: 'https://www.ovenly.io/ovenly-og.png',
-  sameAs: [],
-};
-
-const websiteSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: 'Ovenly',
-  url: 'https://www.ovenly.io',
-};
-
 export default function CompanyLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-      />
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
