@@ -82,7 +82,6 @@ export default async function ReviewsPage({ params }: { params: Promise<{ slug: 
               : <span className="font-bold text-gray-900 text-sm">{r.name}</span>}
           </div>
         </header>
-
         <nav className="bg-white border-b border-gray-200">
           <div className="max-w-6xl mx-auto px-4 flex gap-1 py-2">
             <Link href={`/${slug}`} className="px-4 py-1.5 rounded-full text-sm font-medium text-gray-600 hover:bg-gray-100">Menu</Link>
@@ -90,64 +89,64 @@ export default async function ReviewsPage({ params }: { params: Promise<{ slug: 
             <Link href={`/${slug}/reviews`} className="px-4 py-1.5 rounded-full text-sm font-medium bg-primary text-white">Đánh Giá</Link>
           </div>
         </nav>
-
-        <div className="max-w-2xl mx-auto px-4 py-8 space-y-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-black text-gray-900">Đánh Giá — {r.name}</h1>
-            {r.total_ratings >= 3 && (
-              <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
-                <span className="text-xl font-black text-amber-600">{parseFloat(r.average_rating).toFixed(1)}</span>
-                <div className="flex gap-0.5">
-                  {[1,2,3,4,5].map(s => (
-                    <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= Math.round(r.average_rating) ? '#F59E0B' : '#E5E7EB'}>
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                    </svg>
-                  ))}
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="space-y-4 max-w-2xl">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-black text-gray-900">Đánh Giá</h2>
+              {r.total_ratings >= 3 && (
+                <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                  <span className="text-xl font-black text-amber-600">{parseFloat(r.average_rating).toFixed(1)}</span>
+                  <div className="flex gap-0.5">
+                    {[1,2,3,4,5].map(s => (
+                      <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= Math.round(r.average_rating) ? '#F59E0B' : '#E5E7EB'}>
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                    ))}
+                  </div>
                 </div>
+              )}
+            </div>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+              <p className="text-xs text-gray-500 font-medium">
+                Chỉ hiển thị đánh giá từ khách đã đặt hàng qua LÒ ĐỒ ĂN
+              </p>
+            </div>
+            {reviews.length === 0 ? (
+              <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
+                <p className="text-gray-400 font-medium">Chưa có đánh giá nào</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {reviews.map((rev: any, i: number) => (
+                  <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-bold text-gray-600">{rev.customer_name?.[0]?.toUpperCase() || '?'}</span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{rev.customer_name || 'Khách hàng'}</p>
+                          <p className="text-xs text-gray-400">{new Date(rev.created_date).toLocaleDateString('vi-VN')}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-0.5">
+                        {[1,2,3,4,5].map(s => (
+                          <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= rev.rating ? '#F59E0B' : '#E5E7EB'}>
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                          </svg>
+                        ))}
+                      </div>
+                    </div>
+                    {rev.comment && <p className="text-sm text-gray-700 leading-relaxed">{rev.comment}</p>}
+                  </div>
+                ))}
               </div>
             )}
-          </div>
-
-          <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-            <p className="text-xs text-gray-500 font-medium">Chỉ hiển thị đánh giá từ khách đã đặt hàng qua LÒ ĐỒ ĂN</p>
-          </div>
-
-          {reviews.length === 0 ? (
-            <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-              <p className="text-gray-400 font-medium">Chưa có đánh giá nào</p>
+            <div className="text-center pt-4">
+              <Link href={`/${slug}`} className="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90">
+                Xem menu & đặt món
+              </Link>
             </div>
-          ) : (
-            <div className="space-y-3">
-              {reviews.map((rev: any, i: number) => (
-                <div key={i} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                        <span className="text-sm font-bold text-gray-600">{rev.customer_name?.[0]?.toUpperCase() || '?'}</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">{rev.customer_name || 'Khách hàng'}</p>
-                        <p className="text-xs text-gray-400">{new Date(rev.created_date).toLocaleDateString('vi-VN')}</p>
-                      </div>
-                    </div>
-                    <div className="flex gap-0.5">
-                      {[1,2,3,4,5].map(s => (
-                        <svg key={s} width="13" height="13" viewBox="0 0 24 24" fill={s <= rev.rating ? '#F59E0B' : '#E5E7EB'}>
-                          <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                        </svg>
-                      ))}
-                    </div>
-                  </div>
-                  {rev.comment && <p className="text-sm text-gray-700 leading-relaxed">{rev.comment}</p>}
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="text-center pt-4">
-            <Link href={`/${slug}`} className="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90">
-              🍽️ Xem Menu & Đặt Món
-            </Link>
           </div>
         </div>
       </div>
