@@ -34,12 +34,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const restaurants = await res.json();
     const restaurantPages: MetadataRoute.Sitemap = restaurants
       .filter((r: any) => r.slug && r.launch_status === 'launched')
-      .map((r: any) => ({
-        url: `${base}/${r.slug}`,
-        lastModified: new Date(r.updated_date || r.created_date || new Date()),
-        changeFrequency: 'weekly' as const,
-        priority: r.featured ? 0.9 : 0.8,
-      }));
+      .flatMap((r: any) => {
+        const lastMod = new Date(r.updated_date || r.created_date || new Date());
+        return [
+          { url: `${base}/${r.slug}`, lastModified: lastMod, changeFrequency: 'weekly' as const, priority: r.featured ? 0.9 : 0.8 },
+          { url: `${base}/${r.slug}/location`, lastModified: lastMod, changeFrequency: 'monthly' as const, priority: 0.6 },
+          { url: `${base}/${r.slug}/reviews`, lastModified: lastMod, changeFrequency: 'weekly' as const, priority: 0.6 },
+        ];
+      });
     return [...staticPages, ...restaurantPages];
   } catch {
     return staticPages;
