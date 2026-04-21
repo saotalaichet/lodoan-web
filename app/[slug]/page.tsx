@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  ShoppingBag, Plus, Minus, Trash2, Flame, Star, Leaf, X,
+  ShoppingBag, Plus, Minus, Trash2, X,
   ChevronLeft, MapPin, Phone, FileText, Bike, Clock, Menu,
 } from 'lucide-react';
 import { createPayment } from '@/lib/api';
