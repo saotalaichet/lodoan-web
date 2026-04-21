@@ -61,6 +61,7 @@ const ovelyOrganizationSchema = {
   name: 'Ovenly',
   url: 'https://www.ovenly.io',
   logo: 'https://www.ovenly.io/ovenly-og.png',
+  image: 'https://www.ovenly.io/ovenly-og.png',
   email: 'hello@ovenly.io',
   telephone: '+84938462654',
   description: 'Ovenly là nền tảng SaaS giúp quán ăn, nhà hàng và cơ sở F&B tại Việt Nam nhận đơn hàng online trực tiếp.',
