@@ -189,8 +189,8 @@ export default function CompanyPage() {
         @media (max-width: 768px) {
           .ov-nav-desktop { display: none !important; }
           .ov-nav-mobile-btn { display: flex !important; }
-          .ov-nav { padding: 0 16px !important; height: 58px !important; }
-          .ov-nav-logo { height: 40px !important; }
+          .ov-nav { padding: 0 16px !important; height: 68px !important; }
+          .ov-nav-logo { height: 56px !important; }
           .ov-hero { padding: 60px 20px !important; min-height: 500px !important; }
           .ov-hero h1 { font-size: 32px !important; letter-spacing: -1px !important; }
           .ov-hero p { font-size: 16px !important; }
