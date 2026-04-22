@@ -38,6 +38,10 @@ export default function LoginPage() {
   const t = T[lang as keyof typeof T];
 
   useEffect(() => {
+    if (window.location.hostname.includes('ovenly.io')) {
+      window.location.href = 'https://admin.ovenly.io';
+      return;
+    }
     const stored = localStorage.getItem('ovenly_language') || localStorage.getItem('marketplace_lang') || 'vi';
     setLang(stored);
   }, []);
