@@ -149,9 +149,13 @@ function OrderTrackingPage() {
 
   const fetchRestaurant = async (restaurantId: string) => {
     try {
-      const res = await fetch(`${RAILWAY}/api/restaurants/by-id/${restaurantId}`);
+      const res = await fetch(`${RAILWAY}/api/restaurants/${restaurantId}`);
       if (!res.ok) return;
-      setRestaurant(await res.json());
+      const data = await res.json();
+      setRestaurant(data);
+      if (data?.primary_color) {
+        document.documentElement.style.setProperty('--color-primary', data.primary_color);
+      }
     } catch {}
   };
 
