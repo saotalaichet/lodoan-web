@@ -404,46 +404,20 @@ export default function CompanyPage() {
 
       {/* Footer */}
       <footer className="ov-footer" style={{ borderTop: `1px solid ${BORDER}`, padding: '48px 40px', background: BG }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
-
-          {/* Desktop footer */}
-          <div style={{ display: 'none' }} className="ov-footer-desktop">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: 20, marginBottom: 20 }}>
-              <p style={{ fontSize: 15, fontWeight: 600, color: '#555', margin: 0 }}>© 2026 Ovenly™</p>
-              <Link href="https://www.ovenly.io" style={{ textDecoration: 'none' }}>
-                <img
-                  src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
-                  alt="Ovenly"
-                  style={{ height: 64, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block', cursor: 'pointer' }}
-                />
-              </Link>
-              <p style={{ fontSize: 15, fontWeight: 600, color: '#555', margin: 0, textAlign: 'right' as const }}>{t.footer.allRights}</p>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: 28 }}>
-              {t.footer.links.map(([label, href]) => (
-                <Link key={label} href={href} style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{label}</Link>
-              ))}
-            </div>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 16, textAlign: 'center' as const }}>
+          <Link href="https://www.ovenly.io" style={{ textDecoration: 'none' }}>
+            <img
+              src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
+              alt="Ovenly"
+              style={{ height: 60, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block', cursor: 'pointer' }}
+            />
+          </Link>
+          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' as const }}>
+            {t.footer.links.map(([label, href]) => (
+              <Link key={label} href={href} style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{label}</Link>
+            ))}
           </div>
-
-          {/* Mobile/tablet footer */}
-          <div className="ov-footer-mobile" style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 16, textAlign: 'center' as const }}>
-            <Link href="https://www.ovenly.io" style={{ textDecoration: 'none' }}>
-              <img
-                src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
-                alt="Ovenly"
-                style={{ height: 56, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block', cursor: 'pointer' }}
-              />
-            </Link>
-            <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' as const }}>
-              {t.footer.links.map(([label, href]) => (
-                <Link key={label} href={href} style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{label}</Link>
-              ))}
-            </div>
-            <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>© 2026 Ovenly™</p>
-            <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>{t.footer.allRights}</p>
-          </div>
-
+          <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>© 2026 Ovenly™ · {t.footer.allRights}</p>
         </div>
       </footer>
 
