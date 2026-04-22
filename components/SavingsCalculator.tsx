@@ -11,10 +11,8 @@ export default function SavingsCalculator({ lang }: Props) {
   const [orders, setOrders] = useState(20);
   const [rawValue, setRawValue] = useState(200000);
   const [displayValue, setDisplayValue] = useState('200,000₫');
-  const [isEditing, setIsEditing] = useState(false);
 
   const isVI = lang === 'vi';
-
   const annualSaving = rawValue * 0.125 * orders * 365;
   const usd = annualSaving / 25000;
 
@@ -30,29 +28,25 @@ export default function SavingsCalculator({ lang }: Props) {
   }, [isVI]);
 
   const fmtVal = (n: number) => new Intl.NumberFormat('en').format(n) + '₫';
-
-  const fmtUSD = () =>
-    '≈ $' + (usd >= 1000 ? (usd / 1000).toFixed(1) + 'K' : Math.round(usd)) + ' USD';
+  const fmtUSD = () => '≈ $' + (usd >= 1000 ? (usd / 1000).toFixed(1) + 'K' : Math.round(usd)) + ' USD';
 
   const clampOrders = (n: number) => Math.max(1, Math.min(500, n));
   const clampValue = (n: number) => Math.max(10000, Math.min(5000000, n));
 
   const adjOrders = (d: number) => setOrders(o => clampOrders(o + d));
-
   const adjValue = (d: number) => {
     const next = clampValue(rawValue + d);
     setRawValue(next);
     setDisplayValue(fmtVal(next));
   };
 
-  const onFocus = () => {
-    setIsEditing(true);
+  const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    e.target.value = String(rawValue);
     setDisplayValue(String(rawValue));
   };
 
-  const onBlur = () => {
-    setIsEditing(false);
-    const parsed = parseInt(displayValue.replace(/[^0-9]/g, '')) || 10000;
+  const onBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const parsed = parseInt(e.target.value.replace(/[^0-9]/g, '')) || 10000;
     const clamped = clampValue(parsed);
     setRawValue(clamped);
     setDisplayValue(fmtVal(clamped));
@@ -64,137 +58,79 @@ export default function SavingsCalculator({ lang }: Props) {
     if (parsed >= 10000) setRawValue(clampValue(parsed));
   };
 
-  const inputBase: React.CSSProperties = {
-    border: 'none', outline: 'none', fontSize: 22, fontWeight: 700,
-    color: '#1a1a1a', background: 'transparent', textAlign: 'center',
-    width: '100%', minWidth: 0, fontFamily: 'inherit', lineHeight: 1,
-  };
-
-  const stepper: React.CSSProperties = {
-    display: 'flex', alignItems: 'center',
-    border: `1.5px solid ${BORDER}`, borderRadius: 12,
-    overflow: 'hidden', background: '#fff', height: 56,
-  };
-
-  const btn: React.CSSProperties = {
-    width: 52, height: '100%', border: 'none',
-    background: '#F7F3EF', fontSize: 22, color: '#666',
-    cursor: 'pointer', flexShrink: 0, display: 'flex',
-    alignItems: 'center', justifyContent: 'center',
-    transition: 'background 0.1s',
-  };
-
-  const valWrap: React.CSSProperties = {
-    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    borderLeft: `1.5px solid ${BORDER}`, borderRight: `1.5px solid ${BORDER}`,
-    padding: '0 10px', height: '100%',
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: 'block', fontSize: 12, fontWeight: 700, color: '#555',
-    textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 12,
-  };
-
   return (
-    <section style={{ background: '#FDF5EF', padding: '80px 40px', borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
+    <section style={{ background: '#FDF5EF', padding: 'clamp(40px, 6vw, 80px) clamp(20px, 5vw, 40px)', borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}` }}>
+      <style>{`
+        .calc-grid { display: grid; grid-template-columns: 1fr 1px 1fr; gap: 56px; align-items: center; }
+        .calc-divider { background: ${BORDER}; height: 100%; min-height: 200px; }
+        .calc-result { padding-left: 8px; }
+        @media (max-width: 768px) {
+          .calc-grid { grid-template-columns: 1fr; gap: 36px; }
+          .calc-divider { display: none; }
+          .calc-result { padding-left: 0; border-top: 2px dashed ${BORDER}; padding-top: 32px; }
+        }
+      `}</style>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 12 }}>
           {isVI ? 'Tính toán tiết kiệm' : 'Savings calculator'}
         </p>
-        <h2 style={{ fontSize: 'clamp(26px, 4vw, 44px)', fontWeight: 800, letterSpacing: '-1.5px', lineHeight: 1.08, marginBottom: 56, maxWidth: 620 }}>
+        <h2 style={{ fontSize: 'clamp(22px, 4vw, 44px)', fontWeight: 800, letterSpacing: '-1px', lineHeight: 1.1, marginBottom: 48, maxWidth: 620 }}>
           {isVI ? 'Quán bạn có thể tiết kiệm bao nhiêu?' : 'How much could your restaurant save?'}
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: 64, alignItems: 'center' }}>
-
-          {/* Left — inputs */}
+        <div className="calc-grid">
           <div>
-            <div style={{ marginBottom: 36 }}>
-              <label style={labelStyle}>
+            <div style={{ marginBottom: 32 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 12 }}>
                 {isVI ? 'Số đơn mỗi ngày từ app giao hàng' : 'Daily orders from delivery apps'}
               </label>
-              <div style={stepper}>
-                <button
-                  style={btn}
-                  onClick={() => adjOrders(-5)}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F0E8E0')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#F7F3EF')}
-                >−</button>
-                <div style={valWrap}>
-                  <input
-                    type="number"
-                    value={orders}
-                    min={1}
-                    max={500}
+              <div style={{ display: 'flex', alignItems: 'center', border: `1.5px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden', background: '#fff', height: 56 }}>
+                <button onClick={() => adjOrders(-5)} style={{ width: 52, height: '100%', border: 'none', background: '#F7F3EF', fontSize: 22, color: '#555', cursor: 'pointer', flexShrink: 0 }}>−</button>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: `1.5px solid ${BORDER}`, borderRight: `1.5px solid ${BORDER}`, height: '100%', padding: '0 8px' }}>
+                  <input type="number" value={orders} min={1} max={500}
                     onChange={e => setOrders(clampOrders(parseInt(e.target.value) || 1))}
-                    style={inputBase}
-                  />
+                    style={{ border: 'none', outline: 'none', fontSize: 22, fontWeight: 700, color: '#1a1a1a', background: 'transparent', textAlign: 'center', width: '100%', minWidth: 0, fontFamily: 'inherit' }} />
                 </div>
-                <button
-                  style={btn}
-                  onClick={() => adjOrders(5)}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F0E8E0')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#F7F3EF')}
-                >+</button>
+                <button onClick={() => adjOrders(5)} style={{ width: 52, height: '100%', border: 'none', background: '#F7F3EF', fontSize: 22, color: '#555', cursor: 'pointer', flexShrink: 0 }}>+</button>
               </div>
             </div>
 
             <div>
-              <label style={labelStyle}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 12 }}>
                 {isVI ? 'Giá trị trung bình mỗi đơn' : 'Average order value'}
               </label>
-              <div style={stepper}>
-                <button
-                  style={btn}
-                  onClick={() => adjValue(-50000)}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F0E8E0')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#F7F3EF')}
-                >−</button>
-                <div style={valWrap}>
-                  <input
-                    type="text"
-                    value={displayValue}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                    onChange={onValueChange}
-                    style={inputBase}
-                  />
+              <div style={{ display: 'flex', alignItems: 'center', border: `1.5px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden', background: '#fff', height: 56 }}>
+                <button onClick={() => adjValue(-50000)} style={{ width: 52, height: '100%', border: 'none', background: '#F7F3EF', fontSize: 22, color: '#555', cursor: 'pointer', flexShrink: 0 }}>−</button>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', borderLeft: `1.5px solid ${BORDER}`, borderRight: `1.5px solid ${BORDER}`, height: '100%', padding: '0 8px' }}>
+                  <input type="text" value={displayValue}
+                    onFocus={onFocus} onBlur={onBlur} onChange={onValueChange}
+                    style={{ border: 'none', outline: 'none', fontSize: 22, fontWeight: 700, color: '#1a1a1a', background: 'transparent', textAlign: 'center', width: '100%', minWidth: 0, fontFamily: 'inherit' }} />
                 </div>
-                <button
-                  style={btn}
-                  onClick={() => adjValue(50000)}
-                  onMouseEnter={e => (e.currentTarget.style.background = '#F0E8E0')}
-                  onMouseLeave={e => (e.currentTarget.style.background = '#F7F3EF')}
-                >+</button>
+                <button onClick={() => adjValue(50000)} style={{ width: 52, height: '100%', border: 'none', background: '#F7F3EF', fontSize: 22, color: '#555', cursor: 'pointer', flexShrink: 0 }}>+</button>
               </div>
             </div>
           </div>
 
-          {/* Divider */}
-          <div style={{ background: BORDER, height: '100%', minHeight: 200 }} />
+          <div className="calc-divider" />
 
-          {/* Right — result */}
-          <div>
+          <div className="calc-result">
             <p style={{ fontSize: 12, fontWeight: 700, color: PRIMARY, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 12px' }}>
               {isVI ? 'Bạn có thể tiết kiệm' : 'You could save'}
             </p>
-            <p style={{ fontSize: 'clamp(52px, 6vw, 76px)', fontWeight: 800, color: '#1a1a1a', letterSpacing: '-3px', lineHeight: 1, margin: '0 0 8px' }}>
+            <p style={{ fontSize: 'clamp(44px, 6vw, 72px)', fontWeight: 800, color: '#1a1a1a', letterSpacing: '-2px', lineHeight: 1, margin: '0 0 8px' }}>
               {fmt(annualSaving)}
             </p>
-            <p style={{ fontSize: 17, color: '#444', fontWeight: 600, margin: '0 0 4px' }}>
+            <p style={{ fontSize: 16, color: '#444', fontWeight: 600, margin: '0 0 4px' }}>
               {isVI ? '₫ mỗi năm' : '₫ per year'}
             </p>
-            <p style={{ fontSize: 14, color: '#999', margin: '0 0 32px' }}>{fmtUSD()}</p>
-            <Link
-              href="/register"
-              style={{ display: 'inline-block', background: PRIMARY, color: '#fff', padding: '14px 28px', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}
-            >
+            <p style={{ fontSize: 14, color: '#888', margin: '0 0 28px' }}>{fmtUSD()}</p>
+            <Link href="/register" style={{ display: 'inline-block', background: PRIMARY, color: '#fff', padding: '13px 28px', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
               {isVI ? 'Đặt lịch Demo →' : 'Book A Demo →'}
             </Link>
           </div>
         </div>
 
-        <p style={{ fontSize: 12, color: '#aaa', marginTop: 36, lineHeight: 1.7, maxWidth: 700 }}>
+        <p style={{ fontSize: 12, color: '#aaa', marginTop: 32, lineHeight: 1.7, maxWidth: 700 }}>
           {isVI
             ? 'Ước tính dựa trên mức hoa hồng trung bình 27.5% của các ứng dụng giao đồ ăn. Số liệu thực tế có thể thay đổi tùy nền tảng.'
             : 'Annually based on an average 27.5% commission rate charged by third-party apps. Actual figures vary by platform.'}

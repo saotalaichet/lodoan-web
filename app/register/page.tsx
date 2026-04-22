@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 import OvenlyNav from '@/components/OvenlyNav';
 import SavingsCalculator from '@/components/SavingsCalculator';
 
+const PRIMARY = '#9B1C1C';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
 const T = {
@@ -19,7 +20,7 @@ const T = {
     emailPlaceholder: 'owner@quan.com', phonePlaceholder: '0912 345 678',
     cityPlaceholder: 'Hồ Chí Minh',
     submit: 'Gửi đăng ký', submitting: 'Đang gửi...',
-    backHome: 'Quay lại',
+    backHome: 'Quay lại trang chủ',
     successTitle: 'Đã nhận đăng ký!',
     successMsg: 'Cảm ơn bạn đã đăng ký. Đội ngũ Ovenly sẽ liên hệ với bạn trong vòng 24 giờ.',
     benefits: [
@@ -39,7 +40,7 @@ const T = {
     emailPlaceholder: 'owner@restaurant.com', phonePlaceholder: '0912 345 678',
     cityPlaceholder: 'Ho Chi Minh City',
     submit: 'Submit registration', submitting: 'Submitting...',
-    backHome: 'Go back',
+    backHome: 'Back to home',
     successTitle: 'Registration received!',
     successMsg: 'Thank you for registering. The Ovenly team will contact you within 24 hours.',
     benefits: [
@@ -57,10 +58,11 @@ export default function RegisterPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const t = T[lang as keyof typeof T];
+  const t = T[lang];
 
   useEffect(() => {
-    setLang(localStorage.getItem('ovenly_language') || 'vi');
+    const stored = localStorage.getItem('ovenly_language');
+    if (stored === 'vi' || stored === 'en') setLang(stored);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,90 +93,142 @@ export default function RegisterPage() {
   };
 
   if (submitted) return (
-  <>
-    <OvenlyNav lang={lang} setLang={setLang} />
-    <div className="min-h-screen bg-[#FAF8F0] flex items-center justify-center p-6">
-      <div className="text-center max-w-md">
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-10 h-10 text-green-600" />
+    <>
+      <OvenlyNav lang={lang} setLang={setLang} />
+      <div style={{ minHeight: '80vh', background: '#FAF8F0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <div style={{ textAlign: 'center', maxWidth: 440 }}>
+          <div style={{ width: 72, height: 72, background: '#dcfce7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+            <CheckCircle style={{ width: 36, height: 36, color: '#16a34a' }} />
+          </div>
+          <h2 style={{ fontSize: 28, fontWeight: 800, color: '#111', marginBottom: 12 }}>{t.successTitle}</h2>
+          <p style={{ fontSize: 16, color: '#666', lineHeight: 1.7, marginBottom: 32 }}>{t.successMsg}</p>
+          <Link href="https://www.ovenly.io" style={{ display: 'inline-block', background: PRIMARY, color: '#fff', padding: '12px 28px', borderRadius: 10, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+            {t.backHome}
+          </Link>
         </div>
-        <h2 className="font-heading text-3xl font-bold mb-3 text-gray-900">{t.successTitle}</h2>
-        <p className="text-gray-500 text-lg mb-8">{t.successMsg}</p>
-        <Link href="/" className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition-opacity">
-          <ArrowLeft className="w-4 h-4" /> {t.backHome}
-        </Link>
       </div>
-    </div>
-  </>
-);
+    </>
+  );
 
   return (
     <>
-      <OvenlyNav lang={lang} setLang={(l) => setLang(l)} />
-      <div className="min-h-screen bg-[#FAF8F0]">
-      <div className="max-w-5xl mx-auto px-4 py-12">
+      <style>{`
+        .reg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+        .reg-pad { padding: 56px 40px; }
+        @media (max-width: 768px) {
+          .reg-grid { grid-template-columns: 1fr; gap: 32px; }
+          .reg-pad { padding: 32px 20px; }
+          .reg-benefits { display: none; }
+        }
+      `}</style>
 
+      <OvenlyNav lang={lang} setLang={setLang} />
 
-        <div className="grid md:grid-cols-2 gap-10 items-start">
-          {/* Left — benefits */}
-          <div>
-            <Link href="/" className="font-heading font-black text-primary text-2xl block mb-6">Ovenly</Link>
-            <h1 className="font-heading text-4xl font-bold text-gray-900 mb-4 leading-tight">{t.title}</h1>
-            <p className="text-gray-500 text-lg mb-8">{t.subtitle}</p>
-            <div className="space-y-3">
-              {t.benefits.map((b, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="w-4 h-4 text-primary" />
-                  </div>
-                  <span className="text-gray-700 font-medium">{b}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+      <div style={{ background: '#FAF8F0', minHeight: '100vh' }}>
+        <div className="reg-pad" style={{ maxWidth: 1100, margin: '0 auto' }}>
+          <div className="reg-grid">
 
-          {/* Right — form */}
-          <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200">
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {[
-                { key: 'name', label: t.nameLabel, placeholder: t.namePlaceholder, type: 'text' },
-                { key: 'business_name', label: t.businessNameLabel, placeholder: t.businessPlaceholder, type: 'text' },
-                { key: 'email', label: t.emailLabel, placeholder: t.emailPlaceholder, type: 'email' },
-                { key: 'phone', label: t.phoneLabel, placeholder: t.phonePlaceholder, type: 'tel' },
-                { key: 'city', label: t.cityLabel, placeholder: t.cityPlaceholder, type: 'text' },
-              ].map(field => (
-                <div key={field.key}>
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">{field.label} *</label>
-                  <input type={field.type} required
-                    placeholder={field.placeholder}
-                    value={(form as any)[field.key]}
-                    onChange={e => setForm(p => ({ ...p, [field.key]: e.target.value }))}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50" />
-                </div>
-              ))}
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-1.5">{t.msgLabel}</label>
-                <textarea value={form.message} onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
-                  rows={3} placeholder={lang === 'vi' ? 'Ví dụ: Tôi muốn biết thêm về phí hoa hồng...' : 'e.g. I want to know more about commission fees...'}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-gray-50 resize-none" />
-              </div>
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              <button type="submit" disabled={loading}
-                className="w-full bg-primary text-white py-4 rounded-xl font-bold text-base hover:opacity-90 transition-opacity disabled:opacity-50">
-                {loading ? t.submitting : t.submit}
-              </button>
-              <p className="text-xs text-gray-400 text-center">
-                {lang === 'vi' ? 'Bằng cách đăng ký bạn đồng ý với ' : 'By registering you agree to our '}
-                <Link href="/terms" className="text-primary hover:underline">{lang === 'vi' ? 'Điều Khoản' : 'Terms'}</Link>
-                {lang === 'vi' ? ' và ' : ' and '}
-                <Link href="/privacy" className="text-primary hover:underline">{lang === 'vi' ? 'Chính Sách Bảo Mật' : 'Privacy Policy'}</Link>
+            {/* Left — benefits */}
+            <div className="reg-benefits">
+              <p style={{ fontSize: 12, fontWeight: 700, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 16 }}>
+                {lang === 'vi' ? 'Đăng ký' : 'Register'}
               </p>
-            </form>
+              <h1 style={{ fontSize: 'clamp(24px, 3.5vw, 38px)', fontWeight: 800, color: '#111', marginBottom: 16, letterSpacing: '-1px', lineHeight: 1.15 }}>
+                {t.title}
+              </h1>
+              <p style={{ fontSize: 16, color: '#666', lineHeight: 1.8, marginBottom: 36 }}>{t.subtitle}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {t.benefits.map((b, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ width: 24, height: 24, background: '#FDF0EE', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <CheckCircle style={{ width: 14, height: 14, color: PRIMARY }} />
+                    </div>
+                    <span style={{ fontSize: 15, color: '#444', fontWeight: 500 }}>{b}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right — form */}
+            <div style={{ background: '#fff', borderRadius: 20, padding: 'clamp(24px, 4vw, 40px)', border: '1px solid #E8E0D8' }}>
+
+              {/* Mobile-only title */}
+              <div style={{ marginBottom: 24 }}>
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: '#111', marginBottom: 8, letterSpacing: '-0.5px', lineHeight: 1.2 }}>
+                  {t.title}
+                </h1>
+                <p style={{ fontSize: 14, color: '#666', lineHeight: 1.7, margin: 0 }}>{t.subtitle}</p>
+              </div>
+
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {[
+                  { key: 'name', label: t.nameLabel, placeholder: t.namePlaceholder, type: 'text' },
+                  { key: 'business_name', label: t.businessNameLabel, placeholder: t.businessPlaceholder, type: 'text' },
+                  { key: 'email', label: t.emailLabel, placeholder: t.emailPlaceholder, type: 'email' },
+                  { key: 'phone', label: t.phoneLabel, placeholder: t.phonePlaceholder, type: 'tel' },
+                  { key: 'city', label: t.cityLabel, placeholder: t.cityPlaceholder, type: 'text' },
+                ].map(field => (
+                  <div key={field.key}>
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#555', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {field.label} *
+                    </label>
+                    <input
+                      type={field.type}
+                      required
+                      placeholder={field.placeholder}
+                      value={(form as any)[field.key]}
+                      onChange={e => setForm(p => ({ ...p, [field.key]: e.target.value }))}
+                      style={{ width: '100%', border: '1px solid #E8E0D8', borderRadius: 10, padding: '11px 14px', fontSize: 14, outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit', background: '#FAFAFA' }}
+                    />
+                  </div>
+                ))}
+                <div>
+                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#555', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    {t.msgLabel}
+                  </label>
+                  <textarea
+                    value={form.message}
+                    onChange={e => setForm(p => ({ ...p, message: e.target.value }))}
+                    rows={3}
+                    placeholder={lang === 'vi' ? 'Ví dụ: Tôi muốn biết thêm về phí hoa hồng...' : 'e.g. I want to know more about commission fees...'}
+                    style={{ width: '100%', border: '1px solid #E8E0D8', borderRadius: 10, padding: '11px 14px', fontSize: 14, outline: 'none', resize: 'none', boxSizing: 'border-box', fontFamily: 'inherit', background: '#FAFAFA' }}
+                  />
+                </div>
+                {error && <p style={{ fontSize: 13, color: '#dc2626', margin: 0 }}>{error}</p>}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  style={{ background: PRIMARY, color: '#fff', border: 'none', padding: '14px', borderRadius: 10, fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, marginTop: 4 }}>
+                  {loading ? t.submitting : t.submit}
+                </button>
+                <p style={{ fontSize: 12, color: '#aaa', textAlign: 'center', margin: 0 }}>
+                  {lang === 'vi' ? 'Bằng cách đăng ký bạn đồng ý với ' : 'By registering you agree to our '}
+                  <Link href="/terms" style={{ color: PRIMARY, textDecoration: 'none' }}>{lang === 'vi' ? 'Điều Khoản' : 'Terms'}</Link>
+                  {lang === 'vi' ? ' và ' : ' and '}
+                  <Link href="/privacy" style={{ color: PRIMARY, textDecoration: 'none' }}>{lang === 'vi' ? 'Chính Sách Bảo Mật' : 'Privacy Policy'}</Link>
+                </p>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <SavingsCalculator lang={lang} />
+
+      <SavingsCalculator lang={lang} />
+
+      {/* Footer */}
+      <footer style={{ borderTop: '1px solid #F0E8E0', padding: '32px 20px', background: '#FFFAF5', textAlign: 'center' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+          <Link href="https://www.ovenly.io" style={{ textDecoration: 'none' }}>
+            <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 48, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any }} />
+          </Link>
+          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link href="/about" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{lang === 'vi' ? 'Giới thiệu' : 'About'}</Link>
+            <Link href="/contact" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{lang === 'vi' ? 'Liên hệ' : 'Contact'}</Link>
+            <Link href="https://lodoan.vn" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>LÒ ĐỒ ĂN</Link>
+          </div>
+          <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>© 2026 Ovenly™</p>
+        </div>
+      </footer>
     </>
   );
 }
