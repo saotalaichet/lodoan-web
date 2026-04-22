@@ -143,7 +143,6 @@ export default function CompanyPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const t = T[lang];
 
-  // Close drawer on ESC
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setMenuOpen(false);
@@ -152,7 +151,6 @@ export default function CompanyPage() {
     return () => document.removeEventListener('keydown', handleEsc);
   }, []);
 
-  // Lock body scroll when drawer open
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -183,7 +181,6 @@ export default function CompanyPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <style>{`
-        /* Mobile nav visibility */
         .ov-nav-desktop { display: flex; }
         .ov-nav-mobile-btn { display: none; }
         @media (max-width: 768px) {
@@ -243,7 +240,7 @@ export default function CompanyPage() {
       `}</style>
 
       {/* Nav */}
-      <nav className="ov-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 72, borderBottom: `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 100 }}>
+      <nav className="ov-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 72, borderBottom: menuOpen ? 'none' : `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 300 }}>
         <Link href="https://www.ovenly.io" style={{ textDecoration: 'none', flexShrink: 0 }}>
           <img
             className="ov-nav-logo"
@@ -269,159 +266,57 @@ export default function CompanyPage() {
           </Link>
         </div>
 
-        {/* Mobile: compact lang toggle + hamburger */}
+        {/* Mobile: Book A Demo + hamburger */}
         <div className="ov-nav-mobile-btn" style={{ alignItems: 'center', gap: 8 }}>
-          <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 7, padding: 2 }}>
-            {(['vi', 'en'] as const).map(l => (
-              <button key={l} onClick={() => setLang(l)} style={{ padding: '3px 8px', borderRadius: 5, border: 'none', background: lang === l ? '#fff' : 'transparent', color: lang === l ? '#111' : '#888', fontWeight: lang === l ? 600 : 400, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
+          <Link href="/register" style={{ background: PRIMARY, color: '#fff', padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' as const }}>
+            {t.nav.cta}
+          </Link>
           <button
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
-            style={{
-              width: 40, height: 40, display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-              background: 'transparent', border: 'none',
-              cursor: 'pointer', padding: 0,
-            }}
+            onClick={() => setMenuOpen(o => !o)}
+            aria-label="Toggle menu"
+            style={{ width: 40, height: 40, display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', gap: 5, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round">
-              <line x1="4" y1="7" x2="20" y2="7" />
-              <line x1="4" y1="12" x2="20" y2="12" />
-              <line x1="4" y1="17" x2="20" y2="17" />
-            </svg>
+            <span style={{ display: 'block', width: 22, height: 2, background: '#1a1a1a', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
+            <span style={{ display: 'block', width: 22, height: 2, background: '#1a1a1a', borderRadius: 2, transition: 'all 0.2s', opacity: menuOpen ? 0 : 1 }} />
+            <span style={{ display: 'block', width: 22, height: 2, background: '#1a1a1a', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
           </button>
         </div>
       </nav>
 
-      {/* Mobile drawer backdrop */}
+      {/* Mobile dropdown — full width, drops from nav */}
       {menuOpen && (
-        <div
-          onClick={() => setMenuOpen(false)}
-          style={{
-            position: 'fixed', inset: 0,
-            background: 'rgba(0,0,0,0.5)',
-            zIndex: 200,
-            animation: 'fadeIn 0.15s ease',
-          }}
-        />
+        <div style={{ position: 'fixed', top: 68, left: 0, right: 0, bottom: 0, background: '#fff', zIndex: 299, overflowY: 'auto', animation: 'fadeIn 0.2s ease', borderTop: `1px solid ${BORDER}` }}>
+          {[
+            { href: '/about', label: t.nav.about },
+            { href: 'https://lodoan.vn', label: 'LÒ ĐỒ ĂN' },
+            { href: '/contact', label: lang === 'vi' ? 'Liên hệ' : 'Contact' },
+          ].map(item => (
+            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}
+              style={{ display: 'block', padding: '18px 24px', fontSize: 18, fontWeight: 600, color: '#1a1a1a', textDecoration: 'none', borderBottom: `1px solid ${BORDER}` }}>
+              {item.label}
+            </Link>
+          ))}
+          <div style={{ padding: '20px 24px', borderBottom: `1px solid ${BORDER}` }}>
+            <Link href="https://admin.ovenly.io" onClick={() => setMenuOpen(false)}
+              style={{ display: 'inline-block', background: PRIMARY, color: '#fff', padding: '11px 24px', borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
+              {t.nav.login}
+            </Link>
+          </div>
+          <div style={{ padding: '20px 24px' }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase' as const, letterSpacing: '0.5px', marginBottom: 12 }}>
+              {lang === 'vi' ? 'Ngôn ngữ' : 'Language'}
+            </p>
+            <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3, width: 'fit-content' }}>
+              {(['vi', 'en'] as const).map(l => (
+                <button key={l} onClick={() => setLang(l)}
+                  style={{ padding: '6px 16px', borderRadius: 6, border: 'none', background: lang === l ? '#fff' : 'transparent', color: lang === l ? '#111' : '#888', fontWeight: lang === l ? 700 : 400, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {l.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
-
-      {/* Mobile drawer */}
-      <aside
-        style={{
-          position: 'fixed', top: 0, right: 0, bottom: 0,
-          width: 'min(85vw, 320px)',
-          background: '#fff',
-          zIndex: 300,
-          transform: menuOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.25s ease',
-          display: 'flex', flexDirection: 'column',
-          boxShadow: menuOpen ? '-4px 0 20px rgba(0,0,0,0.1)' : 'none',
-        }}
-      >
-        {/* Drawer header */}
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '16px 20px', borderBottom: `1px solid ${BORDER}`,
-        }}>
-          <img
-            src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
-            alt="Ovenly"
-            style={{ height: 38, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any }}
-          />
-          <button
-            onClick={() => setMenuOpen(false)}
-            aria-label="Close menu"
-            style={{
-              width: 36, height: 36, display: 'flex',
-              alignItems: 'center', justifyContent: 'center',
-              background: 'transparent', border: 'none',
-              cursor: 'pointer', padding: 0,
-            }}
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round">
-              <line x1="6" y1="6" x2="18" y2="18" />
-              <line x1="18" y1="6" x2="6" y2="18" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Drawer links */}
-        <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-          <Link
-            href="/about"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: 'block',
-              padding: '14px 24px',
-              fontSize: 16, fontWeight: 600,
-              color: '#1a1a1a', textDecoration: 'none',
-              borderBottom: '1px solid #FAFAFA',
-            }}
-          >
-            {t.nav.about}
-          </Link>
-          <Link
-            href="https://lodoan.vn"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: 'block',
-              padding: '14px 24px',
-              fontSize: 16, fontWeight: 600,
-              color: '#1a1a1a', textDecoration: 'none',
-              borderBottom: '1px solid #FAFAFA',
-            }}
-          >
-            LÒ ĐỒ ĂN
-          </Link>
-          <Link
-            href="/contact"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: 'block',
-              padding: '14px 24px',
-              fontSize: 16, fontWeight: 600,
-              color: '#1a1a1a', textDecoration: 'none',
-              borderBottom: '1px solid #FAFAFA',
-            }}
-          >
-            {lang === 'vi' ? 'Liên hệ' : 'Contact'}
-          </Link>
-          <Link
-            href="https://admin.ovenly.io"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: 'block',
-              padding: '14px 24px',
-              fontSize: 16, fontWeight: 600,
-              color: '#1a1a1a', textDecoration: 'none',
-              borderBottom: '1px solid #FAFAFA',
-            }}
-          >
-            {t.nav.login}
-          </Link>
-        </nav>
-
-        {/* Drawer CTA */}
-        <div style={{ padding: '20px', borderTop: `1px solid ${BORDER}` }}>
-          <Link
-            href="/register"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: 'block', textAlign: 'center',
-              background: PRIMARY, color: '#fff',
-              padding: '13px', borderRadius: 10,
-              fontSize: 15, fontWeight: 700, textDecoration: 'none',
-            }}
-          >
-            {t.nav.cta} →
-          </Link>
-        </div>
-      </aside>
 
       {/* Hero */}
       <section className="ov-hero" style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
