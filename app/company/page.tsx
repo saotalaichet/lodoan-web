@@ -11,7 +11,7 @@ const BORDER = '#F0E8E0';
 
 const T = {
   vi: {
-    nav: { cta: 'Đăng ký' },
+    nav: { cta: 'Đăng ký', about: 'Giới thiệu', login: 'Đăng nhập' },
     hero: {
       h1: 'Tăng doanh thu mỗi ngày với đơn hàng trực tuyến',
       sub: 'Ovenly giúp các quán ăn uống và nhà hàng nhận đơn online, tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN và trên Google.',
@@ -68,12 +68,13 @@ const T = {
       allRights: 'Bảo lưu mọi quyền',
       links: [
         ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
+        ['Giới thiệu', '/about'],
         ['Liên hệ', '/contact'],
       ],
     },
   },
   en: {
-    nav: { cta: 'Get started free' },
+    nav: { cta: 'Get started free', about: 'About', login: 'Log in' },
     hero: {
       h1: 'Take orders directly from your customers',
       sub: 'Online ordering built for F&B industry, easy to set up, easy to manage and customers order straight from you',
@@ -130,6 +131,7 @@ const T = {
       allRights: 'All rights reserved',
       links: [
         ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
+        ['About', '/about'],
         ['Contact', '/contact'],
       ],
     },
@@ -238,6 +240,8 @@ export default function CompanyPage() {
               </button>
             ))}
           </div>
+          <Link href="/about" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>{t.nav.about}</Link>
+          <Link href="https://admin.ovenly.io" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>{t.nav.login}</Link>
           <Link href="/register" style={{ background: PRIMARY, color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' as const }}>
             {t.nav.cta}
           </Link>
