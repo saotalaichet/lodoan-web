@@ -766,8 +766,8 @@ export default function MarketplaceClient() {
                 {lang === 'vi' ? 'Dành cho đối tác' : 'For Partners'}
               </h4>
               <ul className="space-y-2">
-                <li><Link href="/contact" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Mở quán trên LÒ ĐỒ ĂN' : 'Become a partner'}</Link></li>
-                <li><Link href="/about" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Tìm hiểu thêm' : 'Learn more'}</Link></li>
+                <li><a href="https://www.ovenly.io/register" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Mở quán trên LÒ ĐỒ ĂN' : 'Become a partner'}</a></li>
+                <li><a href="https://www.ovenly.io/about" className="text-sm text-gray-500 hover:text-primary transition-colors">{lang === 'vi' ? 'Tìm hiểu thêm' : 'Learn more'}</a></li>
                 <li><a href="mailto:hello@ovenly.io" className="text-sm text-gray-500 hover:text-primary transition-colors">hello@ovenly.io</a></li>
               </ul>
             </div>
