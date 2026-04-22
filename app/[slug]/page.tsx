@@ -1120,44 +1120,8 @@ export default function RestaurantPage() {
 
   useEffect(() => {
     if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
-    const fetchOrder = async () => {
-      try {
-        const res = await fetch(`${RAILWAY}/api/orders/${paymentReturnOrderId}/status`);
-        const order = await res.json();
-        if (order?.id) {
-          setSuccessOrder({
-            id: paymentReturnOrderId, status: order.status || 'pending', notes: order.notes || '',
-            orderType: order.order_type || 'delivery', paymentMethod: order.payment_method || '',
-            items: order.items || [], total: order.total, delivery_address: order.delivery_address || '',
-          });
-          setPaymentReturnStatus(null);
-          setPaymentReturnOrderId(null);
-        }
-      } catch {}
-    };
-    fetchOrder();
+    window.location.href = `/order/${paymentReturnOrderId}`;
   }, [paymentReturnOrderId, paymentReturnStatus]);
-
-  useEffect(() => {
-    if (!successOrder?.id) return;
-    if (['accepted', 'preparing', 'ready', 'delivering', 'completed', 'declined', 'timed_out'].includes(successOrder.status)) return;
-    if (!pollStartRef.current) pollStartRef.current = Date.now();
-    const interval = setInterval(async () => {
-      try {
-        if (Date.now() - pollStartRef.current! > 10 * 60 * 1000) {
-          setSuccessOrder((prev: any) => ({ ...prev, status: 'timed_out' })); return;
-        }
-        const res = await fetch(`${RAILWAY}/api/orders/${successOrder.id}/status`);
-        const order = await res.json();
-        if (order?.status) setSuccessOrder((prev: any) => ({
-          ...prev, status: order.status, notes: order.notes || prev.notes,
-          items: order.items || prev.items, total: order.total ?? prev.total,
-          delivery_address: order.delivery_address || prev.delivery_address,
-        }));
-      } catch {}
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [successOrder?.id, successOrder?.status]);
 
   // Dynamic brand color — must be before early returns
   useEffect(() => {
@@ -1201,9 +1165,8 @@ export default function RestaurantPage() {
   };
 
   const handleSuccess = (orderId: string, orderType: string, paymentMethod: string) => {
-    const savedAddress = deliveryDetails?.address || '';
     setCheckoutOrderType(null); setDeliveryDetails(null); clear();
-    setSuccessOrder({ id: orderId, status: 'pending', notes: '', orderType, paymentMethod, items: [], delivery_address: savedAddress });
+    window.location.href = `/order/${orderId}`;
   };
 
   if (!slug || slug === 'undefined') return (
@@ -1261,9 +1224,6 @@ export default function RestaurantPage() {
       <div className="pt-8 border-t border-gray-100 mt-12"><p className="text-xs text-gray-400">Powered by Ovenly</p></div>
     </div>
   );
-
-
-  if (successOrder) return <SuccessScreen successOrder={successOrder} restaurant={restaurant} lang={lang} onBack={() => { setSuccessOrder(null); pollStartRef.current = null; }} />;
 
   if (checkoutOrderType) return (
     <Checkout cart={cart} restaurant={restaurant} orderType={checkoutOrderType}
