@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
+import OvenlyNav from '@/components/OvenlyNav';
+import SavingsCalculator from '@/components/SavingsCalculator';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
