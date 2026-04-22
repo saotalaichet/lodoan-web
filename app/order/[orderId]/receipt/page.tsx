@@ -28,7 +28,19 @@ function ReceiptInner() {
     setLang(stored);
     fetch(`${RAILWAY}/api/orders/${orderId}`)
       .then(r => r.json())
-      .then(data => { setOrder(data); setLoading(false); })
+      .then(async data => {
+        setOrder(data);
+        setLoading(false);
+        if (data?.restaurant_id) {
+          try {
+            const rRes = await fetch(`${RAILWAY}/api/restaurants/${data.restaurant_id}`);
+            const rData = await rRes.json();
+            if (rData?.primary_color) {
+              document.documentElement.style.setProperty('--color-primary', rData.primary_color);
+            }
+          } catch {}
+        }
+      })
       .catch(() => setLoading(false));
   }, [orderId]);
 
