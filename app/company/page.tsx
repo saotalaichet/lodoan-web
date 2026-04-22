@@ -11,11 +11,11 @@ const BORDER = '#F0E8E0';
 
 const T = {
   vi: {
-    nav: { cta: 'Đăng ký', about: 'Giới thiệu', login: 'Đăng nhập' },
+    nav: { cta: 'Đặt lịch Demo', about: 'Giới thiệu', login: 'Đăng nhập' },
     hero: {
       h1: 'Tăng doanh thu mỗi ngày với đơn hàng trực tuyến',
       sub: 'Ovenly giúp các quán ăn uống và nhà hàng nhận đơn online, tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN và trên Google.',
-      cta1: 'Đăng ký',
+      cta1: 'Đặt lịch Demo',
       cta2: 'Xem sàn thương mại',
     },
     apps: {
@@ -61,7 +61,7 @@ const T = {
     cta: {
       h2: 'Sẵn sàng đưa quán lên trực tuyến',
       sub: 'Miễn phí cài đặt, hỗ trợ trực tiếp và hoạt động trong vòng một tuần',
-      btn1: 'Đăng ký',
+      btn1: 'Đặt lịch Demo',
       btn2: 'hello@ovenly.io',
     },
     footer: {
@@ -74,11 +74,11 @@ const T = {
     },
   },
   en: {
-    nav: { cta: 'Get started free', about: 'About', login: 'Log in' },
+    nav: { cta: 'Book A Demo', about: 'About', login: 'Log in' },
     hero: {
       h1: 'Take orders directly from your customers',
       sub: 'Online ordering built for F&B industry, easy to set up, easy to manage and customers order straight from you',
-      cta1: 'Register your restaurant',
+      cta1: 'Book A Demo',
       cta2: 'Visit the marketplace',
     },
     apps: {
@@ -124,7 +124,7 @@ const T = {
     cta: {
       h2: 'Ready to put your restaurant online',
       sub: 'Free to set up, direct support and live within a week',
-      btn1: 'Register your restaurant',
+      btn1: 'Book A Demo',
       btn2: 'hello@ovenly.io',
     },
     footer: {
