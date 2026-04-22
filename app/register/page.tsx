@@ -104,21 +104,11 @@ export default function RegisterPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF8F0]">
+    <>
+      <OvenlyNav lang={lang as 'vi' | 'en'} setLang={(l) => setLang(l)} />
+      <div className="min-h-screen bg-[#FAF8F0]">
       <div className="max-w-5xl mx-auto px-4 py-12">
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> {t.backHome}
-          </Link>
-          <div className="flex items-center bg-gray-100 rounded-full p-1 text-xs font-bold">
-            {['vi', 'en'].map(l => (
-              <button key={l} onClick={() => setLang(l)}
-                className={`px-3 py-1 rounded-full transition-all ${lang === l ? 'bg-primary text-white' : 'text-gray-500'}`}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         <div className="grid md:grid-cols-2 gap-10 items-start">
           {/* Left — benefits */}
@@ -179,5 +169,7 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+    <SavingsCalculator lang={lang as 'vi' | 'en'} />
+    </>
   );
 }

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { submitContactForm } from '@/lib/api';
+import OvenlyNav from '@/components/OvenlyNav';
 
 const PRIMARY = '#9B1C1C';
 const BG = '#FFFAF5';
