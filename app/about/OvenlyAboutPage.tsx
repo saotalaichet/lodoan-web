@@ -136,36 +136,6 @@ export default function OvenlyAboutPage() {
         </div>
       </section>
 
-      {/* LO DO AN marketplace mention */}
-      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '72px 40px' }}>
-        <p style={{ fontSize: 13, fontWeight: 700, color: PRIMARY, letterSpacing: '1px', textTransform: 'uppercase' as const, marginBottom: 20 }}>
-          {isVI ? 'Sản phẩm' : 'Our product'}
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
-          <div>
-            <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 38px)', fontWeight: 800, letterSpacing: '-1px', lineHeight: 1.15, marginBottom: 20 }}>
-              {isVI ? 'LÒ ĐỒ ĂN là sàn thương mại đồ ăn của chúng tôi' : 'LÒ ĐỒ ĂN is our food marketplace'}
-            </h2>
-            <p style={{ fontSize: 16, color: '#555', lineHeight: 1.85, marginBottom: 20 }}>
-              {isVI
-                ? 'LÒ ĐỒ ĂN là nền tảng đặt đồ ăn trực tuyến do Ovenly xây dựng và vận hành, nơi khách hàng khám phá và đặt món từ các quán ăn địa phương tại Việt Nam. Quán ăn đăng ký Ovenly sẽ được xuất hiện trên sàn LÒ ĐỒ ĂN và tiếp cận khách hàng mới.'
-                : 'LÒ ĐỒ ĂN is the online food ordering platform built and operated by Ovenly, where customers discover and order from local restaurants across Vietnam. Restaurants that sign up for Ovenly appear on the LÒ ĐỒ ĂN marketplace and reach new customers.'}
-            </p>
-            <a href="https://lodoan.vn" style={{ fontSize: 15, fontWeight: 700, color: PRIMARY, textDecoration: 'none' }}>
-              {isVI ? 'Khám phá LÒ ĐỒ ĂN' : 'Explore LÒ ĐỒ ĂN'} →
-            </a>
-          </div>
-          <div style={{ background: '#fff', border: `1px solid ${BORDER}`, borderRadius: 20, padding: '40px', textAlign: 'center' as const }}>
-            <img
-              src="https://i.postimg.cc/wj17FHhc/Ovenly-logo-1-(3).png"
-              alt="LÒ ĐỒ ĂN"
-              style={{ height: 80, width: 'auto', objectFit: 'contain', display: 'block', margin: '0 auto 16px' }}
-            />
-            <p style={{ fontSize: 14, color: '#888', margin: 0 }}>lodoan.vn</p>
-          </div>
-        </div>
-      </section>
-
       {/* CTA */}
       <section style={{ background: PRIMARY }}>
         <div style={{ maxWidth: 900, margin: '0 auto', padding: '72px 40px', textAlign: 'center' as const }}>
