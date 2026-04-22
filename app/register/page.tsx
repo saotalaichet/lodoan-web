@@ -52,7 +52,7 @@ const T = {
 };
 
 export default function RegisterPage() {
-  const [lang, setLang] = useState('vi');
+  const [lang, setLang] = useState<'vi' | 'en'>('vi');
   const [form, setForm] = useState({ name: '', business_name: '', email: '', phone: '', city: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -91,6 +91,8 @@ export default function RegisterPage() {
   };
 
   if (submitted) return (
+  <>
+    <OvenlyNav lang={lang} setLang={setLang} />
     <div className="min-h-screen bg-[#FAF8F0] flex items-center justify-center p-6">
       <div className="text-center max-w-md">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -103,11 +105,12 @@ export default function RegisterPage() {
         </Link>
       </div>
     </div>
-  );
+  </>
+);
 
   return (
     <>
-      <OvenlyNav lang={lang as 'vi' | 'en'} setLang={(l) => setLang(l)} />
+      <OvenlyNav lang={lang} setLang={(l) => setLang(l)} />
       <div className="min-h-screen bg-[#FAF8F0]">
       <div className="max-w-5xl mx-auto px-4 py-12">
 
@@ -171,7 +174,7 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
-    <SavingsCalculator lang={lang as 'vi' | 'en'} />
+    <SavingsCalculator lang={lang} />
     </>
   );
 }
