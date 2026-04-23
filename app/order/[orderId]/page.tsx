@@ -249,7 +249,7 @@ function OrderTrackingPage() {
       <header style={{ background: '#fff', borderBottom: '1px solid #F0E8E0', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', position: 'sticky', top: 0, zIndex: 50 }}>
         <div style={{ width: 80 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 12, color: '#888' }}>#{orderId.slice(-8).toUpperCase()}</span>
+
           <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 2 }}>
             {(['vi', 'en'] as const).map(l => (
               <button key={l} onClick={() => setLang(l)} style={{ padding: '3px 10px', borderRadius: 6, border: 'none', background: lang === l ? '#fff' : 'transparent', color: lang === l ? '#111' : '#888', fontWeight: lang === l ? 600 : 400, fontSize: 12, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -326,16 +326,21 @@ function OrderTrackingPage() {
                 </a>
               )}
               <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FAF8F0', border: '1px solid #E8E0D8', borderRadius: 10, padding: '10px', textDecoration: 'none', color: PRIMARY, fontWeight: 600, fontSize: 13 }}>
-                🗺️ {isVI ? 'Chỉ đường' : 'Directions'} <span style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}>↗</span>
+                🗺️ {isVI ? 'Mở bản đồ' : 'Open map'} <span style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}>↗</span>
               </a>
             </div>
           </div>
 
           {/* Order items */}
           <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, border: '1px solid #F0E8E0' }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>
-              {isVI ? 'Món đã đặt' : 'Items ordered'}
-            </p>
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 18, fontWeight: 800, color: '#111', margin: '0 0 2px', letterSpacing: '-0.3px' }}>
+                {isVI ? 'Đơn hàng' : 'Order'} #{orderId.slice(-8).toUpperCase()}
+              </p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: '0.5px', margin: 0 }}>
+                {isVI ? 'Món đã đặt' : 'Items ordered'}
+              </p>
+            </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {items.map((item: any, idx: number) => (
                 <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
