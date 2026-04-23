@@ -218,6 +218,9 @@ function OrderTrackingPage() {
     </div>
   );
 
+  const terminalDate = order.updated_date || order.created_date;
+  const isExpired = TERMINAL.includes(order.status) && terminalDate ? (Date.now() - new Date(terminalDate).getTime()) > 24 * 60 * 60 * 1000 : false;
+
   if (isExpired) return (
     <div style={{ fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#F9F7F5', minHeight: '100vh' }}>
       <header style={{ background: '#fff', borderBottom: '1px solid #F0EDE8', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
@@ -258,8 +261,6 @@ function OrderTrackingPage() {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.restaurant_address || restaurant?.name || '')}`;
   const isCancelled = order.status === 'cancelled' || order.status === 'timed_out';
   const isCompleted = order.status === 'completed';
-  const terminalDate = order.updated_date || order.created_date;
-  const isExpired = TERMINAL.includes(order.status) && terminalDate ? (Date.now() - new Date(terminalDate).getTime()) > 24 * 60 * 60 * 1000 : false;
 
   return (
     <div style={{ fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#fff', height: '100dvh', overflow: 'hidden', position: 'relative', color: '#1a1a1a' }}>
