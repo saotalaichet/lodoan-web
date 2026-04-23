@@ -21,6 +21,7 @@ function ReceiptInner() {
   const orderId = params.orderId as string;
   const [order, setOrder] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [restaurant, setRestaurant] = useState<any>(null);
   const [lang, setLang] = useState('vi');
 
   useEffect(() => {
@@ -35,6 +36,7 @@ function ReceiptInner() {
           try {
             const rRes = await fetch(`${RAILWAY}/api/restaurants/${data.restaurant_id}`);
             const rData = await rRes.json();
+            setRestaurant(rData);
             if (rData?.primary_color) {
               document.documentElement.style.setProperty('--color-primary', rData.primary_color);
             }
@@ -87,8 +89,12 @@ function ReceiptInner() {
 
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: 28, paddingBottom: 20, borderBottom: '2px dashed #E5E7EB' }}>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: PRIMARY, margin: '0 0 4px' }}>LÒ ĐỒ ĂN</h1>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#111', margin: '0 0 4px' }}>{order.restaurant_name}</p>
+          {restaurant?.logo && (
+            <img src={restaurant.logo} alt={restaurant.name || order.restaurant_name}
+              style={{ height: 72, width: 'auto', maxWidth: 200, objectFit: 'contain', margin: '0 auto 12px', display: 'block' }}
+              onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+          )}
+          <p style={{ fontSize: 18, fontWeight: 800, color: '#111', margin: '0 0 4px' }}>{order.restaurant_name}</p>
           {order.restaurant_address && <p style={{ fontSize: 13, color: '#666', margin: 0 }}>{order.restaurant_address}</p>}
         </div>
 
@@ -179,8 +185,8 @@ function ReceiptInner() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', color: '#999', fontSize: 12, borderTop: '2px dashed #E5E7EB', paddingTop: 16 }}>
-          <p style={{ margin: '0 0 4px', fontWeight: 600, color: PRIMARY }}>LÒ ĐỒ ĂN by Ovenly</p>
-          <p style={{ margin: 0 }}>lodoan.vn · hello@ovenly.io</p>
+          <p style={{ margin: '0 0 4px', fontWeight: 600, color: PRIMARY }}>{order.restaurant_name}</p>
+          <p style={{ margin: 0 }}>Powered by LÒ ĐỒ ĂN · lodoan.vn</p>
         </div>
       </div>
     </div>

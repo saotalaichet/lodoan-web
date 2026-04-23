@@ -246,7 +246,7 @@ function OrderTrackingPage() {
 
       {/* Header */}
       <header style={{ background: '#fff', borderBottom: '1px solid #F0E8E0', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', position: 'sticky', top: 0, zIndex: 50 }}>
-        <Link href="/" style={{ fontWeight: 900, fontSize: 18, color: PRIMARY, textDecoration: 'none', fontFamily: 'inherit' }}>LÒ ĐỒ ĂN</Link>
+        <div style={{ width: 80 }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 12, color: '#888' }}>#{orderId.slice(-8).toUpperCase()}</span>
           <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 2 }}>
@@ -307,18 +307,20 @@ function OrderTrackingPage() {
               <div>
                 <p style={{ fontWeight: 700, fontSize: 15, margin: 0, color: '#111' }}>{order.restaurant_name}</p>
                 {order.restaurant_address && (
-                  <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: PRIMARY, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-                    <span>{order.restaurant_address}</span>
-                    <span style={{ fontSize: 12 }}>↗</span>
-                  </a>
+                  <p style={{ fontSize: 13, color: '#666', margin: '2px 0 0' }}>{order.restaurant_address}</p>
                 )}
               </div>
             </div>
-            {restaurant?.phone && (
-              <a href={`tel:${restaurant.phone}`} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: '#FAF8F0', border: `1px solid ${PRIMARY}33`, borderRadius: 10, padding: '10px', textDecoration: 'none', color: PRIMARY, fontWeight: 600, fontSize: 14, marginTop: 8 }}>
-                📞 {isVI ? 'Gọi nhà hàng' : 'Call restaurant'}
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              {restaurant?.phone && (
+                <a href={`tel:${restaurant.phone}`} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FAF8F0', border: '1px solid #E8E0D8', borderRadius: 10, padding: '10px', textDecoration: 'none', color: PRIMARY, fontWeight: 600, fontSize: 13 }}>
+                  📞 {isVI ? 'Gọi' : 'Call'}
+                </a>
+              )}
+              <a href={mapsUrl} target="_blank" rel="noopener noreferrer" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#FAF8F0', border: '1px solid #E8E0D8', borderRadius: 10, padding: '10px', textDecoration: 'none', color: PRIMARY, fontWeight: 600, fontSize: 13 }}>
+                🗺️ {isVI ? 'Chỉ đường' : 'Directions'} <span style={{ fontSize: 18, fontWeight: 900, lineHeight: 1 }}>↗</span>
               </a>
-            )}
+            </div>
           </div>
 
           {/* Order items */}
@@ -408,7 +410,7 @@ function OrderTrackingPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
                 <span style={{ color: '#666' }}>{isVI ? 'Loại đơn' : 'Order type'}</span>
                 <span style={{ fontWeight: 600, color: '#111' }}>
-                  {order.order_type === 'delivery' ? (isVI ? '🛵 Giao hàng' : '🛵 Delivery') : (isVI ? '🛍️ Mang về' : '🛍️ Pickup')}
+                  {order.order_type === 'delivery' ? (isVI ? '🛵 Giao hàng' : '🛵 Delivery') : (isVI ? 'Mang về' : 'Pickup')}
                 </span>
               </div>
               {order.delivery_address && order.order_type === 'delivery' && (
