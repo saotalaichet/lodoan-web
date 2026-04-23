@@ -213,6 +213,38 @@ function OrderTrackingPage() {
     </div>
   );
 
+  if (isExpired) return (
+    <div style={{ fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#F9F7F5', minHeight: '100vh' }}>
+      <header style={{ background: '#fff', borderBottom: '1px solid #F0EDE8', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px' }}>
+        <Link href="/" style={{ width: 36, height: 36, borderRadius: '50%', background: '#F5F2EE', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: '#333' }}><BackIcon /></Link>
+        <p style={{ fontWeight: 700, fontSize: 15, margin: 0 }}>{lang === "vi" ? "Chi tiết đơn hàng" : "Order details"}</p>
+        <div style={{ width: 36 }} />
+      </header>
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "24px 16px 48px" }}>
+        <div style={{ background: order.status === "completed" ? "#ECFDF5" : "#FEF2F2", borderRadius: 16, padding: "20px", marginBottom: 16, display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ width: 52, height: 52, borderRadius: "50%", background: order.status === "completed" ? "#D1FAE5" : "#FEE2E2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>{order.status === "completed" ? "✅" : "❌"}</div>
+          <div>
+            <p style={{ fontWeight: 800, fontSize: 18, margin: 0, color: order.status === "completed" ? "#065F46" : "#DC2626" }}>{order.status === "completed" ? (lang === "vi" ? "Đơn hàng hoàn thành" : "Order completed") : (lang === "vi" ? "Đơn hàng đã hủy" : "Order cancelled")}</p>
+            <p style={{ fontSize: 13, color: "#888", margin: "3px 0 0" }}>{order.updated_date ? new Date(order.updated_date).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}</p>
+          </div>
+        </div>
+        <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 12, border: "1px solid #F0EDE8" }}>
+          <p style={{ fontSize: 20, fontWeight: 900, color: "#111", margin: "0 0 2px", letterSpacing: "-0.5px" }}>#{orderId.slice(-8).toUpperCase()}</p>
+          <p style={{ fontSize: 11, color: "#bbb", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.6px", margin: 0 }}>{lang === "vi" ? "Mã đơn hàng" : "Order ID"}</p>
+        </div>
+        <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 12, border: "1px solid #F0EDE8", display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}><span style={{ color: "#999" }}>{lang === "vi" ? "Nhà hàng" : "Restaurant"}</span><span style={{ fontWeight: 600 }}>{order.restaurant_name}</span></div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}><span style={{ color: "#999" }}>{lang === "vi" ? "Tổng cộng" : "Total"}</span><span style={{ fontWeight: 800, color: C }}>{fmt(order.total || 0)}</span></div>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}><span style={{ color: "#999" }}>{lang === "vi" ? "Thanh toán" : "Payment"}</span><span style={{ fontWeight: 600 }}>{PAYMENT_LABELS[order.payment_method] || order.payment_method}</span></div>
+        </div>
+        <Link href={'/order/' + orderId + '/receipt'} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: 14, padding: "14px 16px", textDecoration: "none", color: "#333", border: "1px solid #F0EDE8", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}><div style={{ width: 36, height: 36, borderRadius: 10, background: "#F5F2EE", display: "flex", alignItems: "center", justifyContent: "center" }}><ReceiptIcon /></div><span style={{ fontWeight: 600, fontSize: 14 }}>{lang === "vi" ? "Xem hóa đơn" : "View receipt"}</span></div>
+          <ChevronRightIcon />
+        </Link>
+        <Link href="/" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: C, borderRadius: 14, padding: "14px", textDecoration: "none", color: "#fff", fontWeight: 700, fontSize: 15 }}>{lang === "vi" ? "Đặt món lại" : "Order again"}</Link>
+      </div>
+    </div>
+  );
   const estTime = order.notes?.match(/Est: ([^|]+)/)?.[1]?.trim() || '';
   const items = Array.isArray(order.items) ? order.items : (typeof order.items === 'string' ? JSON.parse(order.items) : []);
   const isVI = lang === 'vi';
@@ -221,6 +253,8 @@ function OrderTrackingPage() {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.restaurant_address || restaurant?.name || '')}`;
   const isCancelled = order.status === 'cancelled' || order.status === 'timed_out';
   const isCompleted = order.status === 'completed';
+  const terminalDate = order.updated_date || order.created_date;
+  const isExpired = TERMINAL.includes(order.status) && terminalDate ? (Date.now() - new Date(terminalDate).getTime()) > 24 * 60 * 60 * 1000 : false;
 
   return (
     <div style={{ fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#fff', height: '100dvh', overflow: 'hidden', position: 'relative', color: '#1a1a1a' }}>
