@@ -1027,6 +1027,75 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
   );
 }
 
+
+// ── WaitingForVendor ──────────────────────────────────────────────────────────
+function WaitingForVendor({ orderId, restaurant, lang, onCancelled, onConfirmed }: {
+  orderId: string; restaurant: any; lang: string;
+  onCancelled: () => void; onConfirmed: (id: string) => void;
+}) {
+  const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
+  const startRef = useRef(Date.now());
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const poll = async () => {
+      const secs = Math.floor((Date.now() - startRef.current) / 1000);
+      setElapsed(secs);
+      if (secs >= 600) {
+        // 10 minutes — auto cancel
+        clearInterval(intervalRef.current!);
+        try {
+          await fetch(`${RAILWAY}/api/orders/${orderId}/cancel`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+        } catch {}
+        onCancelled();
+        return;
+      }
+      try {
+        const res = await fetch(`${RAILWAY}/api/orders/${orderId}`);
+        const data = await res.json();
+        if (data?.status && ['preparing', 'accepted', 'ready', 'delivering', 'completed'].includes(data.status)) {
+          clearInterval(intervalRef.current!);
+          onConfirmed(orderId);
+        }
+      } catch {}
+    };
+    intervalRef.current = setInterval(poll, 3000);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [orderId]);
+
+  const remaining = Math.max(0, 600 - elapsed);
+  const mins = Math.floor(remaining / 60);
+  const secs = remaining % 60;
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="max-w-sm w-full">
+        {restaurant?.logo
+          ? <img src={restaurant.logo} alt={restaurant.name} className="object-contain mx-auto mb-8" style={{ height: '80px', width: 'auto', maxWidth: '200px' }} onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+          : <p className="font-bold text-2xl text-gray-900 mb-8">{restaurant?.name}</p>
+        }
+        <div className="relative w-28 h-28 mx-auto mb-8">
+          <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+          <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center">
+            <span className="text-3xl">🍜</span>
+          </div>
+        </div>
+        <h2 className="font-bold text-xl text-gray-900 mb-2">
+          {lang === 'vi' ? 'Đang chờ quán xác nhận...' : 'Waiting for restaurant to confirm...'}
+        </h2>
+        <p className="text-xs text-gray-400 mb-4">
+          {lang === 'vi' ? 'Vui lòng không đóng trang này' : 'Please do not close this page'}
+        </p>
+        <p className="text-xs text-gray-400 font-mono mb-2">#{orderId.slice(-8).toUpperCase()}</p>
+        <p className="text-xs text-gray-300">
+          {lang === 'vi' ? `Tự động hủy sau ${mins}:${String(secs).padStart(2,'0')}` : `Auto-cancel in ${mins}:${String(secs).padStart(2,'0')}`}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function RestaurantPage() {
   const params = useParams();
   const slug = params.slug as string;
@@ -1047,6 +1116,8 @@ export default function RestaurantPage() {
   const [checkoutOrderType, setCheckoutOrderType] = useState<string | null>(null);
   const [deliveryDetails, setDeliveryDetails] = useState<{ address?: string; fee: number } | null>(null);
   const [successOrder, setSuccessOrder] = useState<any>(null);
+  const [waitingOrderId, setWaitingOrderId] = useState<string | null>(null);
+  const [waitingCancelled, setWaitingCancelled] = useState(false);
   const [paymentReturnOrderId, setPaymentReturnOrderId] = useState<string | null>(null);
   const [paymentReturnStatus, setPaymentReturnStatus] = useState<string | null>(null);
   const pollStartRef = useRef<number | null>(null);
@@ -1120,7 +1191,9 @@ export default function RestaurantPage() {
 
   useEffect(() => {
     if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
-    window.location.href = `/order/${paymentReturnOrderId}`;
+    setWaitingOrderId(paymentReturnOrderId);
+    setPaymentReturnStatus(null);
+    setPaymentReturnOrderId(null);
   }, [paymentReturnOrderId, paymentReturnStatus]);
 
   // Dynamic brand color — must be before early returns
@@ -1166,8 +1239,32 @@ export default function RestaurantPage() {
 
   const handleSuccess = (orderId: string, orderType: string, paymentMethod: string) => {
     setCheckoutOrderType(null); setDeliveryDetails(null); clear();
-    window.location.href = `/order/${orderId}`;
+    setWaitingOrderId(orderId);
   };
+
+  // ── Waiting for vendor to confirm ──────────────────────────────────────────
+  if (waitingOrderId && !waitingCancelled) {
+    return (
+      <WaitingForVendor
+        orderId={waitingOrderId}
+        restaurant={restaurant}
+        lang={lang}
+        onCancelled={() => { setWaitingCancelled(true); setWaitingOrderId(null); }}
+        onConfirmed={(id) => { window.location.href = `/order/${id}`; }}
+      />
+    );
+  }
+
+  if (waitingCancelled) return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
+      <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6"><span className="text-5xl">⏰</span></div>
+      <h2 className="font-bold text-2xl text-gray-900 mb-2">{lang === 'vi' ? 'Đơn hàng đã bị hủy' : 'Order cancelled'}</h2>
+      <p className="text-gray-500 text-sm mb-6">{lang === 'vi' ? 'Quán không xác nhận trong 10 phút. Đơn hàng đã bị hủy tự động.' : 'The restaurant did not confirm within 10 minutes. Order auto-cancelled.'}</p>
+      <button onClick={() => setWaitingCancelled(false)} className="bg-primary text-white font-bold px-8 py-3 rounded-full hover:opacity-90">
+        {lang === 'vi' ? 'Quay lại menu' : 'Back to menu'}
+      </button>
+    </div>
+  );
 
   if (!slug || slug === 'undefined') return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
