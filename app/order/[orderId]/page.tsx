@@ -7,7 +7,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
-const PRIMARY = '#8B1A1A';
+const PRIMARY = 'var(--color-primary, #8B1A1A)';
 const TRACKASIA_KEY = process.env.NEXT_PUBLIC_TRACKASIA_API_KEY || '';
 
 const fmt = (v: number) =>
@@ -296,12 +296,7 @@ function OrderTrackingPage() {
             <StatusBar status={order.status} orderType={order.order_type || 'pickup'} lang={lang} />
           </div>
 
-          {/* Mobile map (top of sheet on mobile) */}
-          {hasMap && (
-            <div style={{ height: 200, borderRadius: 16, overflow: 'hidden', marginBottom: 16, display: 'block' }} className="mobile-map">
-              <MapView lat={Number(restaurant.latitude)} lng={Number(restaurant.longitude)} name={restaurant.name || order.restaurant_name} />
-            </div>
-          )}
+
 
           {/* Restaurant info */}
           <div style={{ background: '#fff', borderRadius: 16, padding: 16, marginBottom: 16, border: '1px solid #F0E8E0' }}>
@@ -439,7 +434,7 @@ export default function OrderPage() {
   return (
     <Suspense fallback={
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAF8F0' }}>
-        <div style={{ width: 44, height: 44, border: '4px solid #8B1A1A33', borderTop: '4px solid #8B1A1A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 44, height: 44, border: '4px solid var(--color-primary, #8B1A1A)', borderTop: '4px solid var(--color-primary, #8B1A1A)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     }>

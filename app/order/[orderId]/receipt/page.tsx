@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
-const PRIMARY = '#8B1A1A';
+const PRIMARY = 'var(--color-primary, #8B1A1A)';
 
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
@@ -190,7 +190,7 @@ function ReceiptInner() {
 export default function ReceiptPage() {
   return (
     <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ width: 36, height: 36, border: '4px solid #8B1A1A33', borderTop: '4px solid #8B1A1A', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 36, height: 36, border: '4px solid var(--color-primary, #8B1A1A)', borderTop: '4px solid var(--color-primary, #8B1A1A)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>}>
       <ReceiptInner />
