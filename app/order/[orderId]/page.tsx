@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const TRACKASIA_KEY = process.env.NEXT_PUBLIC_TRACKASIA_API_KEY || '';
@@ -76,23 +75,29 @@ const BackIcon = () => (
 // ── Map ────────────────────────────────────────────────────────────────────────
 function MapView({ lat, lng, name }: { lat: number; lng: number; name: string }) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<maplibregl.Map | null>(null);
+  const mapInstance = useRef<any>(null);
 
   useEffect(() => {
     if (!mapRef.current || mapInstance.current) return;
-    const map = new maplibregl.Map({
-      container: mapRef.current,
-      style: `https://maps.track-asia.com/styles/v1/streets.json?key=${TRACKASIA_KEY}`,
-      center: [lng, lat],
-      zoom: 15,
+    let map: any;
+    import('maplibre-gl').then((mod) => {
+      const maplibregl = mod.default;
+      import('maplibre-gl/dist/maplibre-gl.css' as any).catch(() => {});
+      map = new maplibregl.Map({
+        container: mapRef.current!,
+        style: `https://maps.track-asia.com/styles/v1/streets.json?key=${TRACKASIA_KEY}`,
+        center: [lng, lat],
+        zoom: 15,
+      });
+      mapInstance.current = map;
+      const el = document.createElement('div');
+      el.style.cssText = `width:40px;height:40px;background:var(--color-primary,#8B1A1A);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.35);`;
+      new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
     });
-    mapInstance.current = map;
-    const el = document.createElement('div');
-    el.style.cssText = `width:40px;height:40px;background:var(--color-primary,#8B1A1A);border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,0.35);`;
-    new maplibregl.Marker({ element: el }).setLngLat([lng, lat]).addTo(map);
-    // Put zoom controls bottom-right so they don't clash with UI elements
-    map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-    return () => { map.remove(); mapInstance.current = null; };
+    return () => {
+      if (mapInstance.current) { mapInstance.current.remove(); mapInstance.current = null; }
+    };
   }, [lat, lng, name]);
 
   return <div ref={mapRef} style={{ width: '100%', height: '100%' }} />;
