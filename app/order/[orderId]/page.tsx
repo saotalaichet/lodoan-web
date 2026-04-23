@@ -241,6 +241,7 @@ function OrderTrackingPage() {
           .track-layout { display: grid !important; grid-template-columns: 1fr 420px !important; height: calc(100vh - 60px) !important; }
           .track-map { display: block !important; }
           .track-sheet { overflow-y: auto; height: 100%; }
+          .mobile-map-container { display: none !important; }
         }
       `}</style>
 
@@ -290,6 +291,13 @@ function OrderTrackingPage() {
               </div>
             )}
           </div>
+
+          {/* Map — mobile only, desktop map is in left column */}
+          {hasMap && (
+            <div className="mobile-map-container" style={{ height: 220, borderRadius: 16, overflow: 'hidden', marginBottom: 16 }}>
+              <MapView lat={Number(restaurant.latitude)} lng={Number(restaurant.longitude)} name={restaurant.name || order.restaurant_name} />
+            </div>
+          )}
 
           {/* Status bar */}
           <div style={{ background: '#fff', borderRadius: 16, padding: '16px 12px', marginBottom: 16, border: '1px solid #F0E8E0' }}>
