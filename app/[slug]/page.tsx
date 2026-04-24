@@ -531,6 +531,8 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         method: 'POST', headers: JSON_HEADERS,
         body: JSON.stringify({
           restaurant_id: restaurant.id, restaurant_name: restaurant.name,
+          restaurant_address: restaurant.address || '',
+          restaurant_phone: restaurant.phone || '',
           customer_email: email, customer_name: name, customer_phone: phone,
           items, subtotal, service_fee: serviceFee,
           delivery_fee: orderType === 'delivery' ? effectiveDelivery : 0,
