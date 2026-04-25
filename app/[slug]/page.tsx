@@ -484,11 +484,24 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const totalQty = cart.reduce((s, i) => s + i.qty, 0);
   const serviceFeePct = orderType === 'delivery' ? (subtotal >= 1000001 ? 0.02 : subtotal >= 500001 ? 0.016 : 0.01) : 0.01;
-  const serviceFee = Math.round(subtotal * serviceFeePct);
+  
+  // Calculate raw service fee
+  const rawServiceFee = Math.round(subtotal * serviceFeePct);
+  
+  // Calculate effective delivery fee
   const effectiveDelivery = totalQty >= 10 && orderType === 'delivery' ? 100000 : deliveryFee;
   const tipAmount = Math.round(subtotal * tipPct / 100);
   const promoDiscount = promoApplied?.discount_amount ?? 0;
-  const total = subtotal + serviceFee + (orderType === 'delivery' ? effectiveDelivery : 0) + tipAmount - promoDiscount;
+  
+  // Calculate raw total before rounding
+  const rawTotal = subtotal + rawServiceFee + (orderType === 'delivery' ? effectiveDelivery : 0) + tipAmount - promoDiscount;
+  
+  // Round total UP to nearest 1,000đ
+  const roundedTotal = Math.ceil(rawTotal / 1000) * 1000;
+  
+  // Adjust service fee to make total round
+  const serviceFee = rawServiceFee + (roundedTotal - rawTotal);
+  const total = roundedTotal;
   const validMethods = PAYMENT_METHODS.filter(m => m.for.includes(orderType));
 
   const applyPromo = async () => {
