@@ -26,18 +26,6 @@ export default function OwnerLayout({ children }: { children: React.ReactNode })
     const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement || document.createElement('link');
     link.rel = 'icon';
     link.href = '/ovenly-apple.jpg';
-    document.head.appendChild(link);
-    const apple = document.querySelector("link[rel='apple-touch-icon']") as HTMLLinkElement || document.createElement('link');
-    apple.rel = 'apple-touch-icon';
-    apple.href = '/ovenly-apple.jpg';
-    document.head.appendChild(apple);
-  }, []);
-
-  useEffect(() => {
-    const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement || document.createElement('link');
-    link.rel = 'icon';
-    link.href = '/ovenly-apple.jpg';
-    document.head.appendChild(link);
     const apple = document.querySelector("link[rel='apple-touch-icon']") as HTMLLinkElement || document.createElement('link');
     apple.rel = 'apple-touch-icon';
     apple.href = '/ovenly-apple.jpg';
