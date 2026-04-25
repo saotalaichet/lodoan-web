@@ -39,7 +39,7 @@ export default function OwnerMonthlyPage() {
     const end = new Date(parseInt(y), parseInt(m), 0, 23, 59, 59);
     setOrders(allOrders.filter(o => {
       const d = new Date(o.created_date);
-      return d >= start && d <= end && o.status === 'completed';
+      return d >= start && d <= end && ['completed', 'picked_up', 'delivered'].includes(o.status);
     }));
   }, [month, allOrders]);
 
@@ -72,11 +72,28 @@ export default function OwnerMonthlyPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="font-bold text-xl text-gray-900">{t.title}</h2>
-        <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1">{t.selectMonth}</label>
-          <input type="month" value={month} onChange={e => setMonth(e.target.value)}
-            className="px-3 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/30" />
-        </div>
+        <div className="flex gap-3">
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1">{lang === 'vi' ? 'Tháng' : 'Month'}</label>
+    <select value={month.split('-')[1]} onChange={e => setMonth(`${month.split('-')[0]}-${e.target.value}`)}
+      className="px-3 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/30">
+      {Array.from({ length: 12 }, (_, i) => (
+        <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
+          {lang === 'vi' ? `Tháng ${i + 1}` : new Date(2000, i).toLocaleString('en', { month: 'long' })}
+        </option>
+      ))}
+    </select>
+  </div>
+  <div>
+    <label className="block text-xs font-semibold text-gray-600 mb-1">{lang === 'vi' ? 'Năm' : 'Year'}</label>
+    <select value={month.split('-')[0]} onChange={e => setMonth(`${e.target.value}-${month.split('-')[1]}`)}
+      className="px-3 py-2 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-primary/30">
+      {[2024, 2025, 2026, 2027].map(y => (
+        <option key={y} value={y}>{y}</option>
+      ))}
+    </select>
+  </div>
+</div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden overflow-x-auto">

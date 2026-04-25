@@ -21,6 +21,8 @@ function calcNet(order: any, session: any, refundAmount = 0) {
 
 const STATUS_COLORS: Record<string, string> = {
   completed: 'bg-green-100 text-green-700',
+  picked_up: 'bg-green-100 text-green-700',
+  delivered: 'bg-green-100 text-green-700',
   declined: 'bg-red-100 text-red-600',
   cancelled: 'bg-red-100 text-red-600',
   pending: 'bg-yellow-100 text-yellow-700',
@@ -29,6 +31,24 @@ const STATUS_COLORS: Record<string, string> = {
   confirmed: 'bg-blue-100 text-blue-700',
   ready: 'bg-green-100 text-green-700',
   delivering: 'bg-blue-100 text-blue-700',
+  delivery_failed: 'bg-red-100 text-red-600',
+  timed_out: 'bg-gray-100 text-gray-600',
+};
+
+const STATUS_LABELS: Record<string, { vi: string; en: string }> = {
+  completed: { vi: 'Hoàn Thành', en: 'Completed' },
+  picked_up: { vi: 'Đã Lấy', en: 'Picked Up' },
+  delivered: { vi: 'Đã Giao', en: 'Delivered' },
+  declined: { vi: 'Từ Chối', en: 'Declined' },
+  cancelled: { vi: 'Đã Hủy', en: 'Cancelled' },
+  pending: { vi: 'Chờ Xử Lý', en: 'Pending' },
+  pending_cod: { vi: 'Chờ COD', en: 'Pending COD' },
+  accepted: { vi: 'Đã Nhận', en: 'Accepted' },
+  confirmed: { vi: 'Đã Xác Nhận', en: 'Confirmed' },
+  ready: { vi: 'Sẵn Sàng', en: 'Ready' },
+  delivering: { vi: 'Đang Giao', en: 'Delivering' },
+  delivery_failed: { vi: 'Giao Thất Bại', en: 'Delivery Failed' },
+  timed_out: { vi: 'Hết Hạn', en: 'Timed Out' },
 };
 
 export default function OwnerOrdersPage() {
@@ -71,7 +91,8 @@ export default function OwnerOrdersPage() {
       ['Order', 'Date', 'Type', 'Total', 'Net Revenue', 'Payment', 'Status'].join(','),
       ...orders.map(o => {
         const refund = refunds.find(r => r.order_id === o.id);
-        const net = o.status === 'completed' ? calcNet(o, session, refund?.refund_amount || 0) : '';
+        const isCompleted = ['completed', 'picked_up', 'delivered'].includes(o.status);
+const net = isCompleted ? calcNet(o, session, refund?.refund_amount || 0) : '';
         return [o.id?.slice(-6), new Date(o.created_date).toLocaleString('vi-VN'), o.order_type, o.total, net, o.payment_method, o.status].join(',');
       }),
     ].join('\n');
@@ -108,7 +129,8 @@ export default function OwnerOrdersPage() {
             ) : orders.map(order => {
               const isPickup = order.order_type === 'pickup';
               const refund = refunds.find(r => r.order_id === order.id);
-              const net = order.status === 'completed' ? calcNet(order, session, refund?.refund_amount || 0) : null;
+              const isCompleted = ['completed', 'picked_up', 'delivered'].includes(order.status);
+const net = isCompleted ? calcNet(order, session, refund?.refund_amount || 0) : null;
               return (
                 <tr key={order.id} className="hover:bg-gray-50">
                   <td className="px-4 py-3 font-mono text-gray-900">#{order.id?.slice(-6)}</td>
@@ -132,7 +154,7 @@ export default function OwnerOrdersPage() {
                   <td className="px-4 py-3 text-gray-500 text-xs">{order.payment_method}</td>
                   <td className="px-4 py-3">
                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-700'}`}>
-                      {order.status}
+                      {STATUS_LABELS[order.status]?.[lang] || order.status}
                     </span>
                   </td>
                 </tr>

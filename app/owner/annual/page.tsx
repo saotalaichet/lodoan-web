@@ -24,7 +24,7 @@ export default function OwnerAnnualPage() {
     setSession(s);
     setLoading(true);
     ownerAuth.getOrders().then(orders => {
-      const completed = orders.filter((o: any) => o.status === 'completed');
+      const completed = orders.filter((o: any) => ['completed', 'picked_up', 'delivered'].includes(o.status));
       const monthly = [];
       for (let m = 0; m < 12; m++) {
         const start = new Date(year, m, 1);
