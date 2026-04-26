@@ -7,8 +7,8 @@ import { Crown, Search } from 'lucide-react';
 import FilterBar from './FilterBar';
 import AddressInput from './AddressInput';
 import { customerAuth } from '@/lib/customerAuth';
-import Header from '../Header';
-import Footer from '../Footer';
+import Header from '@/app/components/Header';
+import Footer from '@/app/components/Footer';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
