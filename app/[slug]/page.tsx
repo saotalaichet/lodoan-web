@@ -873,7 +873,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
               </button>
               <p className="text-center text-xs text-gray-400 mt-2">
                 {lang === 'vi' ? 'Bằng cách đặt hàng, bạn đồng ý với ' : 'By ordering you agree to our '}
-                <Link href="/terms" className="underline hover:text-gray-600">{lang === 'vi' ? 'điều khoản dịch vụ' : 'terms of service'}</Link>{lang === 'vi' ? ' và ' : ' and '}<Link href="/privacy" className="underline hover:text-gray-600">{lang === 'vi' ? 'chính sách bảo mật' : 'privacy policy'}</Link>
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{lang === 'vi' ? 'điều khoản dịch vụ' : 'terms of service'}</a>{lang === 'vi' ? ' và ' : ' and '}<a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{lang === 'vi' ? 'chính sách bảo mật' : 'privacy policy'}</a>
               </p>
             </div>
           </div>
