@@ -109,10 +109,10 @@ export default function PrivacyPage() {
             <p className="mb-2"><strong>5.2. Chia sẻ với đối tác thanh toán:</strong> Khi sử dụng thanh toán điện tử, chúng tôi chia sẻ với MoMo, ZaloPay, 2C2P và các cổng thanh toán khác các thông tin: số tiền giao dịch, mã đơn hàng, thông tin thanh toán đã được mã hóa. Các đối tác này xử lý thông tin thanh toán theo chính sách bảo mật riêng của họ.</p>
             <p className="mb-2"><strong>5.3. Chia sẻ với Nhà Cung Cấp Vận Chuyển:</strong> Đối với đơn hàng giao hàng, chúng tôi chia sẻ với nhà vận chuyển: tên người nhận, số điện thoại liên hệ, địa chỉ giao hàng đầy đủ, hướng dẫn tìm đường. Thông tin này chỉ được sử dụng cho mục đích vận chuyển và sẽ bị xóa sau khi hoàn thành giao hàng.</p>
             <p className="mb-2"><strong>5.4. Chia sẻ với nhà cung cấp dịch vụ kỹ thuật:</strong></p>
-            <p className="mb-1"><strong>5.4.a. Railway (Hoa Kỳ):</strong> Dịch vụ lưu trữ đám mây chính, lưu giữ toàn bộ dữ liệu Hệ Thống.</p>
-            <p className="mb-1"><strong>5.4.b. Dịch vụ email:</strong> Gửi xác nhận đơn hàng và thông báo tự động.</p>
-            <p className="mb-1"><strong>5.4.c. Google Analytics:</strong> Phân tích lưu lượng truy cập với dữ liệu đã ẩn danh.</p>
-            <p className="mb-1"><strong>5.4.d. Nhà cung cấp bảo mật:</strong> Giám sát và phòng chống tấn công mạng.</p>
+            <p className="mb-1"><strong>5.4.a.</strong> Nhà cung cấp lưu trữ đám mây để lưu giữ dữ liệu Hệ Thống.</p>
+            <p className="mb-1"><strong>5.4.b.</strong> Nhà cung cấp dịch vụ email để gửi xác nhận đơn hàng và thông báo tự động.</p>
+            <p className="mb-1"><strong>5.4.c.</strong> Google Analytics để phân tích lưu lượng truy cập với dữ liệu đã ẩn danh.</p>
+            <p className="mb-1"><strong>5.4.d.</strong> Nhà cung cấp bảo mật để giám sát và phòng chống tấn công mạng.</p>
             <p className="mb-2"><strong>5.5. Tiết lộ cho cơ quan nhà nước:</strong> Chúng tôi có thể tiết lộ Thông Tin Cá Nhân khi: có yêu cầu từ tòa án, cơ quan điều tra, cơ quan thuế hoặc cơ quan nhà nước có thẩm quyền khác; cần thiết để tuân thủ luật định về chống rửa tiền, chống khủng bố; cần thiết để bảo vệ quyền lợi hợp pháp của Ovenly; có căn cứ tin rằng việc tiết lộ là cần thiết để ngăn chặn tổn hại nghiêm trọng cho người khác.</p>
             <p className="mb-2"><strong>5.6. Chuyển giao trong giao dịch doanh nghiệp:</strong> Nếu Ovenly tham gia vào giao dịch sáp nhập, mua lại, bán tài sản hoặc phá sản, Thông Tin Cá Nhân có thể được chuyển giao cho bên kế thừa. Bạn sẽ được thông báo trước ít nhất 30 ngày và có quyền phản đối việc chuyển giao. Bên kế thừa phải cam kết tuân thủ Chính Sách này hoặc xin đồng ý mới từ bạn.</p>
             <p className="mb-2"><strong>5.7. Chia sẻ dữ liệu tổng hợp:</strong> Chúng tôi có thể chia sẻ dữ liệu thống kê đã được tổng hợp và ẩn danh (không thể xác định cá nhân) với đối tác kinh doanh, nhà đầu tư, hoặc công chúng nhằm mục đích nghiên cứu thị trường hoặc báo cáo hoạt động kinh doanh.</p>
@@ -120,9 +120,9 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-heading font-bold text-base text-gray-900 mb-2">6. CHUYỂN GIAO DỮ LIỆU XUYÊN BIÊN GIỚI</h2>
-            <p className="mb-2"><strong>6.1. Vị trí lưu trữ:</strong> Thông Tin Cá Nhân của bạn được lưu trữ chủ yếu trên máy chủ tại Hoa Kỳ (Railway) và có thể được sao lưu tại Singapore. Việc chuyển giao dữ liệu ra nước ngoài tuân thủ Luật Bảo Vệ Dữ Liệu Cá Nhân và các quy định về chuyển giao xuyên biên giới.</p>
-            <p className="mb-2"><strong>6.2. Biện pháp bảo vệ:</strong> Chúng tôi đảm bảo mức độ bảo vệ tương đương cho dữ liệu được chuyển ra nước ngoài thông qua: ký kết thỏa thuận xử lý dữ liệu với các nhà cung cấp dịch vụ, áp dụng điều khoản hợp đồng mẫu về bảo vệ dữ liệu, mã hóa dữ liệu khi truyền tải và lưu trữ, thực hiện đánh giá tác động chuyển giao xuyên biên giới khi cần thiết, kiểm toán bảo mật định kỳ đối với nhà cung cấp dịch vụ.</p>
-            <p className="mb-2"><strong>6.3. Quyền của bạn:</strong> Bạn có quyền yêu cầu thông tin chi tiết về việc chuyển giao dữ liệu ra nước ngoài và các biện pháp bảo vệ được áp dụng bằng cách liên hệ với chúng tôi.</p>
+            <p className="mb-2"><strong>6.1. Vị trí lưu trữ:</strong> Thông Tin Cá Nhân của bạn được lưu trữ trên các máy chủ đám mây đặt tại nước ngoài nhằm đảm bảo hiệu suất và độ tin cậy cao. Việc chuyển giao dữ liệu ra nước ngoài tuân thủ đầy đủ Luật Bảo Vệ Dữ Liệu Cá Nhân và các quy định về chuyển giao xuyên biên giới.</p>
+            <p className="mb-2"><strong>6.2. Biện pháp bảo vệ:</strong> Chúng tôi đảm bảo mức độ bảo vệ tương đương cho dữ liệu được chuyển ra nước ngoài thông qua: ký kết thỏa thuận xử lý dữ liệu với các nhà cung cấp dịch vụ đám mây, áp dụng điều khoản hợp đồng mẫu về bảo vệ dữ liệu, mã hóa dữ liệu khi truyền tải và lưu trữ, thực hiện đánh giá tác động chuyển giao xuyên biên giới khi cần thiết, kiểm toán bảo mật định kỳ đối với nhà cung cấp dịch vụ.</p>
+            <p className="mb-2"><strong>6.3. Quyền của bạn:</strong> Bạn có quyền yêu cầu thông tin chi tiết về việc chuyển giao dữ liệu ra nước ngoài, bao gồm vị trí cụ thể của máy chủ lưu trữ và các biện pháp bảo vệ được áp dụng, bằng cách liên hệ với chúng tôi.</p>
           </section>
 
           <section>
@@ -211,11 +211,10 @@ export default function PrivacyPage() {
             <h2 className="font-heading font-bold text-base text-gray-900 mb-2">15. THÔNG TIN LIÊN HỆ</h2>
             <p className="mb-2">Nếu có câu hỏi về Chính Sách này hoặc muốn thực hiện quyền của mình, liên hệ:</p>
             <div className="p-3 bg-gray-50 rounded-lg text-xs">
-              <p className="font-semibold text-gray-900">CÔNG TY OVENLY</p>
+              <p className="font-semibold text-gray-900">CÔNG TY TNHH MTV OVENLY SOFTWARE</p>
               <p className="text-gray-700 mt-1">Bộ phận: Phụ Trách Bảo Vệ Dữ Liệu Cá Nhân</p>
               <p className="text-gray-700">Email: <a href="mailto:hello@ovenly.io" className="text-primary underline">hello@ovenly.io</a></p>
               <p className="text-gray-700">Website: <a href="https://www.ovenly.io" target="_blank" rel="noopener noreferrer" className="text-primary underline">www.ovenly.io</a></p>
-              <p className="text-gray-700 mt-1">Địa chỉ: [Địa chỉ trụ sở chính đăng ký kinh doanh tại Việt Nam]</p>
             </div>
             <p className="mt-2 text-xs text-gray-500">Chúng tôi cam kết xử lý yêu cầu của bạn trong 15 ngày làm việc kể từ ngày nhận được yêu cầu hợp lệ. Đối với yêu cầu phức tạp, thời hạn có thể kéo dài thêm 15 ngày và chúng tôi sẽ thông báo trước.</p>
           </section>
