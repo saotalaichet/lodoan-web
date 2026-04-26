@@ -35,8 +35,8 @@ export default function Footer() {
                 : 'Connecting diners with amazing restaurants across Vietnam.'}
             </p>
             <div className="flex gap-4 justify-center sm:justify-start">
-              
-                <a href="https://facebook.com"
+              <a
+                href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -47,8 +47,8 @@ export default function Footer() {
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                 </svg>
               </a>
-              
-                <a href="https://instagram.com"
+              <a
+                href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -62,8 +62,8 @@ export default function Footer() {
                   <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
                 </svg>
               </a>
-              
-                <a href="https://tiktok.com"
+              <a
+                href="https://tiktok.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -101,7 +101,7 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3 sm:space-y-2">
               <li>
-                
+                <a
                   href="https://www.ovenly.io/register"
                   className="text-base sm:text-sm text-gray-500 hover:text-primary transition-colors inline-block py-1"
                 >
@@ -109,7 +109,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                
+                <a
                   href="https://www.ovenly.io/about"
                   className="text-base sm:text-sm text-gray-500 hover:text-primary transition-colors inline-block py-1"
                 >
@@ -117,7 +117,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                
+                <a
                   href="mailto:hello@ovenly.io"
                   className="text-base sm:text-sm text-gray-500 hover:text-primary transition-colors inline-block py-1"
                 >
@@ -133,7 +133,7 @@ export default function Footer() {
             © {CURRENT_YEAR} LÒ ĐỒ ĂN™ {lang === 'vi' ? 'Bảo lưu mọi quyền.' : 'All rights reserved.'}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-2">
-            
+            <a
               href="/terms"
               target="_blank"
               rel="noopener noreferrer"
@@ -142,7 +142,7 @@ export default function Footer() {
               {lang === 'vi' ? 'Điều Khoản Dịch Vụ' : 'Terms of Service'}
             </a>
             <span className="hidden sm:inline text-gray-300 text-xs">•</span>
-            
+            <a
               href="/privacy"
               target="_blank"
               rel="noopener noreferrer"
