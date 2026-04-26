@@ -36,7 +36,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-4 justify-center sm:justify-start">
               
-                <a href="https://facebook.com"
+                href="https://facebook.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -48,7 +48,7 @@ export default function Footer() {
                 </svg>
               </a>
               
-                <a href="https://instagram.com"
+                href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
@@ -63,7 +63,7 @@ export default function Footer() {
                 </svg>
               </a>
               
-                <a href="https://tiktok.com"
+                href="https://tiktok.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-11 h-11 sm:w-10 sm:h-10 rounded-full flex items-center justify-center hover:opacity-80 transition-opacity"
