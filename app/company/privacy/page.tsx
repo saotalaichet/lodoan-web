@@ -436,31 +436,23 @@ export default function OvenlyPrivacyPage() {
               </section>
 
               {/* 8. INTERNATIONAL DATA TRANSFERS */}
-              <section>
-                <h2 style={{ fontSize: 19, fontWeight: 700, color: '#000', marginBottom: 16 }}>{t.s8_title[lang]}</h2>
-                
-                <p style={{ marginBottom: 12 }}>{lang === 'vi'
-                  ? 'Dữ liệu của bạn có thể được chuyển và lưu trữ tại các máy chủ nằm ngoài Việt Nam, bao gồm:'
-                  : 'Your data may be transferred to and stored on servers located outside Vietnam, including:'}</p>
-                
-                <div style={{ paddingLeft: 20, marginBottom: 16 }}>
-                  <p style={{ marginBottom: 8 }}>
-                    • {lang === 'vi' ? 'Dịch vụ lưu trữ đám mây (AWS, Railway)' : 'Cloud hosting services (AWS, Railway)'}
-                  </p>
-                  <p style={{ marginBottom: 8 }}>
-                    • {lang === 'vi' ? 'Nhà cung cấp thanh toán quốc tế (2C2P, Google Pay, Apple Pay)' : 'International payment providers (2C2P, Google Pay, Apple Pay)'}
-                  </p>
-                  <p style={{ marginBottom: 8 }}>
-                    • {lang === 'vi' ? 'Dịch vụ phân tích (Google Analytics)' : 'Analytics services (Google Analytics)'}
-                  </p>
-                </div>
-
-                <p style={{ fontSize: 14, color: '#666' }}>
-                  {lang === 'vi'
-                    ? 'Chúng tôi đảm bảo rằng các bên thứ ba này áp dụng các biện pháp bảo mật phù hợp và tuân thủ các tiêu chuẩn bảo vệ dữ liệu quốc tế.'
-                    : 'We ensure these third parties apply appropriate security measures and comply with international data protection standards.'}
-                </p>
-              </section>
+<section>
+  <h2 style={{ fontSize: 19, fontWeight: 700, color: '#000', marginBottom: 16 }}>{t.s8_title[lang]}</h2>
+  
+  <p style={{ marginBottom: 12 }}>{lang === 'vi'
+    ? 'Dữ liệu của bạn có thể được chuyển và lưu trữ tại các máy chủ nằm ngoài Việt Nam nhằm cung cấp các dịch vụ liên quan đến lưu trữ đám mây, xử lý thanh toán quốc tế và phân tích hoạt động nền tảng. Việc chuyển giao này được thực hiện để đảm bảo hiệu suất, độ tin cậy và khả năng mở rộng của Dịch Vụ.'
+    : 'Your data may be transferred to and stored on servers located outside Vietnam to provide services related to cloud hosting, international payment processing and platform analytics. These transfers are made to ensure performance, reliability and scalability of Services.'}</p>
+  
+  <p style={{ marginBottom: 12 }}>{lang === 'vi'
+    ? 'Chúng tôi đảm bảo rằng các nhà cung cấp dịch vụ bên thứ ba xử lý dữ liệu của bạn áp dụng các biện pháp bảo mật phù hợp và tuân thủ các tiêu chuẩn bảo vệ dữ liệu quốc tế. Tất cả các thỏa thuận với nhà cung cấp bao gồm các điều khoản bắt buộc về bảo mật dữ liệu, giới hạn quyền truy cập và yêu cầu thông báo vi phạm.'
+    : 'We ensure that third-party service providers processing your data apply appropriate security measures and comply with international data protection standards. All agreements with providers include mandatory terms regarding data security, access restrictions and breach notification requirements.'}</p>
+  
+  <p style={{ fontSize: 14, color: '#666' }}>
+    {lang === 'vi'
+      ? 'Bạn có quyền yêu cầu thông tin chi tiết về các quốc gia mà dữ liệu của bạn được chuyển đến và các biện pháp bảo vệ cụ thể được áp dụng bằng cách liên hệ với chúng tôi.'
+      : 'You have the right to request detailed information about countries where your data is transferred and specific safeguards applied by contacting us.'}
+  </p>
+</section>
 
               {/* 9. CHILDREN'S PRIVACY */}
               <section>
