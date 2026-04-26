@@ -1,15 +1,13 @@
 'use client';
-import Link from 'next/link';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link href="/" className="font-heading font-black text-primary text-lg">LÒ ĐỒ ĂN</Link>
-        </div>
-      </header>
-      <div className="max-w-3xl mx-auto px-4 py-12">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <Header />
+      <main className="flex-1">
+        <div className="max-w-3xl mx-auto px-4 py-12">
         <h1 className="font-heading text-3xl font-black text-primary mb-8">Chính Sách Bảo Mật</h1>
         <div className="bg-white rounded-2xl p-8 space-y-4 text-gray-600 text-sm leading-snug" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <p className="text-xs text-gray-400">Phiên bản hiện hành: Tháng 4 năm 2026</p>
@@ -220,7 +218,9 @@ export default function PrivacyPage() {
           </section>
 
         </div>
-      </div>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }
