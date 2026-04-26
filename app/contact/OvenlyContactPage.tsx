@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { submitContactForm } from '@/lib/api';
 import OvenlyNav from '@/components/OvenlyNav';
+import OvenlyFooter from '@/components/OvenlyFooter';
 
 const PRIMARY = '#9B1C1C';
 const BG = '#FFFAF5';
@@ -104,18 +105,7 @@ export default function OvenlyContactPage() {
         </div>
       </div>
 
-      <footer style={{ borderTop: `1px solid ${BORDER}`, padding: '40px', background: BG, textAlign: 'center' as const }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column' as const, alignItems: 'center', gap: 16 }}>
-          <Link href="https://www.ovenly.io" style={{ textDecoration: 'none' }}>
-            <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 52, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any }} />
-          </Link>
-          <div style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' as const }}>
-            <Link href="/about" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>{isVI ? 'Giới thiệu' : 'About'}</Link>
-            <Link href="https://lodoan.vn" style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}>LÒ ĐỒ ĂN</Link>
-          </div>
-          <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>© 2026 Ovenly™</p>
-        </div>
-      </footer>
+      <OvenlyFooter lang={lang} />
     </div>
   );
 }
