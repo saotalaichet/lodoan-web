@@ -2,191 +2,96 @@
 
 import Link from 'next/link';
 
+const PRIMARY = '#9B1C1C';
+const BG = '#FFFAF5';
+const BORDER = '#F0E8E0';
+
+const TRANSLATIONS = {
+  vi: {
+    allRights: 'Bảo lưu mọi quyền',
+    links: [
+      ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
+      ['Giới thiệu', '/about'],
+      ['Liên hệ', '/contact'],
+      ['Điều Khoản Dịch Vụ', 'https://www.ovenly.io/company/terms'],
+      ['Chính Sách Bảo Mật', 'https://www.ovenly.io/company/privacy'],
+    ],
+  },
+  en: {
+    allRights: 'All rights reserved',
+    links: [
+      ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
+      ['About', '/about'],
+      ['Contact', '/contact'],
+      ['Terms of Service', 'https://www.ovenly.io/company/terms'],
+      ['Privacy Policy', 'https://www.ovenly.io/company/privacy'],
+    ],
+  },
+};
+
 interface OvenlyFooterProps {
   lang: 'vi' | 'en';
 }
 
-const PRIMARY = '#9B1C1C';
-
 export default function OvenlyFooter({ lang }: OvenlyFooterProps) {
-  const t = {
-    companyName: { 
-      vi: 'CÔNG TY TNHH MTV OVENLY SOFTWARE', 
-      en: 'Ovenly Software Co Limited' 
-    },
-    brandName: { 
-      vi: 'Nền tảng LÒ ĐỒ ĂN', 
-      en: 'LÒ ĐỒ ĂN Platform' 
-    },
-    email: 'hello@ovenly.io',
-    website: 'www.ovenly.io',
-    marketplace: 'lodoan.vn',
-    
-    legal: { vi: 'Pháp Lý', en: 'Legal' },
-    terms: { vi: 'Điều Khoản Dịch Vụ', en: 'Terms of Service' },
-    privacy: { vi: 'Chính Sách Bảo Mật', en: 'Privacy Policy' },
-    
-    contact: { vi: 'Liên Hệ', en: 'Contact' },
-    
-    copyright: {
-      vi: '© 2026 Ovenly Software. Bảo lưu mọi quyền.',
-      en: '© 2026 Ovenly Software. All rights reserved.'
-    }
-  };
+  const t = TRANSLATIONS[lang];
 
   return (
-    <footer style={{ 
-      background: '#FAFAF9', 
-      borderTop: '1px solid #E7E5E4',
-      padding: '48px 20px 24px'
-    }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        {/* Main Footer Content */}
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '40px',
-          marginBottom: '40px'
-        }}>
-          
-          {/* Company Info */}
-          <div>
-            <h3 style={{ 
-              fontSize: 18, 
-              fontWeight: 700, 
-              color: PRIMARY, 
-              marginBottom: 16 
-            }}>
-              Ovenly
-            </h3>
-            <p style={{ 
-              fontSize: 14, 
-              color: '#57534E', 
-              marginBottom: 8,
-              fontWeight: 600 
-            }}>
-              {t.companyName[lang]}
-            </p>
-            <p style={{ 
-              fontSize: 14, 
-              color: '#78716C', 
-              marginBottom: 16 
-            }}>
-              {t.brandName[lang]}
-            </p>
-          </div>
-
-          {/* Legal Links */}
-          <div>
-            <h3 style={{ 
-              fontSize: 16, 
-              fontWeight: 700, 
-              color: '#292524', 
-              marginBottom: 16 
-            }}>
-              {t.legal[lang]}
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <a 
-                href="https://www.ovenly.io/company/terms"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ 
-                  fontSize: 14, 
-                  color: '#57534E',
-                  textDecoration: 'none',
-                  transition: 'color 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.color = PRIMARY}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#57534E'}
+    <footer 
+      className="ov-footer" 
+      style={{ 
+        borderTop: `1px solid ${BORDER}`, 
+        padding: '48px 40px', 
+        background: BG 
+      }}
+    >
+      <style jsx>{`
+        @media (max-width: 768px) {
+          .ov-footer {
+            padding: 32px 20px !important;
+          }
+          .ov-footer-logo {
+            height: 50px !important;
+          }
+          .ov-footer-links {
+            gap: 16px !important;
+          }
+          .ov-footer-link {
+            font-size: 13px !important;
+          }
+        }
+      `}</style>
+      
+      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, textAlign: 'center' }}>
+        <Link href="https://www.ovenly.io" style={{ textDecoration: 'none' }}>
+          <img
+            src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
+            alt="Ovenly"
+            className="ov-footer-logo"
+            style={{ height: 60, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply', display: 'block', cursor: 'pointer' }}
+          />
+        </Link>
+        <div 
+          className="ov-footer-links"
+          style={{ display: 'flex', gap: 24, justifyContent: 'center', flexWrap: 'wrap' }}
+        >
+          {t.links.map(([label, href]) => {
+            const isExternal = href.startsWith('http');
+            return (
+              <Link 
+                key={label} 
+                href={href} 
+                target={isExternal ? '_blank' : undefined}
+                rel={isExternal ? 'noopener noreferrer' : undefined}
+                className="ov-footer-link"
+                style={{ fontSize: 14, color: '#888', textDecoration: 'none' }}
               >
-                {t.terms[lang]} ↗
-              </a>
-              <a 
-                href="https://www.ovenly.io/company/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ 
-                  fontSize: 14, 
-                  color: '#57534E',
-                  textDecoration: 'none',
-                  transition: 'color 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.color = PRIMARY}
-                onMouseLeave={(e) => e.currentTarget.style.color = '#57534E'}
-              >
-                {t.privacy[lang]} ↗
-              </a>
-            </div>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h3 style={{ 
-              fontSize: 16, 
-              fontWeight: 700, 
-              color: '#292524', 
-              marginBottom: 16 
-            }}>
-              {t.contact[lang]}
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <a 
-                href={`mailto:${t.email}`}
-                style={{ 
-                  fontSize: 14, 
-                  color: PRIMARY,
-                  textDecoration: 'none',
-                  fontWeight: 600
-                }}
-              >
-                {t.email}
-              </a>
-              <a 
-                href={`https://${t.website}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ 
-                  fontSize: 14, 
-                  color: '#57534E',
-                  textDecoration: 'none'
-                }}
-              >
-                {t.website}
-              </a>
-              <a 
-                href={`https://${t.marketplace}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ 
-                  fontSize: 14, 
-                  color: '#57534E',
-                  textDecoration: 'none'
-                }}
-              >
-                {t.marketplace}
-              </a>
-            </div>
-          </div>
+                {label}
+              </Link>
+            );
+          })}
         </div>
-
-        {/* Bottom Bar */}
-        <div style={{ 
-          borderTop: '1px solid #E7E5E4',
-          paddingTop: 24,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 12
-        }}>
-          <p style={{ 
-            fontSize: 13, 
-            color: '#A8A29E',
-            textAlign: 'center'
-          }}>
-            {t.copyright[lang]}
-          </p>
-        </div>
+        <p style={{ fontSize: 14, color: '#aaa', margin: 0 }}>© 2026 Ovenly™ · {t.allRights}</p>
       </div>
     </footer>
   );
