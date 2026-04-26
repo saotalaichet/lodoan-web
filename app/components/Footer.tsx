@@ -16,9 +16,7 @@ export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        {/* Main Footer Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-6 lg:gap-8 mb-8">
-          {/* Brand Info */}
           <div className="text-center sm:text-left">
             <div className="flex items-center justify-center sm:justify-start mb-4" style={{ gap: '10px' }}>
               <img
@@ -36,7 +34,6 @@ export default function Footer() {
                 ? 'Khám phá và đặt món online từ các địa điểm ăn uống quanh bạn.'
                 : 'Connecting diners with amazing restaurants across Vietnam.'}
             </p>
-            {/* Social Icons - Larger on mobile */}
             <div className="flex gap-4 justify-center sm:justify-start">
               
                 href="https://facebook.com"
@@ -59,10 +56,10 @@ export default function Footer() {
                 aria-label="Instagram"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2"/>
-                  <rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                  <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor"/>
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="currentColor" opacity="0.2" />
+                  <rect x="3" y="3" width="18" height="18" rx="4" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  <circle cx="12" cy="12" r="3.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                  <circle cx="17.5" cy="6.5" r="1" fill="currentColor" />
                 </svg>
               </a>
               
@@ -80,7 +77,6 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Navigation */}
           <div className="text-center sm:text-left">
             <h4 className="font-bold text-gray-900 text-base sm:text-sm mb-4 sm:mb-3 uppercase tracking-wide">
               {lang === 'vi' ? 'Điều Hướng' : 'Navigation'}
@@ -99,7 +95,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* For Partners */}
           <div className="text-center sm:text-left sm:col-span-2 lg:col-span-1">
             <h4 className="font-bold text-gray-900 text-base sm:text-sm mb-4 sm:mb-3 uppercase tracking-wide">
               {lang === 'vi' ? 'Dành cho đối tác' : 'For Partners'}
@@ -133,14 +128,10 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Legal Links - Mobile Optimized */}
         <div className="pt-6 border-t border-gray-100 space-y-4">
-          {/* Copyright */}
           <p className="text-sm sm:text-xs text-gray-400 text-center">
             © {CURRENT_YEAR} LÒ ĐỒ ĂN™ {lang === 'vi' ? 'Bảo lưu mọi quyền.' : 'All rights reserved.'}
           </p>
-          
-          {/* Legal Links - Stack on mobile, inline on desktop */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-2">
             
               href="/terms"
