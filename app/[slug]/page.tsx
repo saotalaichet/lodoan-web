@@ -480,6 +480,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   const [promoApplied, setPromoApplied] = useState<{ code: string; discount_amount: number; description?: string } | null>(null);
   const [promoError, setPromoError] = useState('');
   const [promoLoading, setPromoLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const totalQty = cart.reduce((s, i) => s + i.qty, 0);
@@ -862,7 +863,41 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
               </div>
             </div>
             <div className="px-5 pb-5">
-              <button onClick={handlePlace} disabled={placing || cart.length === 0}
+              {/* Terms Agreement Checkbox */}
+              <div className="mb-3">
+                <label className="flex items-start gap-2 cursor-pointer group">
+                  <div className="relative flex-shrink-0 mt-0.5">
+                    <input
+                      type="checkbox"
+                      checked={agreedToTerms}
+                      onChange={(e) => setAgreedToTerms(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-5 h-5 border-2 border-gray-300 rounded peer-checked:bg-primary peer-checked:border-primary transition-all flex items-center justify-center">
+                      {agreedToTerms && (
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7"/>
+                        </svg>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-xs text-gray-600 leading-relaxed">
+                    {lang === 'vi' ? 'Tôi đồng ý với ' : 'I agree to the '}
+                    <a href="https://www.lodoan.vn/terms" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+                      {lang === 'vi' ? 'Điều khoản dịch vụ' : 'Terms of Service'}
+                    </a>
+                    {lang === 'vi' ? ' và ' : ' and '}
+                    <a href="https://www.lodoan.vn/privacy" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:text-primary/80">
+                      {lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy'}
+                    </a>
+                  </span>
+                </label>
+              </div>
+
+              {/* Place Order Button */}
+              <button 
+                onClick={handlePlace} 
+                disabled={placing || cart.length === 0 || !agreedToTerms}
                 className="w-full bg-primary hover:opacity-90 disabled:opacity-50 text-white font-bold py-4 rounded-xl text-sm transition-colors shadow-lg shadow-primary/30">
                 {placing ? (
                   <span className="flex items-center justify-center gap-2">
@@ -871,10 +906,6 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
                   </span>
                 ) : `${lang === 'vi' ? 'Xác nhận đặt hàng' : 'Place Order'} · ${fmt(total)}`}
               </button>
-              <p className="text-center text-xs text-gray-400 mt-2">
-                {lang === 'vi' ? 'Bằng cách đặt hàng, bạn đồng ý với ' : 'By ordering you agree to our '}
-                <a href="/terms" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{lang === 'vi' ? 'điều khoản dịch vụ' : 'terms of service'}</a>{lang === 'vi' ? ' và ' : ' and '}<a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-600">{lang === 'vi' ? 'chính sách bảo mật' : 'privacy policy'}</a>
-              </p>
             </div>
           </div>
         </div>
