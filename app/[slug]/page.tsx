@@ -897,7 +897,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
               {/* Place Order Button */}
               <button 
                 onClick={handlePlace} 
-                disabled={placing || cart.length === 0 || !agreedToTerms}
+                disabled={placing || cart.length === 0 || !agreedToTerms || (!customer && (!name.trim() || !phone.trim() || !email.trim()))}
                 className="w-full bg-primary hover:opacity-90 disabled:opacity-50 text-white font-bold py-4 rounded-xl text-sm transition-colors shadow-lg shadow-primary/30">
                 {placing ? (
                   <span className="flex items-center justify-center gap-2">
