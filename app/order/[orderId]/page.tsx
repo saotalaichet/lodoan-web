@@ -8,13 +8,14 @@ import Link from 'next/link';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const TRACKASIA_KEY = process.env.NEXT_PUBLIC_TRACKASIA_API_KEY || '';
 const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
-const TERMINAL = ['completed', 'cancelled', 'timed_out', 'delivered', 'delivery_failed'];
-const STEPS_PICKUP   = ['preparing', 'ready', 'completed'];
+const TERMINAL = ['completed', 'cancelled', 'timed_out', 'delivered', 'delivery_failed', 'picked_up'];
+const STEPS_PICKUP   = ['preparing', 'ready', 'picked_up'];
 const STEPS_DELIVERY = ['preparing', 'delivering', 'delivered'];
 
 const STEP_LABELS: Record<string, { vi: string; en: string }> = {
   preparing:  { vi: 'Đang chuẩn bị', en: 'Preparing' },
   ready:      { vi: 'Sẵn sàng lấy', en: 'Ready' },
+  picked_up:  { vi: 'Hoàn thành',    en: 'Completed' },
   completed:  { vi: 'Hoàn thành',    en: 'Completed' },
   delivering: { vi: 'Đang giao',     en: 'On the way' },
   delivered:  { vi: 'Đã giao',       en: 'Delivered' },
@@ -24,6 +25,7 @@ const STATUS_HEADLINE: Record<string, { vi: string; en: string }> = {
   confirmed:       { vi: 'Đơn hàng đã xác nhận',      en: 'Order confirmed' },
   preparing:       { vi: 'Quán đang chuẩn bị món',     en: 'Preparing your order' },
   ready:           { vi: 'Sẵn sàng lấy hàng!',         en: 'Ready for pickup!' },
+  picked_up:       { vi: 'Đã hoàn thành. Cảm ơn bạn!', en: 'Completed. Thank you!' },
   delivering:      { vi: 'Đơn hàng đang trên đường',   en: 'Your order is on the way' },
   delivered:       { vi: 'Đơn hàng đã được giao',      en: 'Order delivered' },
   completed:       { vi: 'Đã hoàn thành. Cảm ơn bạn!', en: 'Completed. Thank you!' },
@@ -115,6 +117,7 @@ function MapView({ lat, lng, name }: { lat: number; lng: number; name: string })
 // ── Step dots ──────────────────────────────────────────────────────────────────
 function StepDots({ status, orderType, lang }: { status: string; orderType: string; lang: string }) {
   const steps = orderType === 'delivery' ? STEPS_DELIVERY : STEPS_PICKUP;
+  // Map confirmed to preparing for display
   const displayStatus = status === 'confirmed' ? 'preparing' : status;
   const currentIdx = steps.indexOf(displayStatus) === -1 ? 0 : steps.indexOf(displayStatus);
   const C = 'var(--color-primary, #8B1A1A)';
@@ -289,7 +292,7 @@ function OrderTrackingPage() {
   const hasMap = restaurant?.latitude && restaurant?.longitude;
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.restaurant_address || restaurant?.name || '')}`;
   const isCancelled = ['cancelled', 'timed_out', 'delivery_failed'].includes(effectiveStatus);
-  const isCompleted = ['completed', 'delivered'].includes(effectiveStatus);
+  const isCompleted = ['completed', 'delivered', 'picked_up'].includes(effectiveStatus);
 
   return (
     <div style={{ fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif', background: '#fff', height: '100dvh', overflow: 'hidden', position: 'relative', color: '#1a1a1a' }}>
