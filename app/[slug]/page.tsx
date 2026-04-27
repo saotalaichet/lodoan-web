@@ -1703,31 +1703,23 @@ export default function RestaurantPage() {
       )}
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-100 py-5 mt-4">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-3">
-            <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
-              {lang === 'vi' ? 'Điều khoản dịch vụ' : 'Terms of Service'}
-            </Link>
-            <span className="text-gray-300 text-xs">·</span>
-            <Link href="/privacy" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
-              {lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy'}
-            </Link>
-            <span className="text-gray-300 text-xs">·</span>
-            <Link href="/security" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
-              {lang === 'vi' ? 'An toàn thông tin' : 'Security Policy'}
-            </Link>
-            <span className="text-gray-300 text-xs">·</span>
-            <Link href="/claims" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
-              {lang === 'vi' ? 'Giải quyết khiếu nại' : 'Dispute Resolution'}
-            </Link>
-          </div>
-          <p className="text-center text-xs text-gray-400">
-            <a href="https://lodoan.vn" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">LÒ ĐỒ ĂN™</a>
-            {restaurant?.show_powered_by !== false && <> | Powered by <a href="https://ovenly.io" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">Ovenly™</a></>}
-          </p>
-        </div>
-      </footer>
+<footer className="bg-white border-t border-gray-100 py-5 mt-4">
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 mb-3">
+      <a href="https://www.lodoan.vn/terms" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
+        {lang === 'vi' ? 'Điều khoản dịch vụ' : 'Terms of Service'}
+      </a>
+      <span className="text-gray-300 text-xs">·</span>
+      <a href="https://www.lodoan.vn/privacy" target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-gray-700 hover:underline transition-colors">
+        {lang === 'vi' ? 'Chính sách bảo mật' : 'Privacy Policy'}
+      </a>
+    </div>
+    <p className="text-center text-xs text-gray-400">
+      <a href="https://lodoan.vn" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">LÒ ĐỒ ĂN™</a>
+      {restaurant?.show_powered_by !== false && <> | Powered by <a href="https://ovenly.io" target="_blank" rel="noopener noreferrer" className="hover:text-gray-600 transition-colors">Ovenly™</a></>}
+    </p>
+  </div>
+</footer>
     </div>
   );
 }
