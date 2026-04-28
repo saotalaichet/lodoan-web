@@ -15,8 +15,8 @@ const SURFACE = '#FFFFFF';
 const T = {
   vi: {
     hero: {
-      h1: 'Gói & Giá',
-      sub: 'Gói đơn giản, minh bạch cho các quán ăn uống độc lập',
+      h1: 'Bảng giá',
+      sub: 'Giá đơn giản, minh bạch cho các quán ăn uống độc lập',
     },
     plans: {
       starter: {
@@ -33,7 +33,7 @@ const T = {
           'Hiển thị trên LÒ ĐỒ ĂN',
           'Bảo vệ bom hàng cơ bản',
           'Báo cáo doanh thu',
-          'Hỗ trợ 24/7 (điện thoại & chat)',
+          'Hỗ trợ 24/7',
         ],
         disclaimer: 'Phí đã bao gồm thanh toán điện tử. Chưa bao gồm 10% VAT trên hoa hồng và 4.5% thuế khấu trừ tại nguồn theo quy định pháp luật.',
       },
@@ -77,8 +77,8 @@ const T = {
   },
   en: {
     hero: {
-      h1: 'Plan & Pricing',
-      sub: 'Simple, transparent plans for independent restaurants',
+      h1: 'Pricing',
+      sub: 'Simple, transparent pricing for independent restaurants',
     },
     plans: {
       starter: {
@@ -95,7 +95,7 @@ const T = {
           'Listed on LÒ ĐỒ ĂN marketplace',
           'Basic order abandonment protection',
           'Sales reporting',
-          '24/7 support (phone & chat)',
+          '24/7 support',
         ],
         disclaimer: 'Fee includes payment processing. Excludes 10% VAT on commission and 4.5% government withholding tax (Decree 117).',
       },
@@ -178,12 +178,12 @@ export default function PricingPage() {
             </div>
             <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{t.plans.starter.name}</h3>
             <p style={{ fontSize: 15, color: '#666', marginBottom: 32, lineHeight: 1.5, minHeight: 45 }}>{t.plans.starter.tagline}</p>
-            <div style={{ marginBottom: 32 }}>
+            <div style={{ marginBottom: 32, minHeight: 110 }}>
               <div style={{ fontSize: 56, fontWeight: 800, color: PRIMARY, letterSpacing: '-2px', lineHeight: 1 }}>{t.plans.starter.price}</div>
-              <div style={{ fontSize: 14, color: '#888', marginTop: 8 }}>{t.plans.starter.priceLabel}</div>
+              <div style={{ fontSize: 14, color: '#888', marginTop: 8, minHeight: 22 }}>{t.plans.starter.priceLabel}</div>
               <div style={{ fontSize: 12, color: '#999', marginTop: 8, minHeight: 18 }}>{t.plans.starter.priceNote}</div>
             </div>
-            <Link href="mailto:sales@ovenly.io" style={{ display: 'block', background: '#fff', color: PRIMARY, border: `2px solid ${PRIMARY}`, padding: '14px 24px', borderRadius: 12, fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 32, transition: 'all 0.2s' }}>
+            <Link href="https://www.ovenly.io/register" style={{ display: 'block', background: '#fff', color: PRIMARY, border: `2px solid ${PRIMARY}`, padding: '14px 24px', borderRadius: 12, fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 32, transition: 'all 0.2s' }}>
               {t.plans.starter.cta}
             </Link>
             <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 24, flex: 1 }}>
@@ -192,9 +192,10 @@ export default function PricingPage() {
               </p>
               {t.plans.starter.features.map((f, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                  <div style={{ width: 18, height: 18, background: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </div>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="9" cy="9" r="9" fill={PRIMARY}/>
+                    <path d="M5 9L8 12L13 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                   <span style={{ fontSize: 15, color: '#333' }}>{f}</span>
                 </div>
               ))}
@@ -209,21 +210,22 @@ export default function PricingPage() {
             </div>
             <h3 style={{ fontSize: 24, fontWeight: 700, marginBottom: 8 }}>{t.plans.enterprise.name}</h3>
             <p style={{ fontSize: 15, color: '#666', marginBottom: 32, lineHeight: 1.5, minHeight: 45 }}>{t.plans.enterprise.tagline}</p>
-            <div style={{ marginBottom: 32 }}>
+            <div style={{ marginBottom: 32, minHeight: 110 }}>
               <div style={{ fontSize: 56, fontWeight: 800, color: '#333', letterSpacing: '-2px', lineHeight: 1 }}>{t.plans.enterprise.price}</div>
               <div style={{ fontSize: 14, color: '#888', marginTop: 8, minHeight: 22 }}>{t.plans.enterprise.priceLabel}</div>
               <div style={{ minHeight: 18 }}></div>
             </div>
-            <Link href="mailto:sales@ovenly.io" style={{ display: 'block', background: 'transparent', color: PRIMARY, border: `1px solid ${PRIMARY}`, padding: '14px 24px', borderRadius: 12, fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 32, transition: 'all 0.2s' }}>
+            <Link href="https://www.ovenly.io/register" style={{ display: 'block', background: 'transparent', color: PRIMARY, border: `1px solid ${PRIMARY}`, padding: '14px 24px', borderRadius: 12, fontSize: 16, fontWeight: 700, textAlign: 'center', textDecoration: 'none', marginBottom: 32, transition: 'all 0.2s' }}>
               {t.plans.enterprise.cta}
             </Link>
             <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: 24, flex: 1 }}>
               <p style={{ fontSize: 13, fontWeight: 600, color: '#666', marginBottom: 16 }}>{t.plans.enterprise.featuresPrefix}</p>
               {t.plans.enterprise.features.map((f, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-                  <div style={{ width: 18, height: 18, background: '#10B981', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                  </div>
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="9" cy="9" r="9" fill={PRIMARY}/>
+                    <path d="M5 9L8 12L13 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                   <span style={{ fontSize: 15, color: '#333' }}>{f}</span>
                 </div>
               ))}
@@ -247,7 +249,7 @@ export default function PricingPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <span style={{ fontSize: 16, color: '#999', textDecoration: 'line-through' }}>{t.additionalFees.onboarding.oldPrice}</span>
                 <span style={{ fontSize: 20, fontWeight: 800, color: PRIMARY }}>→</span>
-                <span style={{ fontSize: 20, fontWeight: 800, color: '#10B981' }}>{t.additionalFees.onboarding.newPrice}</span>
+                <span style={{ fontSize: 20, fontWeight: 800, color: PRIMARY }}>{t.additionalFees.onboarding.newPrice}</span>
                 <span style={{ fontSize: 11, fontWeight: 700, background: '#FEF3C7', color: '#92400E', padding: '4px 10px', borderRadius: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                   {t.additionalFees.onboarding.badge}
                 </span>
