@@ -31,6 +31,10 @@ export default function OvenlyNav({ lang, setLang }: OvenlyNavProps) {
       <style>{`
         .ovn-desktop { display: flex; }
         .ovn-mobile { display: none; }
+        .ovn-logo { height: 56px; }
+        @media (min-width: 769px) {
+          .ovn-logo { height: 68px; }
+        }
         @media (max-width: 768px) {
           .ovn-desktop { display: none !important; }
           .ovn-mobile { display: flex !important; }
@@ -41,7 +45,7 @@ export default function OvenlyNav({ lang, setLang }: OvenlyNavProps) {
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', height: 68, borderBottom: menuOpen ? 'none' : `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 300 }}>
         {/* Logo */}
         <Link href="https://www.ovenly.io" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" style={{ height: 56, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block' }} />
+          <img src="https://i.postimg.cc/Mvp7DzmH/logo-3.png" alt="Ovenly" className="ovn-logo" style={{ width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, display: 'block' }} />
         </Link>
 
         {/* Desktop nav */}
