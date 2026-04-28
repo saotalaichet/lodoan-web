@@ -51,7 +51,7 @@ export default function OvenlyNav({ lang, setLang }: OvenlyNavProps) {
         {/* Desktop nav */}
         <div className="ovn-desktop" style={{ alignItems: 'center', gap: 32, flex: 1, marginLeft: 40 }}>
           {/* Left side nav links */}
-          <Link href="https://lodoan.vn" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>LÒ ĐỒ ĂN</Link>
+          <Link href="https://lodoan.vn" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>LÒ ĐỒ ĂN</Link>
           <Link href="/about" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>{isVI ? 'Giới thiệu' : 'About'}</Link>
           <Link href="https://www.ovenly.io/company/pricing" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>{isVI ? 'Bảng giá' : 'Pricing'}</Link>
           <Link href="https://www.ovenly.io/contact" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>{isVI ? 'Liên hệ' : 'Contact'}</Link>
@@ -105,14 +105,16 @@ export default function OvenlyNav({ lang, setLang }: OvenlyNavProps) {
         }}>
           {/* Nav links */}
           {[
-            { href: 'https://lodoan.vn', label: 'LÒ ĐỒ ĂN' },
-            { href: '/about', label: isVI ? 'Giới thiệu' : 'About' },
-            { href: 'https://www.ovenly.io/company/pricing', label: isVI ? 'Bảng giá' : 'Pricing' },
-            { href: 'https://www.ovenly.io/contact', label: isVI ? 'Liên hệ' : 'Contact' },
+            { href: 'https://lodoan.vn', label: 'LÒ ĐỒ ĂN', external: true },
+            { href: '/about', label: isVI ? 'Giới thiệu' : 'About', external: false },
+            { href: 'https://www.ovenly.io/company/pricing', label: isVI ? 'Bảng giá' : 'Pricing', external: false },
+            { href: 'https://www.ovenly.io/contact', label: isVI ? 'Liên hệ' : 'Contact', external: false },
           ].map(item => (
             <Link
               key={item.href}
               href={item.href}
+              target={item.external ? '_blank' : undefined}
+              rel={item.external ? 'noopener noreferrer' : undefined}
               onClick={() => setMenuOpen(false)}
               style={{ display: 'block', padding: '18px 24px', fontSize: 18, fontWeight: 600, color: '#1a1a1a', textDecoration: 'none', borderBottom: `1px solid ${BORDER}` }}
             >
