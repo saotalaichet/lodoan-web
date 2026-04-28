@@ -12,9 +12,13 @@ async function getRestaurant(slug: string) {
 
 async function getMenu(slug: string) {
   try {
-    const res = await fetch(`${RAILWAY}/api/menu?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return res.json();
+    const restRes = await fetch(`${RAILWAY}/api/restaurants/slug/${slug}`, { cache: 'no-store' });
+    if (!restRes.ok) return null;
+    const restaurant = await restRes.json();
+    if (!restaurant?.id) return null;
+    const menuRes = await fetch(`${RAILWAY}/api/admin/menu/${restaurant.id}`, { cache: 'no-store' });
+    if (!menuRes.ok) return null;
+    return menuRes.json();
   } catch { return null; }
 }
 
