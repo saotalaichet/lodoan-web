@@ -45,6 +45,15 @@ export default function OvenlyNav({ lang, setLang }: OvenlyNavProps) {
         </Link>
 
         {/* Desktop nav */}
+        <div className="ovn-desktop" style={{ alignItems: 'center', gap: 32, flex: 1, marginLeft: 40 }}>
+          {/* Left side nav links */}
+          <Link href="https://lodoan.vn" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>LÒ ĐỒ ĂN</Link>
+          <Link href="/about" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>{isVI ? 'Giới thiệu' : 'About'}</Link>
+          <Link href="https://www.ovenly.io/company/pricing" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>{isVI ? 'Bảng giá' : 'Pricing'}</Link>
+          <Link href="https://www.ovenly.io/contact" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>{isVI ? 'Liên hệ' : 'Contact'}</Link>
+        </div>
+
+        {/* Right side controls */}
         <div className="ovn-desktop" style={{ alignItems: 'center', gap: 12 }}>
           <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3 }}>
             {(['vi', 'en'] as const).map(l => (
@@ -53,8 +62,7 @@ export default function OvenlyNav({ lang, setLang }: OvenlyNavProps) {
               </button>
             ))}
           </div>
-          <Link href="/about" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>{isVI ? 'Giới thiệu' : 'About'}</Link>
-          <Link href="https://admin.ovenly.io" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>{isVI ? 'Đăng nhập' : 'Log in'}</Link>
+          <Link href="https://admin.ovenly.io" style={{ fontSize: 14, color: '#555', textDecoration: 'none', fontWeight: 500 }}>{isVI ? 'Đăng nhập' : 'Log in'}</Link>
           <Link href="/register" style={{ background: PRIMARY, color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' }}>
             {isVI ? 'Đặt lịch Demo' : 'Book A Demo'}
           </Link>
@@ -93,9 +101,10 @@ export default function OvenlyNav({ lang, setLang }: OvenlyNavProps) {
         }}>
           {/* Nav links */}
           {[
-            { href: '/about', label: isVI ? 'Giới thiệu' : 'About' },
             { href: 'https://lodoan.vn', label: 'LÒ ĐỒ ĂN' },
-            { href: '/contact', label: isVI ? 'Liên hệ' : 'Contact' },
+            { href: '/about', label: isVI ? 'Giới thiệu' : 'About' },
+            { href: 'https://www.ovenly.io/company/pricing', label: isVI ? 'Bảng giá' : 'Pricing' },
+            { href: 'https://www.ovenly.io/contact', label: isVI ? 'Liên hệ' : 'Contact' },
           ].map(item => (
             <Link
               key={item.href}

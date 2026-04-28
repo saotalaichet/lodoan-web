@@ -12,6 +12,7 @@ const TRANSLATIONS = {
     links: [
       ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
       ['Giới thiệu', '/about'],
+      ['Bảng giá', 'https://www.ovenly.io/company/pricing'],
       ['Liên hệ', '/contact'],
       ['Điều Khoản Dịch Vụ', 'https://www.ovenly.io/company/terms'],
       ['Chính Sách Bảo Mật', 'https://www.ovenly.io/company/privacy'],
@@ -22,6 +23,7 @@ const TRANSLATIONS = {
     links: [
       ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
       ['About', '/about'],
+      ['Pricing', 'https://www.ovenly.io/company/pricing'],
       ['Contact', '/contact'],
       ['Terms of Service', 'https://www.ovenly.io/company/terms'],
       ['Privacy Policy', 'https://www.ovenly.io/company/privacy'],
