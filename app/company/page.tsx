@@ -2,9 +2,11 @@
 
 export const dynamic = 'force-dynamic';
 
+import OvenlyNav from '@/components/OvenlyNav';
 import OvenlyFooter from '@/components/OvenlyFooter';
+import FAQs from '@/components/FAQs';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 const PRIMARY = '#9B1C1C';
 const BG = '#FFFAF5';
@@ -12,7 +14,6 @@ const BORDER = '#F0E8E0';
 
 const T = {
   vi: {
-    nav: { cta: 'Đặt lịch Demo', about: 'Giới thiệu', login: 'Đăng nhập' },
     hero: {
       h1: 'Tăng doanh thu mỗi ngày với đơn hàng trực tuyến',
       sub: 'Ovenly giúp các quán ăn uống và nhà hàng nhận đơn online, tiếp cận khách hàng mới qua sàn LÒ ĐỒ ĂN và trên Google.',
@@ -65,17 +66,8 @@ const T = {
       btn1: 'Đặt lịch Demo',
       btn2: 'hello@ovenly.io',
     },
-    footer: {
-      allRights: 'Bảo lưu mọi quyền',
-      links: [
-        ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
-        ['Giới thiệu', '/about'],
-        ['Liên hệ', '/contact'],
-      ],
-    },
   },
   en: {
-    nav: { cta: 'Book A Demo', about: 'About', login: 'Log in' },
     hero: {
       h1: 'Take orders directly from your customers',
       sub: 'Online ordering built for F&B industry, easy to set up, easy to manage and customers order straight from you',
@@ -128,34 +120,12 @@ const T = {
       btn1: 'Book A Demo',
       btn2: 'hello@ovenly.io',
     },
-    footer: {
-      allRights: 'All rights reserved',
-      links: [
-        ['LÒ ĐỒ ĂN', 'https://lodoan.vn'],
-        ['About', '/about'],
-        ['Contact', '/contact'],
-      ],
-    },
   },
 };
 
 export default function CompanyPage() {
   const [lang, setLang] = useState<'vi' | 'en'>('vi');
-  const [menuOpen, setMenuOpen] = useState(false);
   const t = T[lang];
-
-  useEffect(() => {
-    const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false);
-    };
-    document.addEventListener('keydown', handleEsc);
-    return () => document.removeEventListener('keydown', handleEsc);
-  }, []);
-
-  useEffect(() => {
-    document.body.style.overflow = menuOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [menuOpen]);
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -182,13 +152,7 @@ export default function CompanyPage() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
       <style>{`
-        .ov-nav-desktop { display: flex; }
-        .ov-nav-mobile-btn { display: none; }
         @media (max-width: 768px) {
-          .ov-nav-desktop { display: none !important; }
-          .ov-nav-mobile-btn { display: flex !important; }
-          .ov-nav { padding: 0 16px !important; height: 68px !important; }
-          .ov-nav-logo { height: 56px !important; }
           .ov-hero { padding: 60px 20px !important; min-height: 500px !important; }
           .ov-hero h1 { font-size: 32px !important; letter-spacing: -1px !important; }
           .ov-hero p { font-size: 16px !important; }
@@ -202,7 +166,6 @@ export default function CompanyPage() {
           .ov-cta-grid { grid-template-columns: 1fr !important; }
           .ov-cta-photo { display: none !important; }
           .ov-cta-section { padding: 56px 20px !important; }
-          .ov-footer { padding: 36px 20px !important; }
           .ov-lodoan-logo { height: 160px !important; }
           .ov-h2 { font-size: 28px !important; }
         }
@@ -215,7 +178,6 @@ export default function CompanyPage() {
           .ov-section { padding: 64px 32px !important; }
           .ov-card-text { padding: 36px 32px !important; }
           .ov-cta-section { padding: 64px 32px !important; }
-          .ov-footer { padding: 40px 32px !important; }
           .ov-hero h1 { font-size: 44px !important; }
         }
         @keyframes slideshow {
@@ -230,94 +192,10 @@ export default function CompanyPage() {
         .ov-slide:nth-child(4) { animation-delay: 15s; }
         .ov-slide:nth-child(5) { animation-delay: 20s; }
         .ov-slide-wrap { position: relative; width: 100%; height: 100%; overflow: hidden; }
-        .ov-footer-desktop { display: grid !important; }
-        .ov-footer-mobile { display: none !important; }
-        @media (max-width: 768px) {
-          .ov-footer-desktop { display: none !important; }
-          .ov-footer-mobile { display: flex !important; }
-          .ov-footer { padding: 36px 20px !important; }
-        }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       `}</style>
 
-      {/* Nav */}
-      <nav className="ov-nav" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px', height: 72, borderBottom: menuOpen ? 'none' : `1px solid ${BORDER}`, background: BG, position: 'sticky', top: 0, zIndex: 300 }}>
-        <Link href="https://www.ovenly.io" style={{ textDecoration: 'none', flexShrink: 0 }}>
-          <img
-            className="ov-nav-logo"
-            src="https://i.postimg.cc/Mvp7DzmH/logo-3.png"
-            alt="Ovenly"
-            style={{ height: 64, width: 'auto', objectFit: 'contain', mixBlendMode: 'multiply' as any, cursor: 'pointer', display: 'block' }}
-          />
-        </Link>
-
-        {/* Desktop nav */}
-        <div className="ov-nav-desktop" style={{ alignItems: 'center', gap: 12 }}>
-          <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3 }}>
-            {(['vi', 'en'] as const).map(l => (
-              <button key={l} onClick={() => setLang(l)} style={{ padding: '4px 10px', borderRadius: 6, border: 'none', background: lang === l ? '#fff' : 'transparent', color: lang === l ? '#111' : '#888', fontWeight: lang === l ? 600 : 400, fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
-                {l.toUpperCase()}
-              </button>
-            ))}
-          </div>
-          <Link href="/about" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>{t.nav.about}</Link>
-          <Link href="https://admin.ovenly.io" style={{ fontSize: 14, color: '#555', textDecoration: 'none' }}>{t.nav.login}</Link>
-          <Link href="/register" style={{ background: PRIMARY, color: '#fff', padding: '9px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' as const }}>
-            {t.nav.cta}
-          </Link>
-        </div>
-
-        {/* Mobile: Book A Demo + hamburger */}
-        <div className="ov-nav-mobile-btn" style={{ alignItems: 'center', gap: 8 }}>
-          <Link href="/register" style={{ background: PRIMARY, color: '#fff', padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap' as const }}>
-            {t.nav.cta}
-          </Link>
-          <button
-            onClick={() => setMenuOpen(o => !o)}
-            aria-label="Toggle menu"
-            style={{ width: 40, height: 40, display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', gap: 5, background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
-          >
-            <span style={{ display: 'block', width: 22, height: 2, background: '#1a1a1a', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(45deg) translate(5px, 5px)' : 'none' }} />
-            <span style={{ display: 'block', width: 22, height: 2, background: '#1a1a1a', borderRadius: 2, transition: 'all 0.2s', opacity: menuOpen ? 0 : 1 }} />
-            <span style={{ display: 'block', width: 22, height: 2, background: '#1a1a1a', borderRadius: 2, transition: 'all 0.2s', transform: menuOpen ? 'rotate(-45deg) translate(5px, -5px)' : 'none' }} />
-          </button>
-        </div>
-      </nav>
-
-      {/* Mobile dropdown — full width, drops from nav */}
-      {menuOpen && (
-        <div style={{ position: 'fixed', top: 68, left: 0, right: 0, bottom: 0, background: '#fff', zIndex: 299, overflowY: 'auto', animation: 'fadeIn 0.2s ease', borderTop: `1px solid ${BORDER}` }}>
-          {[
-            { href: '/about', label: t.nav.about },
-            { href: 'https://lodoan.vn', label: 'LÒ ĐỒ ĂN' },
-            { href: '/contact', label: lang === 'vi' ? 'Liên hệ' : 'Contact' },
-          ].map(item => (
-            <Link key={item.href} href={item.href} onClick={() => setMenuOpen(false)}
-              style={{ display: 'block', padding: '18px 24px', fontSize: 18, fontWeight: 600, color: '#1a1a1a', textDecoration: 'none', borderBottom: `1px solid ${BORDER}` }}>
-              {item.label}
-            </Link>
-          ))}
-          <div style={{ padding: '20px 24px', borderBottom: `1px solid ${BORDER}` }}>
-            <Link href="https://admin.ovenly.io" onClick={() => setMenuOpen(false)}
-              style={{ display: 'inline-block', background: PRIMARY, color: '#fff', padding: '11px 24px', borderRadius: 8, fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>
-              {t.nav.login}
-            </Link>
-          </div>
-          <div style={{ padding: '20px 24px' }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#888', textTransform: 'uppercase' as const, letterSpacing: '0.5px', marginBottom: 12 }}>
-              {lang === 'vi' ? 'Ngôn ngữ' : 'Language'}
-            </p>
-            <div style={{ display: 'flex', background: '#F0E8E0', borderRadius: 8, padding: 3, width: 'fit-content' }}>
-              {(['vi', 'en'] as const).map(l => (
-                <button key={l} onClick={() => setLang(l)}
-                  style={{ padding: '6px 16px', borderRadius: 6, border: 'none', background: lang === l ? '#fff' : 'transparent', color: lang === l ? '#111' : '#888', fontWeight: lang === l ? 700 : 400, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
-                  {l.toUpperCase()}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Nav - Using OvenlyNav component */}
+      <OvenlyNav lang={lang} setLang={setLang} />
 
       {/* Hero */}
       <section className="ov-hero" style={{ position: 'relative', minHeight: 600, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
@@ -475,6 +353,9 @@ export default function CompanyPage() {
           </div>
         </section>
       </div>
+
+      {/* FAQs */}
+      <FAQs lang={lang} />
 
       <OvenlyFooter lang={lang} />
 
