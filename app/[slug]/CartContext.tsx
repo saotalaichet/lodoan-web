@@ -61,7 +61,17 @@ export function CartProvider({ slug, children }: { slug: string; children: React
   }, []);
 
   const set = useCallback((id: string, qty: number) => {
-    setCart(prev => qty <= 0 ? prev.filter(i => i.id !== id) : prev.map(i => (i.id === id ? { ...i, qty } : i)));
+    setCart(prev => {
+      const matches = prev.filter(c => c.id === id || c.id.startsWith(id + '::'));
+      if (matches.length === 0) return prev;
+      if (matches.length === 1) {
+        const m = matches[0];
+        return qty <= 0
+          ? prev.filter(i => i.id !== m.id)
+          : prev.map(i => i.id === m.id ? { ...i, qty } : i);
+      }
+      return prev;
+    });
   }, []);
 
   const update = useCallback((oldId: string, newItem: CartItem) => {
