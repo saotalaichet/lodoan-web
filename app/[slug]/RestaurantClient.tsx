@@ -71,7 +71,7 @@ interface CartItem {
   addons?: { name: string; price: number }[];
 }
 
-function useCart() {
+function useCart(slug: string) {
   // Always start with empty cart — both server and first client render must match.
   const [cart, setCart] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
@@ -80,20 +80,27 @@ function useCart() {
   // This runs only on the client, after the first render has matched the server.
   useEffect(() => {
     try {
-      const saved = sessionStorage.getItem('ovenly_cart');
+      const newKey = `ovenly_cart:${slug}`;
+      const legacy = sessionStorage.getItem('ovenly_cart');
+      const existing = sessionStorage.getItem(newKey);
+      if (legacy && !existing) {
+        sessionStorage.setItem(newKey, legacy);
+        sessionStorage.removeItem('ovenly_cart');
+      }
+      const saved = sessionStorage.getItem(newKey);
       if (saved) setCart(JSON.parse(saved));
     } catch {}
     setHydrated(true);
-  }, []);
+  }, [slug]);
 
   // Save to sessionStorage on every cart change, but only after hydration
   // so we don't accidentally overwrite stored data with the empty initial state.
   useEffect(() => {
     if (!hydrated) return;
     try {
-      sessionStorage.setItem('ovenly_cart', JSON.stringify(cart));
+      sessionStorage.setItem(`ovenly_cart:${slug}`, JSON.stringify(cart));
     } catch {}
-  }, [cart, hydrated]);
+  }, [cart, hydrated, slug]);
 
   const add = (item: CartItem) => setCart(prev => {
     const ex = prev.find(i => i.id === item.id);
@@ -485,6 +492,7 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
   const [tipPct, setTipPct] = useState(0);
   const [placing, setPlacing] = useState(false);
   const placingRef = useRef(false);
+  const idempotencyKeyRef = useRef<string>(crypto.randomUUID());
   const [checkoutMode, setCheckoutMode] = useState<null | 'checkout'>(null);
   const [promoCode, setPromoCode] = useState('');
   const [promoOpen, setPromoOpen] = useState(false);
@@ -551,10 +559,20 @@ function Checkout({ cart, restaurant, orderType, deliveryAddress, deliveryFee, o
         placingRef.current = false;
         return;
       }
+      const cleanPhone = phone.replace(/[\s\-()+]/g, '');
+      if (!/^\d{8,15}$/.test(cleanPhone)) {
+        alert(lang === 'vi'
+          ? 'Số điện thoại không hợp lệ. Vui lòng nhập số có 8-15 chữ số.'
+          : 'Invalid phone number. Please enter 8-15 digits.');
+        setPlacing(false);
+        placingRef.current = false;
+        return;
+      }
       const items = cart.map(i => ({ menu_item_id: i.id, name: i.name, price: i.price, quantity: i.qty }));
       const orderRes = await fetch(`${RAILWAY}/api/orders`, {
         method: 'POST', headers: JSON_HEADERS,
         body: JSON.stringify({
+          idempotency_key: idempotencyKeyRef.current,
           restaurant_id: restaurant.id, restaurant_name: restaurant.name,
           restaurant_address: restaurant.address || '',
           restaurant_phone: restaurant.phone || '',
@@ -1190,7 +1208,7 @@ export default function RestaurantClient({
   const pollStartRef = useRef<number | null>(null);
   const [navOpen, setNavOpen] = useState(false);
 
-  const { cart, add, set, clear, totalQty, subtotal } = useCart();
+  const { cart, add, set, clear, totalQty, subtotal } = useCart(slug);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -1218,9 +1236,6 @@ export default function RestaurantClient({
 
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
-    const lastSlug = sessionStorage.getItem('ovenly_cart_slug');
-    if (lastSlug && lastSlug !== slug) clear();
-    sessionStorage.setItem('ovenly_cart_slug', slug);
     const load = async () => {
       try {
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
@@ -1245,7 +1260,7 @@ export default function RestaurantClient({
       setLoadingRestaurant(false);
       setLoadingItems(false);
     };
-    load();
+    if (!initialRestaurant) load();
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/restaurant?slug=${encodeURIComponent(slug)}`);
