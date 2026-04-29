@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { headers } from 'next/headers';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import './globals.css';
@@ -25,6 +25,11 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   };
 }
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+};
 
 const organizationSchema = {
   '@context': 'https://schema.org',
@@ -105,9 +110,6 @@ export default async function RootLayout({
 
   return (
     <html lang="vi">
-      <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
       <body>
         {!isOvenly && (
           <>
