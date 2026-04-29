@@ -67,19 +67,22 @@ export default function MenuList({
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {catItems.map((item: any) => (
-              <div
-                key={item.id}
-                className={item.is_available === false ? 'opacity-50' : ''}
-              >
-                <MenuItemCard
-                  item={item}
-                  isClosed={isClosed || item.is_available === false}
-                  isOutOfStock={item.is_available === false}
-                  lang="vi"
-                />
-              </div>
-            ))}
+            {catItems.map((item: any) => {
+              const isItemOOS = item.is_sold_out === true || item.is_available === false;
+              return (
+                <div
+                  key={item.id}
+                  className={isItemOOS ? 'opacity-50' : ''}
+                >
+                  <MenuItemCard
+                    item={item}
+                    isClosed={isClosed || isItemOOS}
+                    isOutOfStock={isItemOOS}
+                    lang="vi"
+                  />
+                </div>
+              );
+            })}
           </div>
         </section>
       ))}
