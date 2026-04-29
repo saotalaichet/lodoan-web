@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react';
 
+const TRACKASIA_KEY = process.env.NEXT_PUBLIC_TRACKASIA_API_KEY || '';
+
 interface Props {
   latitude: number;
   longitude: number;
@@ -21,7 +23,7 @@ export default function TrackAsiaMap({ latitude, longitude, name }: Props) {
 
       const map = new (trackasiagl as any).Map({
         container: mapRef.current!,
-        style: 'https://maps.track-asia.com/styles/v2/streets.json?key=b4948621d117757258530daee9e48a980b',
+        style: `https://maps.track-asia.com/styles/v2/streets.json?key=${TRACKASIA_KEY}`,
         center: [longitude, latitude],
         zoom: 15,
       });
