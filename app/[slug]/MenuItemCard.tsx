@@ -53,7 +53,7 @@ export default function MenuItemCard({
             {item.is_spicy && <span className="text-[9px] font-bold text-red-500 bg-red-50 px-1 py-0.5 rounded-full">🌶</span>}
             {item.is_vegetarian && <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 py-0.5 rounded-full">🌿</span>}
           </div>
-          <p className="font-semibold text-gray-900 text-xs leading-snug line-clamp-2">{item.name}</p>
+          <h3 className="font-semibold text-gray-900 text-xs leading-snug line-clamp-2">{item.name}</h3>
           {item.description && (
             <p className="text-[10px] text-gray-400 mt-0.5 line-clamp-2 leading-relaxed">{item.description}</p>
           )}
