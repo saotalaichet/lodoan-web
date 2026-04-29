@@ -261,6 +261,16 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
   isClosed: boolean; isOutOfStock: boolean; lang: string;
 }) {
   const price = parseFloat(item.price) || 0;
+
+  // Silently preload the modal-size image during card view so that when
+  // the user clicks the item, the modal opens instantly with the image
+  // already cached in the browser.
+  useEffect(() => {
+    if (!item.image_url) return;
+    const img = new window.Image();
+    img.src = cloudinaryThumb(item.image_url, 800, 400);
+  }, [item.image_url]);
+
   const handleClick = () => {
     if (isClosed) return;
     let groups: any[] = [];
