@@ -1273,9 +1273,55 @@ export default function RestaurantClient({
         const data = await res.json();
         if (data) setRestaurant(data);
       } catch {}
-    }, 60000);
+    }, 90000);
     return () => clearInterval(interval);
   }, [slug]);
+
+  // Real-time restaurant status updates via WebSocket.
+  // Falls back to existing 60s polling if WebSocket fails or disconnects.
+  useEffect(() => {
+    if (!restaurant?.id) return;
+    const wsUrl = RAILWAY.replace(/^https?:/, 'wss:');
+    let ws: WebSocket | null = null;
+    let reconnectTimer: NodeJS.Timeout | null = null;
+    let cancelled = false;
+
+    const connect = () => {
+      if (cancelled) return;
+      try {
+        ws = new WebSocket(`${wsUrl}/ws/restaurant/${restaurant.id}`);
+        ws.onopen = () => {
+          console.log('[WS] Restaurant updates connected:', restaurant.id);
+        };
+        ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg.type === 'restaurant_update' && msg.restaurant) {
+              setRestaurant(msg.restaurant);
+            }
+          } catch {}
+        };
+        ws.onclose = () => {
+          if (cancelled) return;
+          // Reconnect after 5 seconds if connection drops
+          reconnectTimer = setTimeout(connect, 5000);
+        };
+        ws.onerror = () => {
+          // onclose will fire after onerror, no need to reconnect here
+        };
+      } catch {
+        if (!cancelled) reconnectTimer = setTimeout(connect, 5000);
+      }
+    };
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (ws && ws.readyState === WebSocket.OPEN) ws.close();
+    };
+  }, [restaurant?.id]);
 
   useEffect(() => {
     if (!paymentReturnOrderId || paymentReturnStatus !== 'success') return;
