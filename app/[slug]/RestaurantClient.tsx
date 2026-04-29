@@ -112,7 +112,15 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
         return o && parseFloat(o.price) > 0 ? { name: o.name, price: parseFloat(o.price) } : null;
       })
     ).filter(Boolean) as { name: string; price: number }[];
-    onAdd({ id: item.id + Date.now(), name: item.name, price: basePrice + extra, basePrice, addons, qty, notes });
+
+    // Build a deterministic ID based on the item + selected customizations + notes.
+    // Same item + same addons + same notes => same ID => cart consolidates the qty.
+    // Same item + different addons OR different notes => different ID => separate cart row.
+    const addonSig = addons.map(a => a.name).sort().join('+');
+    const notesSig = (notes || '').trim().slice(0, 50);
+    const cartId = `${item.id}::${addonSig}::${notesSig}`;
+
+    onAdd({ id: cartId, name: item.name, price: basePrice + extra, basePrice, addons, qty, notes });
   };
 
   return (
