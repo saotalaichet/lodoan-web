@@ -1058,13 +1058,15 @@ interface RestaurantClientProps {
   initialRestaurant?: any;
   initialCategories?: any[];
   initialItems?: any[];
+  children?: React.ReactNode;
 }
 
 export default function RestaurantClient({
   slug: slugProp,
   initialRestaurant = null,
   initialCategories = [],
-  initialItems = []
+  initialItems = [],
+  children,
 }: RestaurantClientProps = {}) {
   const params = useParams();
   const slug = slugProp ?? (params.slug as string);
@@ -1077,7 +1079,9 @@ export default function RestaurantClient({
           initialRestaurant={initialRestaurant}
           initialCategories={initialCategories}
           initialItems={initialItems}
-        />
+        >
+          {children}
+        </RestaurantClientInner>
       </ItemSelectionProvider>
     </CartProvider>
   );
@@ -1088,11 +1092,13 @@ function RestaurantClientInner({
   initialRestaurant,
   initialCategories,
   initialItems,
+  children,
 }: {
   slug: string;
   initialRestaurant: any;
   initialCategories: any[];
   initialItems: any[];
+  children?: React.ReactNode;
 }) {
   const [restaurant, setRestaurant] = useState<any>(initialRestaurant);
   const [categories, setCategories] = useState<any[]>(initialCategories);
@@ -1247,25 +1253,6 @@ function RestaurantClientInner({
   const status = getRestaurantStatus(restaurant);
   const isClosed = status !== 'OPEN';
   const todayHours = getTodayHours(restaurant);
-
-  const groupedItems = useMemo(() => {
-    if (allItems.length === 0) return [];
-    if (activeCategory !== 'all') {
-      const cat = categories.find((c: any) => c.id === activeCategory);
-      return cat ? [{ category: cat, items: allItems.filter((i: any) => i.category_id === activeCategory) }] : [];
-    }
-    if (categories.length > 0) {
-      const sortedCats = [...categories].sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
-      const grouped = sortedCats
-        .map((cat: any) => ({ category: cat, items: allItems.filter((i: any) => i.category_id === cat.id) }))
-        .filter(g => g.items.length > 0);
-      const categorizedIds = new Set(categories.map((c: any) => c.id));
-      const uncategorized = allItems.filter((i: any) => !categorizedIds.has(i.category_id));
-      if (uncategorized.length > 0) grouped.push({ category: { id: '__uncategorized', name: 'Khác / Other', sort_order: 9999 }, items: uncategorized });
-      return grouped;
-    }
-    return [{ category: { id: '__all', name: 'Thực Đơn / Menu', sort_order: 0 }, items: allItems }];
-  }, [activeCategory, allItems, categories]);
 
   const getCatLabel = (name: string) => {
     if (!name) return '';
@@ -1540,32 +1527,13 @@ function RestaurantClientInner({
                 </div>
               ) : loadingItems ? (
                 <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Đang tải thực đơn...' : 'Loading menu...'}</div>
-              ) : groupedItems.length === 0 ? (
-                <div className="text-center text-gray-500 py-16">{lang === 'vi' ? 'Chưa có món ăn' : 'No items yet'}</div>
               ) : (
-                <div className="space-y-8">
-                  {groupedItems.map(({ category, items }) => (
-                    items.length > 0 && (
-                      <div key={category.id}>
-                        <div className="mb-4 pb-3 border-b border-gray-200">
-                          <h2 className="text-lg font-bold text-gray-900">{getCatLabel(category.name)}</h2>
-                        </div>
-                        <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
-                          {items.map((item: any) => (
-                            <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
-                              <MenuItemCard
-                                item={item}
-                                isClosed={isClosed || item.is_available === false}
-                                isOutOfStock={item.is_available === false}
-                                lang={lang}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )
-                  ))}
-                </div>
+                <>
+                  {activeCategory !== 'all' && (
+                    <style>{`[data-cat]:not([data-cat="${activeCategory}"]) { display: none !important; }`}</style>
+                  )}
+                  {children}
+                </>
               )}
 
         </div>
