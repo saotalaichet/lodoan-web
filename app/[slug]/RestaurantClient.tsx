@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -1117,6 +1117,7 @@ function RestaurantClientInner({
   // BUG 5 FIX: Added menu error state
   const [menuError, setMenuError] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const router = useRouter();
   const [lang, setLang] = useState('vi');
   const [customer, setCustomer] = useState<any>(null);
   const [showMobileCart, setShowMobileCart] = useState(false);
@@ -1216,6 +1217,9 @@ function RestaurantClientInner({
             const msg = JSON.parse(e.data);
             if (msg.type === 'restaurant_update' && msg.restaurant) {
               setRestaurant(msg.restaurant);
+            } else if (msg.type === 'menu_update') {
+              console.log('[WS] Menu update received, refreshing page data');
+              router.refresh();
             }
           } catch {}
         };
