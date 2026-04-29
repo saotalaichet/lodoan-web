@@ -1,26 +1,5 @@
 import type { Metadata } from 'next';
-
-const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
-
-async function getRestaurant(slug: string) {
-  try {
-    const res = await fetch(`${RAILWAY}/api/restaurants/slug/${slug}`, { cache: 'no-store' });
-    if (!res.ok) return null;
-    return res.json();
-  } catch { return null; }
-}
-
-async function getMenu(slug: string) {
-  try {
-    const restRes = await fetch(`${RAILWAY}/api/restaurants/slug/${slug}`, { cache: 'no-store' });
-    if (!restRes.ok) return null;
-    const restaurant = await restRes.json();
-    if (!restaurant?.id) return null;
-    const menuRes = await fetch(`${RAILWAY}/api/admin/menu/${restaurant.id}`, { cache: 'no-store' });
-    if (!menuRes.ok) return null;
-    return menuRes.json();
-  } catch { return null; }
-}
+import { getRestaurant, getMenu } from '@/lib/restaurantData';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -163,7 +142,7 @@ export default async function SlugLayout({
     ],
   };
 
-  const menu = await getMenu(slug);
+  const menu = r?.id ? await getMenu(r.id) : null;
   const menuSchema = menu?.items?.length > 0 ? {
     '@context': 'https://schema.org',
     '@type': 'Menu',

@@ -1,31 +1,23 @@
 import RestaurantClient from './RestaurantClient';
-
-const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
+import { getRestaurant, getMenu } from '@/lib/restaurantData';
 
 const fmtPrice = (v: any) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 })
     .format(parseFloat(v) || 0);
 
 async function fetchInitialData(slug: string) {
-  try {
-    const restRes = await fetch(`${RAILWAY}/api/restaurants/slug/${slug}`, { cache: 'no-store' });
-    if (!restRes.ok) return null;
-    const restaurant = await restRes.json();
-    if (!restaurant?.id) return null;
+  const restaurant = await getRestaurant(slug);
+  if (!restaurant?.id) return null;
 
-    const menuRes = await fetch(`${RAILWAY}/api/admin/menu/${restaurant.id}`, { cache: 'no-store' });
-    if (!menuRes.ok) return null;
-    const data = await menuRes.json();
+  const data = await getMenu(restaurant.id);
+  if (!data) return null;
 
-    const categories = (data.categories || [])
-      .filter((c: any) => c.is_active !== false)
-      .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
-    const items = (data.items || []).filter((i: any) => i.is_available !== false);
+  const categories = (data.categories || [])
+    .filter((c: any) => c.is_active !== false)
+    .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
+  const items = (data.items || []).filter((i: any) => i.is_available !== false);
 
-    return { restaurant, categories, items };
-  } catch {
-    return null;
-  }
+  return { restaurant, categories, items };
 }
 
 export default async function RestaurantPage({

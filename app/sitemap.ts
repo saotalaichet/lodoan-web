@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    const res = await fetch(`${RAILWAY}/api/marketplace/restaurants`, { cache: 'no-store' });
+    const res = await fetch(`${RAILWAY}/api/marketplace/restaurants`, { next: { revalidate: 3600 } });
     if (!res.ok) return staticPages;
     const restaurants = await res.json();
     const restaurantPages: MetadataRoute.Sitemap = restaurants
