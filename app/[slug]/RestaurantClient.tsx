@@ -15,6 +15,7 @@ import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import MenuItemCard from './MenuItemCard';
 import { CartProvider, useCart, CartItem } from './CartContext';
 import { ItemSelectionProvider, useItemSelection } from './ItemSelectionContext';
+import { LanguageProvider } from './LanguageContext';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -1540,7 +1541,7 @@ function RestaurantClientInner({
                   {activeCategory !== 'all' && (
                     <style>{`[data-cat]:not([data-cat="${activeCategory}"]) { display: none !important; }`}</style>
                   )}
-                  {children}
+                  <LanguageProvider lang={lang}>{children}</LanguageProvider>
                 </>
               )}
 

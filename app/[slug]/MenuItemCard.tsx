@@ -5,20 +5,20 @@ import { Plus, Minus, Star, Flame, Leaf } from 'lucide-react';
 import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import { useCart, useItemQty } from './CartContext';
 import { useItemSelection } from './ItemSelectionContext';
+import { useLang } from './LanguageContext';
 
 interface MenuItemCardProps {
   item: any;
   isClosed: boolean;
   isOutOfStock: boolean;
-  lang: string;
 }
 
 export default function MenuItemCard({
   item,
   isClosed,
   isOutOfStock,
-  lang,
 }: MenuItemCardProps) {
+  const lang = useLang();
   const price = parseFloat(item.price) || 0;
   const { set: setQty } = useCart();
   const qty = useItemQty(item.id);

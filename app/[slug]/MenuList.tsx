@@ -78,7 +78,6 @@ export default function MenuList({
                     item={item}
                     isClosed={isClosed || isItemOOS}
                     isOutOfStock={isItemOOS}
-                    lang="vi"
                   />
                 </div>
               );
