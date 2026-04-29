@@ -110,7 +110,7 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
     const addons = groups.flatMap(g =>
       (selections[g.id] || []).map(oId => {
         const o = g.options?.find((x: any) => x.id === oId);
-        return o && parseFloat(o.price) > 0 ? { name: o.name, price: parseFloat(o.price) } : null;
+        return o ? { name: o.name, price: parseFloat(o.price) || 0 } : null;
       })
     ).filter(Boolean) as { name: string; price: number }[];
 

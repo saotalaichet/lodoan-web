@@ -40,6 +40,12 @@ export default function MenuItemCard({
     openItem(item, groups);
   };
 
+  let hasOptions = false;
+  try {
+    const opts = item.customization_options ? JSON.parse(item.customization_options) : [];
+    hasOptions = Array.isArray(opts) && opts.length > 0;
+  } catch {}
+
   return (
     <div
       onClick={handleClick}
@@ -57,11 +63,23 @@ export default function MenuItemCard({
           <span className="font-semibold text-gray-900 text-base">{fmt(price)}</span>
           {!isClosed && !isOutOfStock && qty > 0 && (
             <div className="flex items-center gap-2 bg-primary rounded-full px-2 py-1" onClick={e => e.stopPropagation()}>
-              <button onClick={() => setQty(item.id, qty - 1)} className="w-5 h-5 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors">
+              <button onClick={() => {
+                if (hasOptions) {
+                  handleClick();
+                } else {
+                  setQty(item.id, qty - 1);
+                }
+              }} className="w-5 h-5 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors">
                 <Minus className="w-3.5 h-3.5" strokeWidth={3} />
               </button>
               <span className="text-sm font-bold text-white min-w-[16px] text-center">{qty}</span>
-              <button onClick={() => setQty(item.id, qty + 1)} className="w-5 h-5 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors">
+              <button onClick={() => {
+                if (hasOptions) {
+                  handleClick();
+                } else {
+                  setQty(item.id, qty + 1);
+                }
+              }} className="w-5 h-5 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors">
                 <Plus className="w-3.5 h-3.5" strokeWidth={3} />
               </button>
             </div>

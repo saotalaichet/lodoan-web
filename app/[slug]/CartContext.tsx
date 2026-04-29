@@ -16,6 +16,7 @@ interface CartContextValue {
   cart: CartItem[];
   add: (item: CartItem) => void;
   set: (id: string, qty: number) => void;
+  update: (oldId: string, newItem: CartItem) => void;
   clear: () => void;
   totalQty: number;
   subtotal: number;
@@ -50,16 +51,28 @@ export function CartProvider({ slug, children }: { slug: string; children: React
   }, [cart, hydrated, slug]);
 
   const add = useCallback((item: CartItem) => {
+    const addQty = item.qty || 1;
     setCart(prev => {
       const ex = prev.find(i => i.id === item.id);
       return ex
-        ? prev.map(i => (i.id === item.id ? { ...i, qty: i.qty + 1 } : i))
-        : [...prev, { ...item, qty: 1 }];
+        ? prev.map(i => (i.id === item.id ? { ...i, qty: i.qty + addQty } : i))
+        : [...prev, { ...item, qty: addQty }];
     });
   }, []);
 
   const set = useCallback((id: string, qty: number) => {
     setCart(prev => qty <= 0 ? prev.filter(i => i.id !== id) : prev.map(i => (i.id === id ? { ...i, qty } : i)));
+  }, []);
+
+  const update = useCallback((oldId: string, newItem: CartItem) => {
+    setCart(prev => {
+      const filtered = prev.filter(i => i.id !== oldId);
+      const ex = filtered.find(i => i.id === newItem.id);
+      if (ex) {
+        return filtered.map(i => i.id === newItem.id ? { ...i, qty: i.qty + newItem.qty } : i);
+      }
+      return [...filtered, newItem];
+    });
   }, []);
 
   const clear = useCallback(() => setCart([]), []);
@@ -68,8 +81,8 @@ export function CartProvider({ slug, children }: { slug: string; children: React
   const subtotal = useMemo(() => cart.reduce((s, i) => s + i.price * i.qty, 0), [cart]);
 
   const value = useMemo(
-    () => ({ cart, add, set, clear, totalQty, subtotal }),
-    [cart, add, set, clear, totalQty, subtotal]
+    () => ({ cart, add, set, update, clear, totalQty, subtotal }),
+    [cart, add, set, update, clear, totalQty, subtotal]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
