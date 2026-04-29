@@ -1624,7 +1624,22 @@ function RestaurantClientInner({
             </div>
             <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
               onCheckout={() => { setShowMobileCart(false); setShowDeliveryModal(true); }}
-              isClosed={isClosed} lang={lang} restaurant={restaurant} />
+              isClosed={isClosed} lang={lang} restaurant={restaurant}
+              onItemClick={(line) => {
+                setShowMobileCart(false);
+                const baseId = line.id.split('::')[0];
+                const menuItem = allItems.find((i: any) => i.id === baseId);
+                if (!menuItem) return;
+                let groups: any[] = [];
+                try { if (menuItem.customization_options) groups = JSON.parse(menuItem.customization_options); } catch {}
+                openItemForEdit(menuItem, groups, {
+                  cartLineId: line.id,
+                  qty: line.qty,
+                  addons: line.addons || [],
+                  notes: line.notes || '',
+                });
+              }}
+            />
           </div>
         </div>
       )}
