@@ -11,20 +11,9 @@ import {
 import { createPayment } from '@/lib/api';
 import { customerAuth } from '@/lib/customerAuth';
 import TrackAsiaAddressInput from '@/components/TrackAsiaAddressInput';
+import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
-
-const fmt = (v: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
-
-// Transform Cloudinary URLs to serve smaller, format-optimized images.
-// Cloudinary URLs have a /upload/ segment we inject transformations into.
-function cloudinaryThumb(url: string | null | undefined, w: number, h: number): string {
-  if (!url) return '';
-  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
-  if (url.includes('/upload/w_') || url.includes('/upload/c_')) return url; // already transformed
-  return url.replace('/upload/', `/upload/w_${w},h_${h},c_fill,q_auto,f_auto/`);
-}
 
 function getRestaurantStatus(restaurant: any): 'OPEN' | 'CLOSED' | 'PAUSED' {
   if (!restaurant) return 'CLOSED';
