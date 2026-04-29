@@ -6,7 +6,7 @@ async function fetchInitialData(slug: string) {
   const restaurant = await getRestaurant(slug);
   if (!restaurant?.id) return null;
 
-  const data = await getMenu(restaurant.id);
+  const data = await getMenu(restaurant.id, slug);
   if (!data) return null;
 
   const categories = (data.categories || [])
