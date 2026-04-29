@@ -74,13 +74,26 @@ function useIsMobile() {
   return isMobile;
 }
 
-function ItemModal({ item, groups, lang, onClose, onAdd }: {
+function ItemModal({ item, groups, lang, edit, onClose, onAdd, onUpdate }: {
   item: any; groups: any[]; lang: string;
-  onClose: () => void; onAdd: (item: CartItem) => void;
+  edit: { cartLineId: string; qty: number; addons: { name: string; price: number }[]; notes: string } | null;
+  onClose: () => void;
+  onAdd: (item: CartItem) => void;
+  onUpdate: (oldId: string, newItem: CartItem) => void;
 }) {
-  const [qty, setQty] = useState(1);
-  const [selections, setSelections] = useState<Record<string, string[]>>({});
-  const [notes, setNotes] = useState('');
+  const initialSelections: Record<string, string[]> = {};
+  if (edit) {
+    const addonNames = new Set(edit.addons.map(a => a.name));
+    for (const g of groups) {
+      const selected = (g.options || [])
+        .filter((o: any) => addonNames.has(o.name))
+        .map((o: any) => o.id);
+      if (selected.length > 0) initialSelections[g.id] = selected;
+    }
+  }
+  const [qty, setQty] = useState(edit?.qty || 1);
+  const [selections, setSelections] = useState<Record<string, string[]>>(initialSelections);
+  const [notes, setNotes] = useState(edit?.notes || '');
   const [error, setError] = useState('');
   const basePrice = parseFloat(item.price) || 0;
 
@@ -121,7 +134,13 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
     const notesSig = (notes || '').trim().slice(0, 50);
     const cartId = `${item.id}::${addonSig}::${notesSig}`;
 
-    onAdd({ id: cartId, name: item.name, price: basePrice + extra, basePrice, addons, qty, notes });
+    const newItem: CartItem = { id: cartId, name: item.name, price: basePrice + extra, basePrice, addons, qty, notes };
+
+    if (edit) {
+      onUpdate(edit.cartLineId, newItem);
+    } else {
+      onAdd(newItem);
+    }
   };
 
   return (
@@ -196,7 +215,9 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
           </div>
           <button onClick={handleAdd}
             className="w-full bg-primary text-white font-bold py-4 rounded-xl text-sm hover:opacity-90 shadow-lg shadow-primary/20">
-            {lang === 'vi' ? `Thêm vào giỏ — ${fmt(total)}` : `Add to cart — ${fmt(total)}`}
+            {edit
+              ? (lang === 'vi' ? `Cập nhật — ${fmt(total)}` : `Update — ${fmt(total)}`)
+              : (lang === 'vi' ? `Thêm vào giỏ — ${fmt(total)}` : `Add to cart — ${fmt(total)}`)}
           </button>
         </div>
       </div>
@@ -204,10 +225,11 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
   );
 }
 
-function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, lang, restaurant }: {
+function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, lang, restaurant, onItemClick }: {
   cart: CartItem[]; subtotal: number; totalQty: number;
   onSet: (id: string, qty: number) => void;
   onCheckout: () => void; isClosed: boolean; lang: string; restaurant?: any;
+  onItemClick?: (item: CartItem) => void;
 }) {
   const minOrder = parseFloat(restaurant?.min_order_amount) || 0;
   const belowMin = minOrder > 0 && subtotal < minOrder;
@@ -239,7 +261,10 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
                     <Plus className="w-3 h-3 text-gray-500" />
                   </button>
                 </div>
-                <div className="flex-1 min-w-0">
+                <div
+                  className={`flex-1 min-w-0 ${onItemClick ? 'cursor-pointer hover:opacity-70 transition-opacity' : ''}`}
+                  onClick={onItemClick ? () => onItemClick(item) : undefined}
+                >
                   <p className="text-xs font-semibold text-gray-800 leading-snug truncate">{item.name}</p>
                   {item.addons?.map((a, i) => <p key={i} className="text-xs text-gray-400">+{a.name}: {fmt(a.price)}</p>)}
                   {item.notes && <p className="text-xs text-gray-400 italic">{item.notes}</p>}
@@ -1132,8 +1157,8 @@ function RestaurantClientInner({
   const pollStartRef = useRef<number | null>(null);
   const [navOpen, setNavOpen] = useState(false);
 
-  const { cart, add, set, clear, totalQty, subtotal } = useCart();
-  const { selectedItem, closeItem } = useItemSelection();
+  const { cart, add, set, update, clear, totalQty, subtotal } = useCart();
+  const { selectedItem, closeItem, openItemForEdit } = useItemSelection();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -1555,7 +1580,21 @@ function RestaurantClientInner({
         <div className="hidden md:block w-72 flex-shrink-0">
           <div className="sticky top-[112px]">
             <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
-              onCheckout={() => setShowDeliveryModal(true)} isClosed={isClosed} lang={lang} restaurant={restaurant} />
+              onCheckout={() => setShowDeliveryModal(true)} isClosed={isClosed} lang={lang} restaurant={restaurant}
+              onItemClick={(line) => {
+                const baseId = line.id.split('::')[0];
+                const menuItem = allItems.find((i: any) => i.id === baseId);
+                if (!menuItem) return;
+                let groups: any[] = [];
+                try { if (menuItem.customization_options) groups = JSON.parse(menuItem.customization_options); } catch {}
+                openItemForEdit(menuItem, groups, {
+                  cartLineId: line.id,
+                  qty: line.qty,
+                  addons: line.addons || [],
+                  notes: line.notes || '',
+                });
+              }}
+            />
           </div>
         </div>
       </div>
@@ -1650,9 +1689,15 @@ function RestaurantClientInner({
 
       {/* Item modal */}
       {selectedItem && (
-        <ItemModal item={selectedItem.item} groups={selectedItem.groups} lang={lang}
+        <ItemModal
+          item={selectedItem.item}
+          groups={selectedItem.groups}
+          lang={lang}
+          edit={selectedItem.edit}
           onClose={closeItem}
-          onAdd={item => { add(item); closeItem(); }} />
+          onAdd={(newItem) => { add(newItem); closeItem(); }}
+          onUpdate={(oldId, newItem) => { update(oldId, newItem); closeItem(); }}
+        />
       )}
 
       {/* Delivery modal */}

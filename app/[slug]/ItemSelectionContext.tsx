@@ -2,14 +2,23 @@
 
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
 
+interface EditState {
+  cartLineId: string;
+  qty: number;
+  addons: { name: string; price: number }[];
+  notes: string;
+}
+
 interface SelectedItem {
   item: any;
   groups: any[];
+  edit: EditState | null;
 }
 
 interface ItemSelectionContextValue {
   selectedItem: SelectedItem | null;
   openItem: (item: any, groups: any[]) => void;
+  openItemForEdit: (item: any, groups: any[], edit: EditState) => void;
   closeItem: () => void;
 }
 
@@ -19,7 +28,11 @@ export function ItemSelectionProvider({ children }: { children: ReactNode }) {
   const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null);
 
   const openItem = useCallback((item: any, groups: any[]) => {
-    setSelectedItem({ item, groups });
+    setSelectedItem({ item, groups, edit: null });
+  }, []);
+
+  const openItemForEdit = useCallback((item: any, groups: any[], edit: EditState) => {
+    setSelectedItem({ item, groups, edit });
   }, []);
 
   const closeItem = useCallback(() => {
@@ -27,8 +40,8 @@ export function ItemSelectionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ selectedItem, openItem, closeItem }),
-    [selectedItem, openItem, closeItem]
+    () => ({ selectedItem, openItem, openItemForEdit, closeItem }),
+    [selectedItem, openItem, openItemForEdit, closeItem]
   );
 
   return <ItemSelectionContext.Provider value={value}>{children}</ItemSelectionContext.Provider>;
