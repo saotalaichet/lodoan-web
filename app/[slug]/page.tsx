@@ -12,7 +12,7 @@ async function fetchInitialData(slug: string) {
   const categories = (data.categories || [])
     .filter((c: any) => c.is_active !== false)
     .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0));
-  const items = (data.items || []).filter((i: any) => i.is_available !== false);
+  const items = data.items || [];
 
   return { restaurant, categories, items };
 }
