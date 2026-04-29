@@ -96,7 +96,7 @@ function MapView({ lat, lng, name }: { lat: number; lng: number; name: string })
       import('maplibre-gl/dist/maplibre-gl.css' as any).catch(() => {});
       map = new maplibregl.Map({
         container: mapRef.current!,
-        style: `https://maps.track-asia.com/styles/v1/streets.json?key=${TRACKASIA_KEY}`,
+        style: `https://maps.track-asia.com/styles/v2/streets.json?key=${TRACKASIA_KEY}`,
         center: [lng, lat],
         zoom: 15,
       });
