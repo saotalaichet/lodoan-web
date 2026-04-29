@@ -29,13 +29,13 @@ export default async function RestaurantPage({
   const ssrEnabled = process.env.NEXT_PUBLIC_SSR_ENABLED !== 'false';
 
   if (!ssrEnabled) {
-    return <RestaurantClient />;
+    return <RestaurantClient slug={slug} />;
   }
 
   const data = await fetchInitialData(slug);
 
   if (!data) {
-    return <RestaurantClient />;
+    return <RestaurantClient slug={slug} />;
   }
 
   const { restaurant, categories, items } = data;
@@ -78,6 +78,7 @@ export default async function RestaurantPage({
         )}
       </div>
       <RestaurantClient
+        slug={slug}
         initialRestaurant={restaurant}
         initialCategories={categories}
         initialItems={items}

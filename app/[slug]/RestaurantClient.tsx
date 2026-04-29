@@ -17,6 +17,15 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' };
 const fmt = (v: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 
+// Transform Cloudinary URLs to serve smaller, format-optimized images.
+// Cloudinary URLs have a /upload/ segment we inject transformations into.
+function cloudinaryThumb(url: string | null | undefined, w: number, h: number): string {
+  if (!url) return '';
+  if (!url.includes('res.cloudinary.com') || !url.includes('/upload/')) return url;
+  if (url.includes('/upload/w_') || url.includes('/upload/c_')) return url; // already transformed
+  return url.replace('/upload/', `/upload/w_${w},h_${h},c_fill,q_auto,f_auto/`);
+}
+
 function getRestaurantStatus(restaurant: any): 'OPEN' | 'CLOSED' | 'PAUSED' {
   if (!restaurant) return 'CLOSED';
   if (restaurant.is_accepting_orders === false) return 'PAUSED';
@@ -172,7 +181,7 @@ function ItemModal({ item, groups, lang, onClose, onAdd }: {
       <div className="bg-white w-full sm:max-w-md sm:rounded-2xl rounded-t-2xl max-h-[90vh] overflow-y-auto">
         {item.image_url ? (
           <div className="relative h-44 overflow-hidden rounded-t-2xl">
-            <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+            <img src={cloudinaryThumb(item.image_url, 800, 400)} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
             <button onClick={onClose} className="absolute top-3 right-3 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow">
               <X className="w-4 h-4" />
             </button>
@@ -294,7 +303,7 @@ function MenuItemCard({ item, qty, onAdd, onSet, onOpen, isClosed, isOutOfStock,
       </div>
       <div className="relative flex-shrink-0 w-32 bg-gray-100">
         {item.image_url ? (
-          <img src={item.image_url} alt={item.name} className="w-full h-full object-cover rounded-lg" />
+          <img src={cloudinaryThumb(item.image_url, 256, 272)} alt={item.name} loading="lazy" className="w-full h-full object-cover rounded-lg" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-2xl">🍜</div>
         )}
@@ -1167,18 +1176,20 @@ function WaitingForVendor({ orderId, restaurant, lang, onCancelled, onConfirmed 
 }
 
 interface RestaurantClientProps {
+  slug?: string;
   initialRestaurant?: any;
   initialCategories?: any[];
   initialItems?: any[];
 }
 
-export default function RestaurantClient({ 
-  initialRestaurant = null, 
-  initialCategories = [], 
-  initialItems = [] 
+export default function RestaurantClient({
+  slug: slugProp,
+  initialRestaurant = null,
+  initialCategories = [],
+  initialItems = []
 }: RestaurantClientProps = {}) {
   const params = useParams();
-  const slug = params.slug as string;
+  const slug = slugProp ?? (params.slug as string);
 
   const [restaurant, setRestaurant] = useState<any>(initialRestaurant);
   const [categories, setCategories] = useState<any[]>(initialCategories);
@@ -1262,7 +1273,7 @@ export default function RestaurantClient({
         const data = await res.json();
         if (data) setRestaurant(data);
       } catch {}
-    }, 30000);
+    }, 60000);
     return () => clearInterval(interval);
   }, [slug]);
 
