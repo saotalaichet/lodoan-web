@@ -1614,17 +1614,33 @@ function RestaurantClientInner({
         </div>
       )}
 
-      {/* Mobile cart drawer */}
-      {showMobileCart && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setShowMobileCart(false)} />
-          <div className="relative bg-white rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-bold text-gray-900 text-lg">{lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}</h2>
-              <button onClick={() => setShowMobileCart(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
-                <X className="w-4 h-4 text-gray-500" />
-              </button>
-            </div>
+      {/* Mobile cart drawer — always rendered, animates in/out via classes */}
+      <div
+        className={`fixed inset-0 z-50 flex flex-col justify-end ${showMobileCart ? 'pointer-events-auto' : 'pointer-events-none'}`}
+        aria-hidden={!showMobileCart}
+      >
+        {/* Backdrop with fade */}
+        <div
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${showMobileCart ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setShowMobileCart(false)}
+        />
+        {/* Drawer panel with slide */}
+        <div
+          className={`relative bg-white rounded-t-3xl max-h-[85vh] flex flex-col transition-transform duration-300 ease-out ${showMobileCart ? 'translate-y-0' : 'translate-y-full'}`}
+        >
+          {/* Drag handle indicator (visual hint) */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-gray-300" />
+          </div>
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 pt-2 pb-4">
+            <h2 className="font-bold text-gray-900 text-lg">{lang === 'vi' ? 'Giỏ hàng của bạn' : 'Your Cart'}</h2>
+            <button onClick={() => setShowMobileCart(false)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center">
+              <X className="w-4 h-4 text-gray-500" />
+            </button>
+          </div>
+          {/* Cart contents — scrollable, takes remaining space */}
+          <div className="flex-1 overflow-y-auto px-5 pb-5 min-h-0">
             <CartSidebar cart={cart} subtotal={subtotal} totalQty={totalQty} onSet={set}
               onCheckout={() => { setShowMobileCart(false); setShowDeliveryModal(true); }}
               isClosed={isClosed} lang={lang} restaurant={restaurant}
@@ -1645,7 +1661,7 @@ function RestaurantClientInner({
             />
           </div>
         </div>
-      )}
+      </div>
 
       {/* Nav drawer */}
       {navOpen && (
