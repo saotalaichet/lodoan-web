@@ -1117,25 +1117,20 @@ function WaitingForVendor({ orderId, restaurant, lang, onCancelled, onConfirmed 
     const poll = async () => {
       const secs = Math.floor((Date.now() - startRef.current) / 1000);
       setElapsed(secs);
-      if (secs >= 600) {
-        // 10 minutes — auto cancel
-        clearInterval(intervalRef.current!);
-        try {
-          await fetch(`${RAILWAY}/api/orders/${orderId}/cancel`, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        } catch {}
-        onCancelled();
-        return;
-      }
       try {
         const res = await fetch(`${RAILWAY}/api/orders/${orderId}`);
         const data = await res.json();
-        if (data?.status && ['preparing', 'accepted', 'ready', 'delivering', 'completed'].includes(data.status)) {
+        if (!data?.status) return;
+        if (['cancelled', 'timed_out', 'declined'].includes(data.status)) {
+          clearInterval(intervalRef.current!);
+          onCancelled();
+        } else if (['preparing', 'accepted', 'ready', 'delivering', 'completed'].includes(data.status)) {
           clearInterval(intervalRef.current!);
           onConfirmed(orderId);
         }
       } catch {}
     };
-    intervalRef.current = setInterval(poll, 3000);
+    intervalRef.current = setInterval(poll, 5000);
     return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
   }, [orderId]);
 
