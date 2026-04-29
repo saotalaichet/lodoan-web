@@ -3,12 +3,10 @@
 import { useEffect } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
+import { useCart, useItemQty } from './CartContext';
 
 interface MenuItemCardProps {
   item: any;
-  qty: number;
-  onAdd: (item: any) => void;
-  onSet: (id: string, qty: number) => void;
   onOpen: (item: any, groups: any[]) => void;
   isClosed: boolean;
   isOutOfStock: boolean;
@@ -17,15 +15,14 @@ interface MenuItemCardProps {
 
 export default function MenuItemCard({
   item,
-  qty,
-  onAdd,
-  onSet,
   onOpen,
   isClosed,
   isOutOfStock,
   lang,
 }: MenuItemCardProps) {
   const price = parseFloat(item.price) || 0;
+  const { set: setQty } = useCart();
+  const qty = useItemQty(item.id);
 
   // Silently preload the modal-size image during card view so that when
   // the user clicks the item, the modal opens instantly with the image
@@ -65,11 +62,11 @@ export default function MenuItemCard({
           <span className="font-bold text-primary text-sm">{fmt(price)}</span>
           {!isClosed && !isOutOfStock && qty > 0 && (
             <div className="flex items-center gap-1 bg-primary rounded-full px-1.5 py-0.5" onClick={e => e.stopPropagation()}>
-              <button onClick={() => onSet(item.id, qty - 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
+              <button onClick={() => setQty(item.id, qty - 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
                 <Minus className="w-2.5 h-2.5" strokeWidth={3} />
               </button>
               <span className="text-[10px] font-bold text-white min-w-[10px] text-center">{qty}</span>
-              <button onClick={() => onSet(item.id, qty + 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
+              <button onClick={() => setQty(item.id, qty + 1)} className="w-3.5 h-3.5 flex items-center justify-center text-white">
                 <Plus className="w-2.5 h-2.5" strokeWidth={3} />
               </button>
             </div>

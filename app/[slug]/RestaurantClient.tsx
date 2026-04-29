@@ -13,6 +13,7 @@ import { customerAuth } from '@/lib/customerAuth';
 import TrackAsiaAddressInput from '@/components/TrackAsiaAddressInput';
 import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import MenuItemCard from './MenuItemCard';
+import { CartProvider, useCart, CartItem } from './CartContext';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -59,58 +60,6 @@ const CUISINE_VI: Record<string, string> = {
   Seafood: 'Hải Sản', Hotpot: 'Lẩu', Banhmi: 'Bánh Mì', Rice: 'Cơm',
   Vegetarian: 'Chay', BBQ: 'BBQ',
 };
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  basePrice?: number;
-  qty: number;
-  notes?: string;
-  addons?: { name: string; price: number }[];
-}
-
-function useCart(slug: string) {
-  // Always start with empty cart — both server and first client render must match.
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [hydrated, setHydrated] = useState(false);
-
-  // After first mount, hydrate from sessionStorage.
-  // This runs only on the client, after the first render has matched the server.
-  useEffect(() => {
-    try {
-      const newKey = `ovenly_cart:${slug}`;
-      const legacy = sessionStorage.getItem('ovenly_cart');
-      const existing = sessionStorage.getItem(newKey);
-      if (legacy && !existing) {
-        sessionStorage.setItem(newKey, legacy);
-        sessionStorage.removeItem('ovenly_cart');
-      }
-      const saved = sessionStorage.getItem(newKey);
-      if (saved) setCart(JSON.parse(saved));
-    } catch {}
-    setHydrated(true);
-  }, [slug]);
-
-  // Save to sessionStorage on every cart change, but only after hydration
-  // so we don't accidentally overwrite stored data with the empty initial state.
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      sessionStorage.setItem(`ovenly_cart:${slug}`, JSON.stringify(cart));
-    } catch {}
-  }, [cart, hydrated, slug]);
-
-  const add = (item: CartItem) => setCart(prev => {
-    const ex = prev.find(i => i.id === item.id);
-    return ex ? prev.map(i => i.id === item.id ? { ...i, qty: i.qty + 1 } : i) : [...prev, { ...item, qty: 1 }];
-  });
-  const set = (id: string, qty: number) => setCart(prev => qty <= 0 ? prev.filter(i => i.id !== id) : prev.map(i => i.id === id ? { ...i, qty } : i));
-  const clear = () => setCart([]);
-  const totalQty = cart.reduce((s, i) => s + i.qty, 0);
-  const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  return { cart, add, set, clear, totalQty, subtotal };
-}
 
 function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
@@ -1119,6 +1068,29 @@ export default function RestaurantClient({
   const params = useParams();
   const slug = slugProp ?? (params.slug as string);
 
+  return (
+    <CartProvider slug={slug}>
+      <RestaurantClientInner
+        slug={slug}
+        initialRestaurant={initialRestaurant}
+        initialCategories={initialCategories}
+        initialItems={initialItems}
+      />
+    </CartProvider>
+  );
+}
+
+function RestaurantClientInner({
+  slug,
+  initialRestaurant,
+  initialCategories,
+  initialItems,
+}: {
+  slug: string;
+  initialRestaurant: any;
+  initialCategories: any[];
+  initialItems: any[];
+}) {
   const [restaurant, setRestaurant] = useState<any>(initialRestaurant);
   const [categories, setCategories] = useState<any[]>(initialCategories);
   const [allItems, setAllItems] = useState<any[]>(initialItems);
@@ -1142,7 +1114,7 @@ export default function RestaurantClient({
   const pollStartRef = useRef<number | null>(null);
   const [navOpen, setNavOpen] = useState(false);
 
-  const { cart, add, set, clear, totalQty, subtotal } = useCart(slug);
+  const { cart, add, set, clear, totalQty, subtotal } = useCart();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -1580,8 +1552,6 @@ export default function RestaurantClient({
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
                                 item={item}
-                                qty={cart.filter(c => c.id === item.id || c.id.startsWith(item.id)).reduce((s, i) => s + i.qty, 0)}
-                                onAdd={add} onSet={set}
                                 onOpen={(it, groups) => setSelectedItem({ item: it, groups })}
                                 isClosed={isClosed || item.is_available === false}
                                 isOutOfStock={item.is_available === false}
