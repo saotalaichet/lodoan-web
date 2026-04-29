@@ -247,9 +247,12 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
             <p className="text-sm text-gray-400 font-medium">{lang === 'vi' ? 'Thêm món vào giỏ hàng' : 'Add items to cart'}</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {cart.map(item => (
-              <div key={item.id} className="flex items-center gap-3">
+              <div
+                key={item.id}
+                className="flex items-center gap-3 p-2 -m-2 rounded-lg hover:bg-gray-50 transition-colors group animate-[fadeInUp_0.3s_ease-out]"
+              >
                 <div className="flex items-center gap-1.5 flex-shrink-0">
                   <button onClick={() => onSet(item.id, item.qty - 1)}
                     className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors">
@@ -262,10 +265,10 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
                   </button>
                 </div>
                 <div
-                  className={`flex-1 min-w-0 ${onItemClick ? 'cursor-pointer hover:opacity-70 transition-opacity' : ''}`}
+                  className={`flex-1 min-w-0 ${onItemClick ? 'cursor-pointer' : ''}`}
                   onClick={onItemClick ? () => onItemClick(item) : undefined}
                 >
-                  <p className="text-xs font-semibold text-gray-800 leading-snug truncate">{item.name}</p>
+                  <p className={`text-xs font-semibold text-gray-800 leading-snug truncate ${onItemClick ? 'group-hover:text-primary transition-colors' : ''}`}>{item.name}</p>
                   {item.addons?.map((a, i) => <p key={i} className="text-xs text-gray-400">+{a.name}: {fmt(a.price)}</p>)}
                   {item.notes && <p className="text-xs text-gray-400 italic">{item.notes}</p>}
                 </div>
@@ -282,7 +285,7 @@ function CartSidebar({ cart, subtotal, totalQty, onSet, onCheckout, isClosed, la
           </div>
           <div className="flex justify-between font-bold text-sm text-gray-900 border-t border-gray-100 pt-2">
             <span>{lang === 'vi' ? 'Tổng cộng' : 'Total'}</span>
-            <span className="text-primary">{fmt(subtotal)}</span>
+            <span key={subtotal} className="text-primary animate-[pulse_0.4s_ease-out]">{fmt(subtotal)}</span>
           </div>
           {totalQty >= 16 ? (
             <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-center">
