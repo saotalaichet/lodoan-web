@@ -4,10 +4,10 @@ import { useEffect } from 'react';
 import { Plus, Minus } from 'lucide-react';
 import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import { useCart, useItemQty } from './CartContext';
+import { useItemSelection } from './ItemSelectionContext';
 
 interface MenuItemCardProps {
   item: any;
-  onOpen: (item: any, groups: any[]) => void;
   isClosed: boolean;
   isOutOfStock: boolean;
   lang: string;
@@ -15,7 +15,6 @@ interface MenuItemCardProps {
 
 export default function MenuItemCard({
   item,
-  onOpen,
   isClosed,
   isOutOfStock,
   lang,
@@ -23,6 +22,7 @@ export default function MenuItemCard({
   const price = parseFloat(item.price) || 0;
   const { set: setQty } = useCart();
   const qty = useItemQty(item.id);
+  const { openItem } = useItemSelection();
 
   // Silently preload the modal-size image during card view so that when
   // the user clicks the item, the modal opens instantly with the image
@@ -37,7 +37,7 @@ export default function MenuItemCard({
     if (isClosed) return;
     let groups: any[] = [];
     try { if (item.customization_options) groups = JSON.parse(item.customization_options); } catch {}
-    onOpen(item, groups);
+    openItem(item, groups);
   };
 
   return (

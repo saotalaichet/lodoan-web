@@ -14,6 +14,7 @@ import TrackAsiaAddressInput from '@/components/TrackAsiaAddressInput';
 import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import MenuItemCard from './MenuItemCard';
 import { CartProvider, useCart, CartItem } from './CartContext';
+import { ItemSelectionProvider, useItemSelection } from './ItemSelectionContext';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -1070,12 +1071,14 @@ export default function RestaurantClient({
 
   return (
     <CartProvider slug={slug}>
-      <RestaurantClientInner
-        slug={slug}
-        initialRestaurant={initialRestaurant}
-        initialCategories={initialCategories}
-        initialItems={initialItems}
-      />
+      <ItemSelectionProvider>
+        <RestaurantClientInner
+          slug={slug}
+          initialRestaurant={initialRestaurant}
+          initialCategories={initialCategories}
+          initialItems={initialItems}
+        />
+      </ItemSelectionProvider>
     </CartProvider>
   );
 }
@@ -1101,7 +1104,6 @@ function RestaurantClientInner({
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [lang, setLang] = useState('vi');
   const [customer, setCustomer] = useState<any>(null);
-  const [selectedItem, setSelectedItem] = useState<{ item: any; groups: any[] } | null>(null);
   const [showMobileCart, setShowMobileCart] = useState(false);
   const [showDeliveryModal, setShowDeliveryModal] = useState(false);
   const [checkoutOrderType, setCheckoutOrderType] = useState<string | null>(null);
@@ -1115,6 +1117,7 @@ function RestaurantClientInner({
   const [navOpen, setNavOpen] = useState(false);
 
   const { cart, add, set, clear, totalQty, subtotal } = useCart();
+  const { selectedItem, closeItem } = useItemSelection();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -1552,7 +1555,6 @@ function RestaurantClientInner({
                             <div key={item.id} className={item.is_available === false ? 'opacity-50' : ''}>
                               <MenuItemCard
                                 item={item}
-                                onOpen={(it, groups) => setSelectedItem({ item: it, groups })}
                                 isClosed={isClosed || item.is_available === false}
                                 isOutOfStock={item.is_available === false}
                                 lang={lang}
@@ -1668,8 +1670,8 @@ function RestaurantClientInner({
       {/* Item modal */}
       {selectedItem && (
         <ItemModal item={selectedItem.item} groups={selectedItem.groups} lang={lang}
-          onClose={() => setSelectedItem(null)}
-          onAdd={item => { add(item); setSelectedItem(null); }} />
+          onClose={closeItem}
+          onAdd={item => { add(item); closeItem(); }} />
       )}
 
       {/* Delivery modal */}
