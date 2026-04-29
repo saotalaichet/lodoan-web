@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Plus, Minus } from 'lucide-react';
+import { Plus, Minus, Star, Flame, Leaf } from 'lucide-react';
 import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import { useCart, useItemQty } from './CartContext';
 import { useItemSelection } from './ItemSelectionContext';
@@ -48,13 +48,6 @@ export default function MenuItemCard({
     >
       <div className="flex-1 min-w-0 flex flex-col justify-between p-4">
         <div>
-          {(item.is_chef_choice || item.is_spicy || item.is_vegetarian) && (
-            <div className="flex flex-wrap gap-1 mb-1.5">
-              {item.is_chef_choice && <span className="text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">⭐ Chef's choice</span>}
-              {item.is_spicy && <span className="text-xs font-semibold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">🌶 Spicy</span>}
-              {item.is_vegetarian && <span className="text-xs font-semibold text-green-700 bg-green-50 px-2 py-0.5 rounded-full">🌿 Vegetarian</span>}
-            </div>
-          )}
           <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 mb-1">{item.name}</h3>
           {item.description && (
             <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">{item.description}</p>
@@ -80,6 +73,37 @@ export default function MenuItemCard({
           <img src={cloudinaryThumb(item.image_url, 288, 288)} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-4xl">🍜</div>
+        )}
+        {(item.is_chef_choice || item.is_spicy || item.is_vegetarian) && (
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {item.is_chef_choice && (
+              <span
+                className="w-6 h-6 flex items-center justify-center bg-white/95 text-amber-500 rounded-full shadow-sm"
+                title={lang === 'vi' ? 'Nổi bật' : 'Featured'}
+                aria-label={lang === 'vi' ? 'Nổi bật' : 'Featured'}
+              >
+                <Star className="w-3.5 h-3.5" strokeWidth={2.5} fill="currentColor" />
+              </span>
+            )}
+            {item.is_spicy && (
+              <span
+                className="w-6 h-6 flex items-center justify-center bg-white/95 text-red-600 rounded-full shadow-sm"
+                title={lang === 'vi' ? 'Cay' : 'Spicy'}
+                aria-label={lang === 'vi' ? 'Cay' : 'Spicy'}
+              >
+                <Flame className="w-3.5 h-3.5" strokeWidth={2.5} />
+              </span>
+            )}
+            {item.is_vegetarian && (
+              <span
+                className="w-6 h-6 flex items-center justify-center bg-white/95 text-green-700 rounded-full shadow-sm"
+                title={lang === 'vi' ? 'Chay' : 'Vegetarian'}
+                aria-label={lang === 'vi' ? 'Chay' : 'Vegetarian'}
+              >
+                <Leaf className="w-3.5 h-3.5" strokeWidth={2.5} />
+              </span>
+            )}
+          </div>
         )}
         {isOutOfStock && (
           <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
