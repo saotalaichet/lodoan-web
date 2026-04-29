@@ -10,7 +10,9 @@ const DAYS_KEY = ['sunday','monday','tuesday','wednesday','thursday','friday','s
 
 async function getRestaurant(slug: string) {
   try {
-    const res = await fetch(`${RAILWAY}/api/restaurants/slug/${slug}`, { cache: 'no-store' });
+    const res = await fetch(`${RAILWAY}/api/restaurants/slug/${slug}`, {
+      next: { revalidate: 60, tags: [`restaurant:${slug}`] },
+    });
     if (!res.ok) return null;
     return res.json();
   } catch { return null; }
@@ -45,13 +47,43 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
   );
 
   const todayIdx = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' })).getDay();
-  const schema = {
+
+  const SCHEMA_DAYS: Record<string, string> = {
+    monday: 'https://schema.org/Monday',
+    tuesday: 'https://schema.org/Tuesday',
+    wednesday: 'https://schema.org/Wednesday',
+    thursday: 'https://schema.org/Thursday',
+    friday: 'https://schema.org/Friday',
+    saturday: 'https://schema.org/Saturday',
+    sunday: 'https://schema.org/Sunday',
+  };
+  const openingHoursSpec = r.hours
+    ? Object.entries(SCHEMA_DAYS)
+        .map(([key, dayOfWeek]) => {
+          const range = r.hours[key];
+          if (!range || typeof range !== 'string') return null;
+          const match = range.match(/^(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})$/);
+          if (!match) return null;
+          return {
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek,
+            opens: match[1],
+            closes: match[2],
+          };
+        })
+        .filter(Boolean)
+    : [];
+
+  const schema: any = {
     '@context': 'https://schema.org', '@type': 'Restaurant', name: r.name,
     url: `https://www.lodoan.vn/${slug}`,
     address: r.address ? { '@type': 'PostalAddress', streetAddress: r.address, addressLocality: r.district || r.city || 'Việt Nam', addressCountry: 'VN' } : undefined,
     telephone: r.phone && r.phone !== 'N/A' ? r.phone : undefined,
     geo: r.latitude && r.longitude ? { '@type': 'GeoCoordinates', latitude: parseFloat(r.latitude), longitude: parseFloat(r.longitude) } : undefined,
   };
+  if (openingHoursSpec.length > 0) {
+    schema.openingHoursSpecification = openingHoursSpec;
+  }
 
   const primaryColor = r.primary_color || '#8B1A1A';
 
