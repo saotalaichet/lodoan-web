@@ -4,7 +4,6 @@ interface MenuListProps {
   restaurant: any;
   categories: any[];
   items: any[];
-  isMobile?: boolean;
   isClosed?: boolean;
 }
 
@@ -21,7 +20,6 @@ export default function MenuList({
   restaurant,
   categories,
   items,
-  isMobile = false,
   isClosed = false,
 }: MenuListProps) {
   // Group items by category
@@ -68,7 +66,7 @@ export default function MenuList({
               {getViLabel(category.name)}
             </h2>
           </div>
-          <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-2'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {catItems.map((item: any) => (
               <div
                 key={item.id}
