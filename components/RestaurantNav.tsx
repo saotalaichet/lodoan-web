@@ -19,8 +19,8 @@ const T = {
   },
   en: {
     orderNow: 'Order Now',
-    signIn: 'Sign in',
-    signOut: 'Sign out',
+    signIn: 'Log in',
+    signOut: 'Log out',
     menu: 'Menu',
     menuSub: 'View menu & order',
     location: 'Location',
