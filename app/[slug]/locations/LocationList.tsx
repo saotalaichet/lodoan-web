@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { MapPin, Phone, Clock, Navigation, ArrowRight } from 'lucide-react';
+import { MapPin, Phone, Clock, Navigation, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 const MultiPinMap = dynamic(() => import('@/components/MultiPinMap'), {
   ssr: false,
@@ -205,8 +205,15 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
             return (
             <div
               key={s.id}
-              className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all hover:shadow-md"
+              className={`border rounded-2xl overflow-hidden transition-all hover:shadow-md relative ${
+                isCurrent
+                  ? 'bg-primary/5 border-primary/20'
+                  : 'bg-white border-gray-200'
+              }`}
             >
+              {isCurrent && (
+                <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary" />
+              )}
               <div className="p-5">
                 <div className="flex gap-4">
                   <div className="relative flex-shrink-0">
@@ -235,13 +242,11 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <h3 className="font-bold text-gray-900 text-lg leading-tight truncate">{s.name}</h3>
+                    <div className="flex items-center gap-1.5 mb-1.5">
                       {isCurrent && (
-                        <span className="text-[10px] px-2 py-1 rounded-full bg-primary text-white font-bold flex-shrink-0 uppercase tracking-wider">
-                          {t.youAreHere}
-                        </span>
+                        <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0" aria-label={t.youAreHere} />
                       )}
+                      <h3 className="font-bold text-gray-900 text-lg leading-tight truncate">{s.name}</h3>
                     </div>
 
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
