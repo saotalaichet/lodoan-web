@@ -36,9 +36,11 @@ export default async function RestaurantPage({
   }
 
   const { restaurant, categories, items } = data;
+  const primaryColor = restaurant.primary_color || '#8B1A1A';
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `:root { --color-primary: ${primaryColor}; }` }} />
       <div className="sr-only">
         <h1>{restaurant.name}</h1>
         {restaurant.address && <p>{restaurant.address}</p>}
