@@ -34,18 +34,25 @@ body {
   }
 }
 
-.ovenly-pin-popup .maplibregl-popup-content,
-.ovenly-pin-popup .trackasia-popup-content {
+/* trackasia uses class prefix .trackasiagl-popup-* (NOT .trackasia-popup-* or .maplibregl-popup-*) */
+.ovenly-pin-popup .trackasiagl-popup-content,
+.ovenly-pin-popup .maplibregl-popup-content {
   padding: 0 !important;
   border-radius: 14px !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
   border: 1px solid #e5e7eb !important;
   overflow: hidden;
+  background: #fff !important;
 }
 
-.ovenly-pin-popup .maplibregl-popup-tip,
-.ovenly-pin-popup .trackasia-popup-tip {
+.ovenly-pin-popup .trackasiagl-popup-tip,
+.ovenly-pin-popup .maplibregl-popup-tip {
   border-top-color: #fff !important;
   border-bottom-color: #fff !important;
+}
+
+.ovenly-pin-popup .trackasiagl-popup-close-button,
+.ovenly-pin-popup .maplibregl-popup-close-button {
+  display: none !important;
 }
 
