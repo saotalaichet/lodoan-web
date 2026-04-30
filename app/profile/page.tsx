@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { User, ShoppingBag, Star, Lock } from 'lucide-react';
 import { customerAuth } from '@/lib/customerAuth';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
@@ -61,7 +62,7 @@ const T = {
 function ProfileInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [lang, setLang] = useState('vi');
+  const { lang, setLang } = useMarketplaceLang();
   const [customer, setCustomer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(
@@ -76,11 +77,6 @@ function ProfileInner() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const t = T[lang as keyof typeof T];
-
-  useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
-  }, []);
 
   useEffect(() => {
     customerAuth.getCustomer().then(c => {

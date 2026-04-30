@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
@@ -39,12 +40,10 @@ function ReceiptInner() {
   const [order, setOrder] = useState<any>(null);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [lang, setLang] = useState('vi');
+  const { lang } = useMarketplaceLang();
   const C = 'var(--color-primary, #8B1A1A)';
 
   useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
     fetch(`${RAILWAY}/api/orders/${orderId}`)
       .then(r => r.json())
       .then(async data => {

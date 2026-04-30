@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Mail, Lock } from 'lucide-react';
 import { customerAuth } from '@/lib/customerAuth';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const T = {
   vi: {
@@ -29,7 +30,7 @@ const T = {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [lang, setLang] = useState('vi');
+  const { lang, setLang } = useMarketplaceLang();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -40,15 +41,8 @@ export default function LoginPage() {
   useEffect(() => {
     if (window.location.hostname.includes('ovenly.io')) {
       window.location.href = 'https://admin.ovenly.io';
-      return;
     }
-    const stored = localStorage.getItem('ovenly_language') || localStorage.getItem('marketplace_lang') || 'vi';
-    setLang(stored);
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem('ovenly_language', lang);
-  }, [lang]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,21 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { submitContactForm } from '@/lib/api';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 export default function LodoanContactPage() {
-  const [lang, setLang] = useState('vi');
+  const { lang } = useMarketplaceLang();
   const [form, setForm] = useState({ full_name: '', order_number: '', phone_number: '', email: '', issue_type: '', message: '' });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
-  }, []);
 
   const isVI = lang === 'vi';
   const update = (k: string, v: string) => setForm(p => ({ ...p, [k]: v }));

@@ -9,6 +9,7 @@ import AddressInput from './AddressInput';
 import { customerAuth } from '@/lib/customerAuth';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -289,7 +290,7 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
 }
 
 export default function MarketplaceClient() {
-  const [lang, setLang] = useState('vi');
+  const { lang, setLang } = useMarketplaceLang();
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -303,37 +304,12 @@ export default function MarketplaceClient() {
   const [customer, setCustomer] = useState<any>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
     customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
     const savedAddr = sessionStorage.getItem('marketplace_delivery_address');
     const savedCoords = sessionStorage.getItem('marketplace_delivery_coords');
     if (savedAddr) setDeliveryAddress(savedAddr);
     if (savedCoords) { try { setDeliveryCoords(JSON.parse(savedCoords)); } catch {} }
-
-    const langChangeHandler = (e: Event) => {
-      const ce = e as CustomEvent<string>;
-      if (ce.detail) setLang(ce.detail);
-    };
-    window.addEventListener('ovenly-lang-changed', langChangeHandler);
-
-    const storageHandler = (e: StorageEvent) => {
-      if ((e.key === 'marketplace_lang' || e.key === 'ovenly_language') && e.newValue) {
-        setLang(e.newValue);
-      }
-    };
-    window.addEventListener('storage', storageHandler);
-
-    return () => {
-      window.removeEventListener('ovenly-lang-changed', langChangeHandler);
-      window.removeEventListener('storage', storageHandler);
-    };
   }, []);
-
-  useEffect(() => {
-    localStorage.setItem('marketplace_lang', lang);
-    localStorage.setItem('ovenly_language', lang);
-  }, [lang]);
 
   useEffect(() => {
     const fetchRestaurants = async () => {

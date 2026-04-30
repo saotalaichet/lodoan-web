@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
@@ -156,17 +157,12 @@ function OrderTrackingPage() {
   const [order, setOrder] = useState<any>(null);
   const [restaurant, setRestaurant] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [lang, setLang] = useState('vi');
+  const { lang, setLang } = useMarketplaceLang();
   const [sheetExpanded, setSheetExpanded] = useState(false);
   const [autoReady, setAutoReady] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
   const C = 'var(--color-primary, #8B1A1A)';
-
-  useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
-  }, []);
 
   const fetchOrder = async () => {
     try {

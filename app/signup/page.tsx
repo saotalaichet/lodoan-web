@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { User, Mail, Lock, Phone } from 'lucide-react';
 import { customerAuth } from '@/lib/customerAuth';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const T = {
   vi: {
@@ -35,7 +36,7 @@ const T = {
 
 export default function SignupPage() {
   const router = useRouter();
-  const [lang, setLang] = useState('vi');
+  const { lang, setLang } = useMarketplaceLang();
   const [form, setForm] = useState({
     full_name: '', email: '', password: '', confirmPassword: '',
     phone_number: '', preferred_language: 'vi', terms: false,
@@ -44,11 +45,6 @@ export default function SignupPage() {
   const [error, setError] = useState('');
   const t = T[lang as keyof typeof T];
   const update = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }));
-
-  useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

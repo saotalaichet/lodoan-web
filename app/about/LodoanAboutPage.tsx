@@ -1,17 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Header from '@/app/components/Header';
 import Footer from '@/app/components/Footer';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 export default function LodoanAboutPage() {
-  const [lang, setLang] = useState('vi');
-  
-  useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
-  }, []);
+  const { lang } = useMarketplaceLang();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

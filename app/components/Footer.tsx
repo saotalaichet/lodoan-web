@@ -1,17 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const CURRENT_YEAR = new Date().getFullYear();
 
 export default function Footer() {
-  const [lang, setLang] = useState('vi');
-
-  useEffect(() => {
-    const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
-  }, []);
+  const { lang } = useMarketplaceLang();
 
   return (
     <footer className="bg-white border-t border-gray-200 mt-16">

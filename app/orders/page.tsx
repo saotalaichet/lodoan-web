@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { customerAuth } from '@/lib/customerAuth';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const PRIMARY = '#8B1A1A';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
@@ -24,16 +25,13 @@ const STATUS_CONFIG: Record<string, { labelVi: string; labelEn: string; color: s
 };
 
 export default function OrdersPage() {
-  const [lang, setLang] = useState('vi');
+  const { lang, setLang } = useMarketplaceLang();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [customer, setCustomer] = useState<any>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const stored = localStorage.getItem('ovenly_language') || localStorage.getItem('marketplace_lang') || 'vi';
-    setLang(stored);
-
     customerAuth.getCustomer().then(async c => {
       if (!c) { setLoading(false); return; }
       setCustomer(c);

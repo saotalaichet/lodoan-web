@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock } from 'lucide-react';
+import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
@@ -11,17 +12,12 @@ function ResetPasswordInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
-  const [lang, setLang] = useState('vi');
+  const { lang } = useMarketplaceLang();
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState('');
   const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    const stored = localStorage.getItem('ovenly_language') || 'vi';
-    setLang(stored);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
