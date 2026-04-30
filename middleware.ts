@@ -91,6 +91,7 @@ export function middleware(request: NextRequest) {
       pathname.startsWith('/api/') ||
       pathname === '/about' ||
       pathname === '/contact' ||
+      pathname === '/register' ||
       pathname === '/favicon.ico' ||
       pathname === '/robots.txt' ||
       pathname === '/sitemap.xml' ||
