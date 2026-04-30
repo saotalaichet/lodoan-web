@@ -8,14 +8,16 @@ import { customerAuth } from '@/lib/customerAuth';
 const T = {
   vi: {
     orderNow: 'Đặt món',
-    signIn: 'Đăng nhập',
-    signOut: 'Đăng xuất',
+    signIn: 'Log in',
+    signOut: 'Log out',
     menu: 'Menu',
     menuSub: 'Xem thực đơn & đặt hàng',
     location: 'Vị Trí',
     locationSub: 'Địa chỉ & giờ mở cửa',
     reviews: 'Đánh Giá',
     reviewsSub: 'Từ khách đã đặt hàng',
+    locations: 'Tất Cả Địa Điểm',
+    locationsSub: 'Tìm chi nhánh khác',
   },
   en: {
     orderNow: 'Order Now',
@@ -27,6 +29,8 @@ const T = {
     locationSub: 'Address & hours',
     reviews: 'Reviews',
     reviewsSub: 'From verified orders',
+    locations: 'All Locations',
+    locationsSub: 'Find another branch',
   },
 };
 
@@ -106,6 +110,9 @@ export default function RestaurantNav({ restaurant, slug, lang = 'vi' }: { resta
             <nav className="flex-1 px-3 py-4 space-y-1">
               {([
                 { label: t.menu, sub: t.menuSub, path: `/${slug}` },
+                ...(restaurant.brand_id ? [
+                  { label: t.locations, sub: t.locationsSub, path: `/${slug}/locations` }
+                ] : []),
                 { label: t.location, sub: t.locationSub, path: `/${slug}/location` },
                 { label: t.reviews, sub: t.reviewsSub, path: `/${slug}/reviews` },
               ]).map(item => (
