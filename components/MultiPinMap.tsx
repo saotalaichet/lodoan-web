@@ -62,28 +62,32 @@ export default function MultiPinMap({ markers, userCoords }: MultiPinMapProps) {
         const primaryColor =
           getComputedStyle(document.documentElement).getPropertyValue('--color-primary').trim() || '#8B1A1A';
 
-        markers.forEach((m) => {
+        markers.forEach((m, idx) => {
           const el = document.createElement('div');
           el.style.cursor = 'pointer';
-          const w = m.isCurrent ? 36 : 30;
-          const h = m.isCurrent ? 46 : 38;
-          const fill = m.isCurrent ? primaryColor : '#fff';
-          const stroke = m.isCurrent ? '#fff' : primaryColor;
-          const strokeWidth = m.isCurrent ? 2 : 3;
-          const dotR = m.isCurrent ? 4 : 3;
-          const dotFill = m.isCurrent ? '#fff' : primaryColor;
-          el.innerHTML = `
-            <svg width="${w}" height="${h}" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
-              <path d="M12 0C5.4 0 0 5.4 0 12c0 8 12 20 12 20s12-12 12-20c0-6.6-5.4-12-12-12z" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>
-              <circle cx="12" cy="12" r="${dotR}" fill="${dotFill}"/>
-            </svg>
-          `;
+          const size = m.isCurrent ? 44 : 36;
+
+          if (m.isCurrent) {
+            el.innerHTML = `
+              <svg width="${size}" height="${size}" viewBox="0 0 44 44" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.35));">
+                <circle cx="22" cy="22" r="20" fill="${primaryColor}" stroke="#fff" stroke-width="3"/>
+                <path d="M22 11l3.09 6.26L32 18.27l-5 4.87 1.18 6.88L22 26.77l-6.18 3.25L17 23.14l-5-4.87 6.91-1.01L22 11z" fill="#fff"/>
+              </svg>
+            `;
+          } else {
+            el.innerHTML = `
+              <svg width="${size}" height="${size}" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+                <circle cx="18" cy="18" r="16" fill="#fff" stroke="${primaryColor}" stroke-width="3"/>
+                <text x="18" y="23" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="800" fill="${primaryColor}" text-anchor="middle">${idx + 1}</text>
+              </svg>
+            `;
+          }
 
           const popupHtml = `<div style="padding:4px 8px;font-weight:600">${m.name.replace(/</g, '&lt;')}</div>`;
 
-          new (trackasiagl as any).Marker({ element: el, anchor: 'bottom' })
+          new (trackasiagl as any).Marker({ element: el, anchor: 'center' })
             .setLngLat([m.longitude, m.latitude])
-            .setPopup(new (trackasiagl as any).Popup({ offset: 25 }).setHTML(popupHtml))
+            .setPopup(new (trackasiagl as any).Popup({ offset: 22 }).setHTML(popupHtml))
             .addTo(map);
         });
       });

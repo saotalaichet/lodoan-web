@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { MapPin, Phone, Clock, Navigation, ArrowRight, AlertCircle } from 'lucide-react';
+import { MapPin, Phone, Clock, Navigation, ArrowRight } from 'lucide-react';
 
 const MultiPinMap = dynamic(() => import('@/components/MultiPinMap'), {
   ssr: false,
@@ -36,7 +36,6 @@ interface LocationListProps {
 
 const T = {
   vi: {
-    locationDenied: 'Đã từ chối quyền truy cập vị trí. Sắp xếp theo tên.',
     locating: 'Đang xác định vị trí của bạn...',
     youAreHere: 'Bạn đang ở đây',
     orderHere: 'Đặt món tại đây',
@@ -50,7 +49,6 @@ const T = {
     call: 'Gọi',
   },
   en: {
-    locationDenied: 'Location access denied. Sorted alphabetically.',
     locating: 'Finding your location...',
     youAreHere: 'You are here',
     orderHere: 'Order from here',
@@ -181,13 +179,6 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
           <span>{t.locating}</span>
         </div>
       )}
-      {geoStatus === 'denied' && (
-        <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-start gap-2.5">
-          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>{t.locationDenied}</span>
-        </div>
-      )}
-
       {mapMarkers.length > 0 && (
         <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
           <MultiPinMap markers={mapMarkers} userCoords={userCoords} />
@@ -195,7 +186,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
       )}
 
       <div className="space-y-3">
-        {sorted.map((s) => {
+        {sorted.map((s, idx) => {
           const isCurrent = s.slug === currentSlug;
           const todayHours = s.hours?.[todayKey];
           const isOpen = s._isOpen;
@@ -208,17 +199,30 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
             >
               <div className="p-5">
                 <div className="flex gap-4">
-                  {s.logo ? (
-                    <img
-                      src={s.logo}
-                      alt={s.name}
-                      className="w-20 h-20 rounded-2xl object-contain bg-gray-50 flex-shrink-0 border border-gray-100"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-2xl bg-gray-100 flex-shrink-0 flex items-center justify-center">
-                      <MapPin className="w-7 h-7 text-gray-300" />
+                  <div className="relative flex-shrink-0">
+                    {s.logo ? (
+                      <img
+                        src={s.logo}
+                        alt={s.name}
+                        className="w-20 h-20 rounded-2xl object-contain bg-gray-50 border border-gray-100"
+                      />
+                    ) : (
+                      <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center">
+                        <MapPin className="w-7 h-7 text-gray-300" />
+                      </div>
+                    )}
+                    <div className={`absolute -top-2 -left-2 w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-white ${
+                      isCurrent ? 'bg-primary' : 'bg-white border-2 border-primary'
+                    }`}>
+                      {isCurrent ? (
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M12 2L14.39 8.26L21 9.27L16 14.14L17.18 21L12 17.77L6.82 21L8 14.14L3 9.27L9.61 8.26L12 2Z"/>
+                        </svg>
+                      ) : (
+                        <span className="text-xs font-black text-primary">{idx + 1}</span>
+                      )}
                     </div>
-                  )}
+                  </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1.5">

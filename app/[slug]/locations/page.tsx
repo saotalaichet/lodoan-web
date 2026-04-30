@@ -9,16 +9,14 @@ const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 
 const T = {
   vi: {
-    pageTitle: 'Tất Cả Địa Điểm',
-    subtitle: 'Tìm chi nhánh gần bạn nhất',
+    pageTitle: 'Tất Cả Chi Nhánh',
     notFound: 'Không tìm thấy nhà hàng',
     back: '← Quay lại',
     noBrand: 'Nhà hàng này không thuộc thương hiệu nào',
     viewMenuCta: 'Xem menu & đặt món',
   },
   en: {
-    pageTitle: 'All Locations',
-    subtitle: 'Find the branch closest to you',
+    pageTitle: 'All Branches',
     notFound: 'Restaurant not found',
     back: '← Back',
     noBrand: 'This restaurant does not belong to any brand',
@@ -112,7 +110,7 @@ export default async function LocationsPage({ params }: { params: Promise<{ slug
             <div className="mb-2">
               <h2 className="text-3xl font-black text-gray-900 tracking-tight">{t.pageTitle}</h2>
               <p className="text-sm text-gray-500 mt-1">
-                {siblings.length} {lang === 'en' ? (siblings.length === 1 ? 'location' : 'locations') : 'địa điểm'} · {t.subtitle}
+                {siblings.length} {lang === 'en' ? (siblings.length === 1 ? 'branch' : 'branches') : 'chi nhánh'}
               </p>
             </div>
 
