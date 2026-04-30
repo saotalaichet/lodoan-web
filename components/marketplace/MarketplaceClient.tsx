@@ -158,11 +158,6 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
     if (safeSlug) window.location.href = `/${safeSlug}`;
   };
 
-  const handleOrderNow = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (safeSlug && !isOrderingDisabled) window.location.href = `/${safeSlug}`;
-  };
-
   return (
     <div
       onClick={handleClick}
@@ -262,28 +257,31 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
             <span>{lang === 'vi' ? 'Tối thiểu' : 'Min'}: {fmt(restaurant.min_order_amount)}</span>
           )}
         </div>
-        <button
-          onClick={handleOrderNow}
-          disabled={!hasSlug || isOrderingDisabled}
-          className={`w-full h-8 font-bold rounded-lg text-sm transition-opacity mt-auto ${
-            !isOrderingDisabled && hasSlug
-              ? 'bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white hover:opacity-90'
-              : ''
-          }`}
-          style={
-            isOrderingDisabled
-              ? { background: '#D3D3D3', color: '#666', cursor: 'not-allowed' }
-              : hasSlug
-              ? undefined
-              : { background: '#E5E5E5', color: '#999', cursor: 'not-allowed' }
-          }
-        >
-          {isOrderingDisabled
-            ? (lang === 'vi' ? 'Đang Đóng Cửa' : 'Currently Closed')
-            : hasSlug
-            ? (lang === 'vi' ? 'Đặt Ngay' : 'Order Now')
-            : (lang === 'vi' ? 'Sắp Ra Mắt' : 'Coming Soon')}
-        </button>
+        {!isOrderingDisabled && hasSlug ? (
+          <a
+            href={`/${safeSlug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full h-8 inline-flex items-center justify-center font-bold rounded-lg text-sm transition-opacity mt-auto bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white hover:opacity-90"
+          >
+            {lang === 'vi' ? 'Đặt Ngay' : 'Order Now'}
+          </a>
+        ) : (
+          <div
+            className="w-full h-8 inline-flex items-center justify-center font-bold rounded-lg text-sm mt-auto"
+            style={
+              isOrderingDisabled
+                ? { background: '#D3D3D3', color: '#666', cursor: 'not-allowed' }
+                : { background: '#E5E5E5', color: '#999', cursor: 'not-allowed' }
+            }
+            onClick={(e) => e.stopPropagation()}
+          >
+            {isOrderingDisabled
+              ? (lang === 'vi' ? 'Đang Đóng Cửa' : 'Currently Closed')
+              : (lang === 'vi' ? 'Sắp Ra Mắt' : 'Coming Soon')}
+          </div>
+        )}
       </div>
     </div>
   );
