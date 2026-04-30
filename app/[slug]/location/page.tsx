@@ -154,7 +154,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
             {r.address && (
               <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                 {r.latitude && r.longitude ? (
-                  <MapWrapper latitude={parseFloat(r.latitude)} longitude={parseFloat(r.longitude)} name={r.name} />
+                  <MapWrapper latitude={parseFloat(r.latitude)} longitude={parseFloat(r.longitude)} name={r.name} primaryColor={r.primary_color || '#8B1A1A'} />
                 ) : (
                   <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-3">
                     <p className="text-sm text-gray-500">{t.noCoords}</p>

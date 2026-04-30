@@ -36,6 +36,7 @@ interface Marker {
   position?: number | null;
   logo?: string;
   hours?: Record<string, string>;
+  address?: string;
 }
 
 interface MultiPinMapProps {
@@ -113,6 +114,9 @@ export default function MultiPinMap({ markers, userCoords, lang = 'vi' }: MultiP
           const isOpen = isOpenNow(m.hours);
           const safeName = m.name.replace(/</g, '&lt;').replace(/>/g, '&gt;');
           const safeLogo = m.logo ? m.logo.replace(/"/g, '&quot;') : '';
+          const safeAddress = m.address
+            ? m.address.replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            : '';
           const statusBg = isOpen ? '#ecfdf5' : '#fef2f2';
           const statusBorder = isOpen ? '#a7f3d0' : '#fecaca';
           const statusText = isOpen ? '#047857' : '#b91c1c';
@@ -120,28 +124,45 @@ export default function MultiPinMap({ markers, userCoords, lang = 'vi' }: MultiP
           const statusLabel = isOpen
             ? (lang === 'en' ? 'Open now' : 'Đang mở')
             : (lang === 'en' ? 'Closed' : 'Đã đóng');
-          const ctaLabel = lang === 'en' ? 'Order from here' : 'Đặt món tại đây';
-          const youAreHereLabel = lang === 'en' ? 'You are here' : 'Bạn đang ở đây';
+          const hoursLabel = lang === 'en' ? 'Today' : 'Hôm nay';
+
+          const todayKey = POPUP_DAYS_KEY[new Date().getDay()];
+          const todayHoursStr = m.hours?.[todayKey] || '';
 
           const popupHtml = `
-            <div style="display:flex;flex-direction:column;gap:10px;padding:14px;min-width:240px;font-family:system-ui,-apple-system,sans-serif;">
+            <div style="display:flex;flex-direction:column;gap:12px;padding:14px;width:260px;max-width:calc(100vw - 60px);font-family:system-ui,-apple-system,sans-serif;">
               <div style="display:flex;gap:10px;align-items:flex-start;">
                 ${safeLogo
                   ? `<img src="${safeLogo}" alt="" style="width:44px;height:44px;border-radius:10px;object-fit:contain;background:#f9fafb;border:1px solid #f3f4f6;flex-shrink:0;" />`
                   : `<div style="width:44px;height:44px;border-radius:10px;background:#f3f4f6;flex-shrink:0;"></div>`
                 }
                 <div style="flex:1;min-width:0;">
-                  <p style="margin:0 0 6px 0;font-weight:700;font-size:14px;color:#111827;line-height:1.3;">${safeName}</p>
+                  <p style="margin:0 0 6px 0;font-weight:700;font-size:14px;color:#111827;line-height:1.3;word-wrap:break-word;">${safeName}</p>
                   <span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:9999px;background:${statusBg};color:${statusText};border:1px solid ${statusBorder};">
                     <span style="width:6px;height:6px;border-radius:50%;background:${statusDot};display:inline-block;"></span>
                     ${statusLabel}
                   </span>
                 </div>
               </div>
-              ${m.isCurrent
-                ? `<div style="background:${primaryColor};color:#fff;text-align:center;padding:8px 12px;border-radius:10px;font-weight:700;font-size:11px;letter-spacing:0.05em;text-transform:uppercase;">${youAreHereLabel}</div>`
-                : `<a href="/${m.slug}" style="display:flex;align-items:center;justify-content:center;gap:6px;background:${primaryColor};color:#fff;text-decoration:none;padding:9px 12px;border-radius:10px;font-weight:600;font-size:13px;transition:opacity 0.15s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">${ctaLabel} <span style="font-size:14px;">→</span></a>`
-              }
+              ${safeAddress || todayHoursStr ? `<div style="border-top:1px solid #f3f4f6;"></div>` : ''}
+              ${safeAddress ? `
+                <div style="display:flex;gap:8px;align-items:flex-start;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                  </svg>
+                  <p style="margin:0;font-size:12px;color:#4b5563;line-height:1.5;word-wrap:break-word;">${safeAddress}</p>
+                </div>
+              ` : ''}
+              ${todayHoursStr ? `
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <p style="margin:0;font-size:12px;color:#4b5563;">${hoursLabel}: <strong style="color:#111827;">${todayHoursStr}</strong></p>
+                </div>
+              ` : ''}
             </div>
           `;
 

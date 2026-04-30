@@ -174,6 +174,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
         position,
         logo: s.logo,
         hours: s.hours,
+        address: s.address,
       };
     });
 
@@ -204,9 +205,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
             return (
             <div
               key={s.id}
-              className={`bg-white border rounded-2xl overflow-hidden transition-all hover:shadow-md ${
-                isCurrent ? 'border-primary border-2 shadow-sm' : 'border-gray-200'
-              }`}
+              className="bg-white border border-gray-200 rounded-2xl overflow-hidden transition-all hover:shadow-md"
             >
               <div className="p-5">
                 <div className="flex gap-4">
@@ -284,14 +283,10 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
               <div className="border-t border-gray-100 bg-gray-50/50 px-5 py-3 flex items-center gap-2">
                 <Link
                   href={`/${s.slug}`}
-                  className={`flex-1 inline-flex items-center justify-center gap-2 font-semibold py-2.5 rounded-xl text-sm transition-all ${
-                    isCurrent
-                      ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
-                      : 'bg-primary text-white hover:opacity-90 shadow-sm'
-                  }`}
+                  className="flex-1 inline-flex items-center justify-center gap-2 font-semibold py-3 rounded-xl text-sm transition-all bg-primary text-white hover:opacity-90 shadow-sm"
                 >
-                  {isCurrent ? t.viewDetails : t.orderHere}
-                  {!isCurrent && <ArrowRight className="w-4 h-4" />}
+                  {t.orderHere}
+                  <ArrowRight className="w-4 h-4" />
                 </Link>
                 {s.address && (
                   <a
@@ -300,7 +295,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
                     rel="noopener noreferrer"
                     title={t.directions}
                     aria-label={t.directions}
-                    className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-white border border-gray-200 hover:bg-gray-100 transition-all flex-shrink-0"
+                    className="w-11 h-11 inline-flex items-center justify-center rounded-xl bg-white border border-gray-200 hover:bg-gray-100 transition-all flex-shrink-0"
                   >
                     <Navigation className="w-4 h-4 text-gray-600" />
                   </a>
@@ -310,7 +305,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
                     href={`tel:${s.phone}`}
                     title={t.call}
                     aria-label={t.call}
-                    className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-white border border-gray-200 hover:bg-gray-100 transition-all flex-shrink-0"
+                    className="w-11 h-11 inline-flex items-center justify-center rounded-xl bg-white border border-gray-200 hover:bg-gray-100 transition-all flex-shrink-0"
                   >
                     <Phone className="w-4 h-4 text-gray-600" />
                   </a>
