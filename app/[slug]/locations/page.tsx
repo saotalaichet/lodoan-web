@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const cookieStore = await cookies();
   const langCookie = cookieStore.get('ovenly_language')?.value;
   const isEn = langCookie === 'en';
-  const title = isEn ? `${r.name} | All Locations` : `${r.name} | Tất Cả Địa Điểm`;
+  const title = isEn ? `${r.name} | All Branches` : `${r.name} | Tất Cả Chi Nhánh`;
   const description = isEn
     ? `Find all locations of ${r.name} on LÒ ĐỒ ĂN. View addresses, hours, and order from the branch closest to you.`
     : `Tìm tất cả địa điểm của ${r.name} trên LÒ ĐỒ ĂN. Xem địa chỉ, giờ mở cửa và đặt món từ chi nhánh gần bạn nhất.`;

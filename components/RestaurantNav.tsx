@@ -16,7 +16,7 @@ const T = {
     locationSub: 'Địa chỉ & giờ mở cửa',
     reviews: 'Đánh Giá',
     reviewsSub: 'Từ khách đã đặt hàng',
-    locations: 'Tất Cả Địa Điểm',
+    locations: 'Tất Cả Chi Nhánh',
     locationsSub: 'Tìm chi nhánh khác',
   },
   en: {
@@ -29,7 +29,7 @@ const T = {
     locationSub: 'Address & hours',
     reviews: 'Reviews',
     reviewsSub: 'From verified orders',
-    locations: 'All Locations',
+    locations: 'All Branches',
     locationsSub: 'Find another branch',
   },
 };

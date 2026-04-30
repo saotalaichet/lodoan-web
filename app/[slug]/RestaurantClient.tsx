@@ -1693,7 +1693,7 @@ function RestaurantClientInner({
               {([
                 { label: lang === 'vi' ? 'Menu' : 'Menu', sub: lang === 'vi' ? 'Xem thực đơn & đặt hàng' : 'Browse menu & order', path: `/${slug}` },
                 ...(restaurant?.brand_id ? [
-                  { label: lang === 'vi' ? 'Tất Cả Địa Điểm' : 'All Locations', sub: lang === 'vi' ? 'Tìm chi nhánh khác' : 'Find another branch', path: `/${slug}/locations` }
+                  { label: lang === 'vi' ? 'Tất Cả Chi Nhánh' : 'All Branches', sub: lang === 'vi' ? 'Tìm chi nhánh khác' : 'Find another branch', path: `/${slug}/locations` }
                 ] : []),
                 { label: lang === 'vi' ? 'Vị Trí' : 'Location', sub: lang === 'vi' ? 'Địa chỉ & giờ mở cửa' : 'Address & hours', path: `/${slug}/location` },
                 { label: lang === 'vi' ? 'Đánh Giá' : 'Reviews', sub: lang === 'vi' ? 'Từ khách đã đặt hàng' : 'From verified orders', path: `/${slug}/reviews` },
