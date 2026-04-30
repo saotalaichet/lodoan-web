@@ -10,6 +10,7 @@ const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const TRACKASIA_KEY = process.env.NEXT_PUBLIC_TRACKASIA_API_KEY || '';
 const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
 const TERMINAL = ['completed', 'cancelled', 'timed_out', 'delivered', 'delivery_failed', 'picked_up'];
+const SUCCESS_TERMINAL = ['completed', 'delivered', 'picked_up'];
 const STEPS_PICKUP   = ['preparing', 'ready', 'picked_up'];
 const STEPS_DELIVERY = ['preparing', 'delivering', 'delivered'];
 
@@ -260,6 +261,43 @@ function OrderTrackingPage() {
             <p style={{ fontSize: 13, color: "#888", margin: "3px 0 0" }}>{order.updated_date ? new Date(order.updated_date).toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}</p>
           </div>
         </div>
+        {SUCCESS_TERMINAL.includes(order.status) && order.rating_token && (
+          <Link
+            href={`/rate/${order.id}?token=${order.rating_token}`}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 12,
+              background: '#FFFBEB',
+              border: '1px solid #FCD34D',
+              borderRadius: 16,
+              padding: '16px 20px',
+              marginBottom: 16,
+              textDecoration: 'none',
+              transition: 'all 0.15s',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#FEF3C7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="#F59E0B">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+              </div>
+              <div>
+                <p style={{ fontWeight: 800, fontSize: 15, margin: 0, color: '#78350F' }}>
+                  {lang === 'vi' ? 'Đánh giá đơn hàng' : 'Rate your order'}
+                </p>
+                <p style={{ fontSize: 12, color: '#92400E', margin: '2px 0 0 0' }}>
+                  {lang === 'vi' ? 'Phản hồi giúp nhà hàng cải thiện chất lượng' : 'Your feedback helps the restaurant improve'}
+                </p>
+              </div>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#92400E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </Link>
+        )}
         <div style={{ background: "#fff", borderRadius: 16, padding: "14px 16px", marginBottom: 12, border: "1px solid #F0EDE8" }}>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#111", margin: "0 0 2px", letterSpacing: "-0.5px" }}>#{orderId.slice(-8).toUpperCase()}</p>
           <p style={{ fontSize: 11, color: "#bbb", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.6px", margin: 0 }}>{lang === "vi" ? "Mã đơn hàng" : "Order ID"}</p>
