@@ -377,14 +377,15 @@ export default function MarketplaceClient() {
         if (!r.latitude || !r.longitude) return { ...r, _distance: 9999 };
         const d = haversineDistance(activeCoords.lat, activeCoords.lon, r.latitude, r.longitude);
         return { ...r, _distance: d };
-      }).filter(r => r._distance <= 5);
+      });
     }
 
     const tierOrder: Record<string, number> = { Premium: 0, Standard: 1, Basic: 2 };
     list.sort((a, b) => {
       if (activeCoords) {
-        const dd = (a._distance || 0) - (b._distance || 0);
-        if (Math.abs(dd) > 0.3) return dd;
+        const da = a._distance ?? 9999;
+        const db = b._distance ?? 9999;
+        if (da !== db) return da - db;
       }
       const tierDiff = (tierOrder[a.subscription_tier] ?? 2) - (tierOrder[b.subscription_tier] ?? 2);
       if (tierDiff !== 0) return tierDiff;
