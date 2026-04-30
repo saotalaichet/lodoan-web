@@ -87,7 +87,9 @@ export default async function LocationsPage({ params }: { params: Promise<{ slug
     redirect(`/${slug}`);
   }
 
-  const primaryColor = brand?.primary_color || r.primary_color || '#8B1A1A';
+  // Use the current restaurant's primary_color, not the brand's
+  // Different siblings have different colors; this page is contextual to the current restaurant
+  const primaryColor = r.primary_color || '#8B1A1A';
 
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
@@ -107,18 +109,12 @@ export default async function LocationsPage({ params }: { params: Promise<{ slug
         <RestaurantNav restaurant={r} slug={slug} lang={lang} />
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="space-y-4 max-w-4xl">
-            <div className="flex items-center gap-3 mb-2">
-              {brand.logo ? (
-                <img src={brand.logo} alt={brand.name} className="w-12 h-12 rounded-xl object-contain bg-white border border-gray-200" />
-              ) : null}
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">{t.pageTitle}</h2>
-                <p className="text-sm text-gray-500">
-                  {brand.name} · {siblings.length} {lang === 'en' ? 'locations' : 'địa điểm'}
-                </p>
-              </div>
+            <div className="mb-2">
+              <h2 className="text-3xl font-black text-gray-900 tracking-tight">{t.pageTitle}</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {siblings.length} {lang === 'en' ? (siblings.length === 1 ? 'location' : 'locations') : 'địa điểm'} · {t.subtitle}
+              </p>
             </div>
-            <p className="text-sm text-gray-600">{t.subtitle}</p>
 
             <LocationList
               siblings={siblings}

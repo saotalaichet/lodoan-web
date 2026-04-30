@@ -3,11 +3,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { MapPin, Phone, Clock, Navigation, ArrowRight, AlertCircle } from 'lucide-react';
 
 const MultiPinMap = dynamic(() => import('@/components/MultiPinMap'), {
   ssr: false,
   loading: () => (
-    <div className="h-72 bg-gray-100 rounded-2xl flex items-center justify-center">
+    <div className="h-80 bg-gray-100 rounded-2xl flex items-center justify-center">
       <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
     </div>
   ),
@@ -35,24 +36,32 @@ interface LocationListProps {
 
 const T = {
   vi: {
-    locationDenied: 'Đã từ chối quyền truy cập vị trí',
-    locating: 'Đang xác định vị trí...',
+    locationDenied: 'Đã từ chối quyền truy cập vị trí. Sắp xếp theo tên.',
+    locating: 'Đang xác định vị trí của bạn...',
     youAreHere: 'Bạn đang ở đây',
     orderHere: 'Đặt món tại đây',
-    viewMap: 'Xem chi tiết',
+    viewDetails: 'Xem chi tiết',
     today: 'Hôm nay',
+    openNow: 'Đang mở',
+    closed: 'Đã đóng',
     km: 'km',
     m: 'm',
+    directions: 'Chỉ đường',
+    call: 'Gọi',
   },
   en: {
-    locationDenied: 'Location access denied',
-    locating: 'Locating...',
+    locationDenied: 'Location access denied. Sorted alphabetically.',
+    locating: 'Finding your location...',
     youAreHere: 'You are here',
     orderHere: 'Order from here',
-    viewMap: 'View details',
+    viewDetails: 'View details',
     today: 'Today',
+    openNow: 'Open now',
+    closed: 'Closed',
     km: 'km',
     m: 'm',
+    directions: 'Directions',
+    call: 'Call',
   },
 };
 
@@ -77,6 +86,27 @@ function formatDistance(km: number, lang: 'vi' | 'en'): string {
   if (km < 1) return `${Math.round(km * 1000)} ${t.m}`;
   if (km < 10) return `${km.toFixed(1)} ${t.km}`;
   return `${Math.round(km)} ${t.km}`;
+}
+
+function isOpenNow(hours?: Record<string, string>): boolean {
+  if (!hours) return false;
+  const now = new Date();
+  const todayKey = DAYS_KEY[now.getDay()];
+  const todayHours = hours[todayKey];
+  if (!todayHours || todayHours.toLowerCase() === 'closed') return false;
+
+  const match = todayHours.match(/^(\d{1,2}):(\d{2})\s*-\s*(\d{1,2}):(\d{2})$/);
+  if (!match) return false;
+
+  const [, openH, openM, closeH, closeM] = match;
+  const openMinutes = parseInt(openH) * 60 + parseInt(openM);
+  const closeMinutes = parseInt(closeH) * 60 + parseInt(closeM);
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  if (closeMinutes < openMinutes) {
+    return nowMinutes >= openMinutes || nowMinutes < closeMinutes;
+  }
+  return nowMinutes >= openMinutes && nowMinutes < closeMinutes;
 }
 
 export default function LocationList({ siblings, currentSlug, lang }: LocationListProps) {
@@ -112,7 +142,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
       if (userCoords && validLat !== null && validLon !== null) {
         distance = haversine(userCoords[0], userCoords[1], validLat, validLon);
       }
-      return { ...s, _lat: validLat, _lon: validLon, _distance: distance };
+      return { ...s, _lat: validLat, _lon: validLon, _distance: distance, _isOpen: isOpenNow(s.hours) };
     });
   }, [siblings, userCoords]);
 
@@ -144,16 +174,17 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
   const todayKey = DAYS_KEY[new Date().getDay()];
 
   return (
-    <div className="space-y-4">
-      {geoStatus === 'denied' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-amber-800">
-          {t.locationDenied}
+    <div className="space-y-5">
+      {geoStatus === 'requesting' && (
+        <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-800 flex items-center gap-2.5">
+          <div className="w-3.5 h-3.5 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin flex-shrink-0" />
+          <span>{t.locating}</span>
         </div>
       )}
-      {geoStatus === 'requesting' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2.5 text-xs text-blue-800 flex items-center gap-2">
-          <div className="w-3 h-3 border-2 border-blue-300 border-t-blue-600 rounded-full animate-spin" />
-          {t.locating}
+      {geoStatus === 'denied' && (
+        <div className="bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-800 flex items-start gap-2.5">
+          <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span>{t.locationDenied}</span>
         </div>
       )}
 
@@ -167,74 +198,106 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
         {sorted.map((s) => {
           const isCurrent = s.slug === currentSlug;
           const todayHours = s.hours?.[todayKey];
+          const isOpen = s._isOpen;
           return (
             <div
               key={s.id}
-              className={`bg-white border rounded-2xl p-4 transition-all ${
-                isCurrent ? 'border-primary border-2 shadow-md' : 'border-gray-200 hover:border-gray-300'
+              className={`bg-white border rounded-2xl overflow-hidden transition-all hover:shadow-md ${
+                isCurrent ? 'border-primary border-2 shadow-sm' : 'border-gray-200'
               }`}
             >
-              <div className="flex gap-3">
-                {s.logo ? (
-                  <img
-                    src={s.logo}
-                    alt={s.name}
-                    className="w-16 h-16 rounded-xl object-contain bg-gray-50 flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-16 h-16 rounded-xl bg-gray-100 flex-shrink-0" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <p className="font-bold text-gray-900 truncate">{s.name}</p>
-                    {isCurrent && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary text-white font-bold flex-shrink-0">
-                        {t.youAreHere}
+              <div className="p-5">
+                <div className="flex gap-4">
+                  {s.logo ? (
+                    <img
+                      src={s.logo}
+                      alt={s.name}
+                      className="w-20 h-20 rounded-2xl object-contain bg-gray-50 flex-shrink-0 border border-gray-100"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-2xl bg-gray-100 flex-shrink-0 flex items-center justify-center">
+                      <MapPin className="w-7 h-7 text-gray-300" />
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <h3 className="font-bold text-gray-900 text-lg leading-tight truncate">{s.name}</h3>
+                      {isCurrent && (
+                        <span className="text-[10px] px-2 py-1 rounded-full bg-primary text-white font-bold flex-shrink-0 uppercase tracking-wider">
+                          {t.youAreHere}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        isOpen
+                          ? 'bg-green-50 text-green-700 border border-green-200'
+                          : 'bg-red-50 text-red-700 border border-red-200'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-green-500' : 'bg-red-500'}`} />
+                        {isOpen ? t.openNow : t.closed}
                       </span>
+                      {s._distance !== null && (
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold text-gray-600">
+                          <Navigation className="w-3 h-3" />
+                          {formatDistance(s._distance, lang)}
+                        </span>
+                      )}
+                    </div>
+
+                    {s.address && (
+                      <p className="text-sm text-gray-600 leading-relaxed mb-1.5 flex items-start gap-1.5">
+                        <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+                        <span className="truncate">{s.address}</span>
+                      </p>
                     )}
-                  </div>
-                  {s.address && <p className="text-xs text-gray-500 truncate">{s.address}</p>}
-                  <div className="flex items-center gap-3 mt-1.5 text-xs">
-                    {s._distance !== null && (
-                      <span className="font-semibold text-primary">{formatDistance(s._distance, lang)}</span>
-                    )}
+
                     {todayHours && (
-                      <span className="text-gray-500">
-                        {t.today}: <span className="font-medium text-gray-700">{todayHours}</span>
-                      </span>
+                      <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                        <span>
+                          {t.today}: <span className="font-semibold text-gray-700">{todayHours}</span>
+                        </span>
+                      </p>
                     )}
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2 mt-3">
+
+              <div className="border-t border-gray-100 bg-gray-50/50 px-5 py-3 flex items-center gap-2">
                 <Link
                   href={`/${s.slug}`}
-                  className={`flex-1 text-center font-semibold py-2 rounded-xl text-sm transition-all ${
+                  className={`flex-1 inline-flex items-center justify-center gap-2 font-semibold py-2.5 rounded-xl text-sm transition-all ${
                     isCurrent
-                      ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      : 'bg-primary text-white hover:opacity-90'
+                      ? 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                      : 'bg-primary text-white hover:opacity-90 shadow-sm'
                   }`}
                 >
-                  {isCurrent ? t.viewMap : t.orderHere}
+                  {isCurrent ? t.viewDetails : t.orderHere}
+                  {!isCurrent && <ArrowRight className="w-4 h-4" />}
                 </Link>
                 {s.address && (
                   <a
                     href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Google Maps"
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-all flex-shrink-0"
+                    title={t.directions}
+                    aria-label={t.directions}
+                    className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-white border border-gray-200 hover:bg-gray-100 transition-all flex-shrink-0"
                   >
-                    📍
+                    <Navigation className="w-4 h-4 text-gray-600" />
                   </a>
                 )}
                 {s.phone && (
                   <a
                     href={`tel:${s.phone}`}
-                    aria-label="Call"
-                    className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition-all flex-shrink-0"
+                    title={t.call}
+                    aria-label={t.call}
+                    className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-white border border-gray-200 hover:bg-gray-100 transition-all flex-shrink-0"
                   >
-                    📞
+                    <Phone className="w-4 h-4 text-gray-600" />
                   </a>
                 )}
               </div>

@@ -64,18 +64,24 @@ export default function MultiPinMap({ markers, userCoords }: MultiPinMapProps) {
 
         markers.forEach((m) => {
           const el = document.createElement('div');
-          const size = m.isCurrent ? 32 : 26;
-          el.style.width = `${size}px`;
-          el.style.height = `${size}px`;
-          el.style.background = m.isCurrent ? primaryColor : '#fff';
-          el.style.border = m.isCurrent ? '3px solid #fff' : `3px solid ${primaryColor}`;
-          el.style.borderRadius = '50%';
-          el.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
           el.style.cursor = 'pointer';
+          const w = m.isCurrent ? 36 : 30;
+          const h = m.isCurrent ? 46 : 38;
+          const fill = m.isCurrent ? primaryColor : '#fff';
+          const stroke = m.isCurrent ? '#fff' : primaryColor;
+          const strokeWidth = m.isCurrent ? 2 : 3;
+          const dotR = m.isCurrent ? 4 : 3;
+          const dotFill = m.isCurrent ? '#fff' : primaryColor;
+          el.innerHTML = `
+            <svg width="${w}" height="${h}" viewBox="0 0 24 32" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+              <path d="M12 0C5.4 0 0 5.4 0 12c0 8 12 20 12 20s12-12 12-20c0-6.6-5.4-12-12-12z" fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>
+              <circle cx="12" cy="12" r="${dotR}" fill="${dotFill}"/>
+            </svg>
+          `;
 
           const popupHtml = `<div style="padding:4px 8px;font-weight:600">${m.name.replace(/</g, '&lt;')}</div>`;
 
-          new (trackasiagl as any).Marker({ element: el })
+          new (trackasiagl as any).Marker({ element: el, anchor: 'bottom' })
             .setLngLat([m.longitude, m.latitude])
             .setPopup(new (trackasiagl as any).Popup({ offset: 25 }).setHTML(popupHtml))
             .addTo(map);
