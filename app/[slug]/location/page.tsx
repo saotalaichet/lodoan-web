@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import Link from 'next/link';
 import MapWrapper from '@/components/MapWrapper';
 import RestaurantNav from '@/components/RestaurantNav';
@@ -7,6 +8,37 @@ const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const DAYS_VI = ['Chủ Nhật','Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
 const DAYS_EN = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const DAYS_KEY = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+
+const T = {
+  vi: {
+    pageTitle: 'Vị Trí & Giờ Mở Cửa',
+    notFound: 'Không tìm thấy nhà hàng',
+    back: '← Quay lại',
+    noCoords: 'Chưa có tọa độ bản đồ',
+    viewOnGoogleMaps: 'Xem trên Google Maps →',
+    openInGoogleMaps: 'Mở trong Google Maps →',
+    address: 'Địa chỉ',
+    phone: 'Điện thoại',
+    hours: 'Giờ Mở Cửa',
+    today: 'Hôm nay',
+    closed: 'Đóng cửa',
+    viewMenuCta: 'Xem menu & đặt món',
+  },
+  en: {
+    pageTitle: 'Location & Hours',
+    notFound: 'Restaurant not found',
+    back: '← Back',
+    noCoords: 'No map coordinates available',
+    viewOnGoogleMaps: 'View on Google Maps →',
+    openInGoogleMaps: 'Open in Google Maps →',
+    address: 'Address',
+    phone: 'Phone',
+    hours: 'Opening Hours',
+    today: 'Today',
+    closed: 'Closed',
+    viewMenuCta: 'View menu & order',
+  },
+};
 
 async function getRestaurant(slug: string) {
   try {
@@ -22,10 +54,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const r = await getRestaurant(slug);
   if (!r) return { title: 'Location | LÒ ĐỒ ĂN' };
-  const title = `${r.name} | Địa Chỉ & Giờ Mở Cửa`;
+  const cookieStore = await cookies();
+  const langCookie = cookieStore.get('ovenly_language')?.value;
+  const isEn = langCookie === 'en';
+  const title = isEn ? `${r.name} | Location & Hours` : `${r.name} | Địa Chỉ & Giờ Mở Cửa`;
   const description = r.address
-    ? `Tìm ${r.name} tại ${r.address}. Xem giờ mở cửa và đặt món online trên LÒ ĐỒ ĂN.`
-    : `Xem địa chỉ và giờ mở cửa của ${r.name} trên LÒ ĐỒ ĂN.`;
+    ? (isEn
+        ? `Find ${r.name} at ${r.address}. See opening hours and order online on LÒ ĐỒ ĂN.`
+        : `Tìm ${r.name} tại ${r.address}. Xem giờ mở cửa và đặt món online trên LÒ ĐỒ ĂN.`)
+    : (isEn
+        ? `View address and opening hours of ${r.name} on LÒ ĐỒ ĂN.`
+        : `Xem địa chỉ và giờ mở cửa của ${r.name} trên LÒ ĐỒ ĂN.`);
   return {
     title, description,
     alternates: { canonical: `https://www.lodoan.vn/${slug}/location` },
@@ -35,13 +74,18 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function LocationPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  const cookieStore = await cookies();
+  const langCookie = cookieStore.get('ovenly_language')?.value;
+  const lang: 'vi' | 'en' = langCookie === 'en' ? 'en' : 'vi';
+  const t = T[lang];
+  const DAYS = lang === 'en' ? DAYS_EN : DAYS_VI;
   const r = await getRestaurant(slug);
   if (!r) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
         <p className="text-5xl mb-4">😕</p>
-        <p className="font-bold text-gray-700 mb-4">Không tìm thấy nhà hàng</p>
-        <Link href="/" className="text-sm font-semibold text-primary hover:underline">← Quay lại</Link>
+        <p className="font-bold text-gray-700 mb-4">{t.notFound}</p>
+        <Link href="/" className="text-sm font-semibold text-primary hover:underline">{t.back}</Link>
       </div>
     </div>
   );
@@ -74,6 +118,16 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
         .filter(Boolean)
     : [];
 
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'LÒ ĐỒ ĂN', item: 'https://www.lodoan.vn' },
+      { '@type': 'ListItem', position: 2, name: r.name, item: `https://www.lodoan.vn/${slug}` },
+      { '@type': 'ListItem', position: 3, name: t.pageTitle },
+    ],
+  };
+
   const schema: any = {
     '@context': 'https://schema.org', '@type': 'Restaurant', name: r.name,
     url: `https://www.lodoan.vn/${slug}`,
@@ -91,21 +145,22 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
     <>
       <style dangerouslySetInnerHTML={{ __html: `:root { --color-primary: ${primaryColor}; }` }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="min-h-screen bg-gray-50">
         <RestaurantNav restaurant={r} slug={slug} />
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="space-y-6 max-w-2xl">
-            <h2 className="text-2xl font-black text-gray-900">Vị Trí & Giờ Mở Cửa</h2>
+            <h2 className="text-2xl font-black text-gray-900">{t.pageTitle}</h2>
             {r.address && (
               <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
                 {r.latitude && r.longitude ? (
                   <MapWrapper latitude={parseFloat(r.latitude)} longitude={parseFloat(r.longitude)} name={r.name} />
                 ) : (
                   <div className="h-44 bg-gray-100 flex flex-col items-center justify-center gap-3">
-                    <p className="text-sm text-gray-500">Chưa có tọa độ bản đồ</p>
+                    <p className="text-sm text-gray-500">{t.noCoords}</p>
                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.address)}`}
                       target="_blank" rel="noopener noreferrer" className="text-xs font-semibold text-primary hover:underline">
-                      Xem trên Google Maps →
+                      {t.viewOnGoogleMaps}
                     </a>
                   </div>
                 )}
@@ -121,11 +176,11 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Địa chỉ</p>
+                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t.address}</p>
                     <p className="text-sm font-medium text-gray-900">{r.address}</p>
                     <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.address)}`}
                       target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-semibold hover:underline mt-1 inline-block">
-                      Mở trong Google Maps →
+                      {t.openInGoogleMaps}
                     </a>
                   </div>
                 </div>
@@ -138,7 +193,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
                     </svg>
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Điện thoại</p>
+                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">{t.phone}</p>
                     <a href={`tel:${r.phone}`} className="text-sm font-medium text-primary hover:underline">{r.phone}</a>
                   </div>
                 </div>
@@ -150,7 +205,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
                   <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="12" cy="12" r="10" strokeWidth={2}/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6l4 2"/>
                   </svg>
-                  <h3 className="font-bold text-gray-900">Giờ Mở Cửa</h3>
+                  <h3 className="font-bold text-gray-900">{t.hours}</h3>
                 </div>
                 {DAYS_KEY.map((key, i) => {
                   const h = r.hours[key];
@@ -158,11 +213,11 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
                   return (
                     <div key={key} className={`flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0 px-2 rounded-lg ${isToday ? 'bg-primary/5' : ''}`}>
                       <span className={`text-sm ${isToday ? 'font-bold text-primary' : 'text-gray-700'}`}>
-                        {DAYS_VI[i]}
-                        {isToday && <span className="ml-2 text-xs bg-primary text-white px-1.5 py-0.5 rounded-full">Hôm nay</span>}
+                        {DAYS[i]}
+                        {isToday && <span className="ml-2 text-xs bg-primary text-white px-1.5 py-0.5 rounded-full">{t.today}</span>}
                       </span>
                       <span className={`text-sm font-semibold ${h ? (isToday ? 'text-primary' : 'text-gray-900') : 'text-gray-400'}`}>
-                        {h || 'Đóng cửa'}
+                        {h || t.closed}
                       </span>
                     </div>
                   );
@@ -171,7 +226,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
             )}
             <div className="text-center">
               <Link href={`/${slug}`} className="inline-flex items-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-xl text-sm hover:opacity-90">
-                Xem menu & đặt món
+                {t.viewMenuCta}
               </Link>
             </div>
           </div>

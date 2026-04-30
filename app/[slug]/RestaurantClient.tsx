@@ -1185,7 +1185,10 @@ function RestaurantClientInner({
     }
   }, []);
 
-  useEffect(() => { localStorage.setItem('ovenly_language', lang); }, [lang]);
+  useEffect(() => {
+    localStorage.setItem('ovenly_language', lang);
+    document.cookie = `ovenly_language=${lang}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
+  }, [lang]);
 
   useEffect(() => {
     if (!slug || slug === 'undefined') return;
