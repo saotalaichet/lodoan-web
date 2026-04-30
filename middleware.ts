@@ -2,14 +2,15 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Routes that belong only to lodoan.vn (B2C customer marketplace)
+// /register is intentionally NOT in this list — it's the B2B business owner
+// lead form that belongs on ovenly.io. /signup is the actual B2C customer signup.
 const LODOAN_ONLY_PATHS = [
   '/order/',     // customer order tracking
   '/orders/',    // customer order list
   '/profile',    // customer profile
   '/rate/',      // customer rating
   '/login',      // customer login (uses customerAuth)
-  '/signup',     // customer signup
-  '/register',   // customer register
+  '/signup',     // customer signup (creates customer account)
   '/reset-password',
 ];
 
@@ -108,6 +109,13 @@ export function middleware(request: NextRequest) {
     if (pathname.startsWith('/company/') || pathname === '/company') {
       return NextResponse.redirect(
         new URL(`https://www.ovenly.io${pathname}`),
+        { status: 301 }
+      );
+    }
+    // /register is the B2B business lead form, lives on ovenly.io
+    if (pathname === '/register') {
+      return NextResponse.redirect(
+        new URL('https://www.ovenly.io/register'),
         { status: 301 }
       );
     }
