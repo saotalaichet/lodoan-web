@@ -159,15 +159,23 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
     return arr;
   }, [siblingsWithDistance, userCoords]);
 
+  let siblingPosition = 0;
   const mapMarkers = sorted
     .filter((s) => s._lat !== null && s._lon !== null)
-    .map((s) => ({
-      latitude: s._lat as number,
-      longitude: s._lon as number,
-      name: s.name,
-      slug: s.slug,
-      isCurrent: s.slug === currentSlug,
-    }));
+    .map((s) => {
+      const isCurrent = s.slug === currentSlug;
+      const position = isCurrent ? null : ++siblingPosition;
+      return {
+        latitude: s._lat as number,
+        longitude: s._lon as number,
+        name: s.name,
+        slug: s.slug,
+        isCurrent,
+        position,
+        logo: s.logo,
+        hours: s.hours,
+      };
+    });
 
   const todayKey = DAYS_KEY[new Date().getDay()];
 
@@ -181,16 +189,19 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
       )}
       {mapMarkers.length > 0 && (
         <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-          <MultiPinMap markers={mapMarkers} userCoords={userCoords} />
+          <MultiPinMap markers={mapMarkers} userCoords={userCoords} lang={lang} />
         </div>
       )}
 
       <div className="space-y-3">
-        {sorted.map((s, idx) => {
-          const isCurrent = s.slug === currentSlug;
-          const todayHours = s.hours?.[todayKey];
-          const isOpen = s._isOpen;
-          return (
+        {(() => {
+          let cardSiblingPos = 0;
+          return sorted.map((s) => {
+            const isCurrent = s.slug === currentSlug;
+            const cardPosition = isCurrent ? null : ++cardSiblingPos;
+            const todayHours = s.hours?.[todayKey];
+            const isOpen = s._isOpen;
+            return (
             <div
               key={s.id}
               className={`bg-white border rounded-2xl overflow-hidden transition-all hover:shadow-md ${
@@ -219,7 +230,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
                           <path d="M12 2L14.39 8.26L21 9.27L16 14.14L17.18 21L12 17.77L6.82 21L8 14.14L3 9.27L9.61 8.26L12 2Z"/>
                         </svg>
                       ) : (
-                        <span className="text-xs font-black text-primary">{idx + 1}</span>
+                        <span className="text-xs font-black text-primary">{cardPosition}</span>
                       )}
                     </div>
                   </div>
@@ -306,8 +317,9 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
                 )}
               </div>
             </div>
-          );
-        })}
+            );
+          });
+        })()}
       </div>
     </div>
   );

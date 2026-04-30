@@ -34,3 +34,18 @@ body {
   }
 }
 
+.ovenly-pin-popup .maplibregl-popup-content,
+.ovenly-pin-popup .trackasia-popup-content {
+  padding: 0 !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #e5e7eb !important;
+  overflow: hidden;
+}
+
+.ovenly-pin-popup .maplibregl-popup-tip,
+.ovenly-pin-popup .trackasia-popup-tip {
+  border-top-color: #fff !important;
+  border-bottom-color: #fff !important;
+}
+
