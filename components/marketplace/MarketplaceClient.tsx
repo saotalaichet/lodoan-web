@@ -264,12 +264,16 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
         <button
           onClick={handleOrderNow}
           disabled={!hasSlug || isOrderingDisabled}
-          className="w-full h-8 font-bold rounded-lg text-sm transition-opacity mt-auto"
+          className={`w-full h-8 font-bold rounded-lg text-sm transition-opacity mt-auto ${
+            !isOrderingDisabled && hasSlug
+              ? 'bg-gradient-to-br from-primary via-primary/90 to-primary/75 text-white hover:opacity-90'
+              : ''
+          }`}
           style={
             isOrderingDisabled
               ? { background: '#D3D3D3', color: '#666', cursor: 'not-allowed' }
               : hasSlug
-              ? { background: '#8B1A1A', color: 'white' }
+              ? undefined
               : { background: '#E5E5E5', color: '#999', cursor: 'not-allowed' }
           }
         >
@@ -306,6 +310,24 @@ export default function MarketplaceClient() {
     const savedCoords = sessionStorage.getItem('marketplace_delivery_coords');
     if (savedAddr) setDeliveryAddress(savedAddr);
     if (savedCoords) { try { setDeliveryCoords(JSON.parse(savedCoords)); } catch {} }
+
+    const langChangeHandler = (e: Event) => {
+      const ce = e as CustomEvent<string>;
+      if (ce.detail) setLang(ce.detail);
+    };
+    window.addEventListener('ovenly-lang-changed', langChangeHandler);
+
+    const storageHandler = (e: StorageEvent) => {
+      if ((e.key === 'marketplace_lang' || e.key === 'ovenly_language') && e.newValue) {
+        setLang(e.newValue);
+      }
+    };
+    window.addEventListener('storage', storageHandler);
+
+    return () => {
+      window.removeEventListener('ovenly-lang-changed', langChangeHandler);
+      window.removeEventListener('storage', storageHandler);
+    };
   }, []);
 
   useEffect(() => {

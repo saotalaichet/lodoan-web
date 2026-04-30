@@ -21,11 +21,20 @@ export default function Header() {
     const stored = localStorage.getItem('marketplace_lang') || localStorage.getItem('ovenly_language') || 'vi';
     setLang(stored);
     customerAuth.getCustomer().then(c => { if (c) setCustomer(c); });
+
+    const handler = (e: Event) => {
+      const ce = e as CustomEvent<string>;
+      if (ce.detail && ce.detail !== lang) setLang(ce.detail);
+    };
+    window.addEventListener('ovenly-lang-changed', handler);
+    return () => window.removeEventListener('ovenly-lang-changed', handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     localStorage.setItem('marketplace_lang', lang);
     localStorage.setItem('ovenly_language', lang);
+    window.dispatchEvent(new CustomEvent('ovenly-lang-changed', { detail: lang }));
   }, [lang]);
 
   useEffect(() => {
