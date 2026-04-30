@@ -147,7 +147,7 @@ export default async function LocationPage({ params }: { params: Promise<{ slug:
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="min-h-screen bg-gray-50">
-        <RestaurantNav restaurant={r} slug={slug} />
+        <RestaurantNav restaurant={r} slug={slug} lang={lang} />
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="space-y-6 max-w-2xl">
             <h2 className="text-2xl font-black text-gray-900">{t.pageTitle}</h2>

@@ -127,7 +127,7 @@ export default async function ReviewsPage({ params }: { params: Promise<{ slug: 
       {reviewSchema && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(reviewSchema) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <div className="min-h-screen bg-gray-50">
-        <RestaurantNav restaurant={r} slug={slug} />
+        <RestaurantNav restaurant={r} slug={slug} lang={lang} />
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="space-y-4 max-w-2xl">
             <div className="flex items-center justify-between">
