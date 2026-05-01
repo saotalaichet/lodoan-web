@@ -110,6 +110,10 @@ export default async function RootLayout({
 
   return (
     <html lang="vi">
+      <head>
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+        <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1" />
+      </head>
       <body>
         {!isOvenly && (
           <>
