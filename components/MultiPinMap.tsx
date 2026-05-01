@@ -37,6 +37,7 @@ interface Marker {
   logo?: string;
   hours?: Record<string, string>;
   address?: string;
+  phone?: string;
 }
 
 interface MultiPinMapProps {
@@ -117,6 +118,9 @@ export default function MultiPinMap({ markers, userCoords, lang = 'vi' }: MultiP
           const safeAddress = m.address
             ? m.address.replace(/</g, '&lt;').replace(/>/g, '&gt;')
             : '';
+          const validPhone = m.phone && m.phone !== 'N/A' ? m.phone : '';
+          const safePhone = validPhone.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const phoneHref = validPhone.replace(/[^0-9+]/g, '');
           const statusBg = isOpen ? '#ecfdf5' : '#fef2f2';
           const statusBorder = isOpen ? '#a7f3d0' : '#fecaca';
           const statusText = isOpen ? '#047857' : '#b91c1c';
@@ -144,7 +148,7 @@ export default function MultiPinMap({ markers, userCoords, lang = 'vi' }: MultiP
                   </span>
                 </div>
               </div>
-              ${safeAddress || todayHoursStr ? `<div style="border-top:1px solid #f3f4f6;"></div>` : ''}
+              ${safeAddress || safePhone || todayHoursStr ? `<div style="border-top:1px solid #f3f4f6;"></div>` : ''}
               ${safeAddress ? `
                 <div style="display:flex;gap:8px;align-items:flex-start;">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:2px;">
@@ -152,6 +156,14 @@ export default function MultiPinMap({ markers, userCoords, lang = 'vi' }: MultiP
                     <circle cx="12" cy="10" r="3"/>
                   </svg>
                   <p style="margin:0;font-size:12px;color:#4b5563;line-height:1.5;word-wrap:break-word;">${safeAddress}</p>
+                </div>
+              ` : ''}
+              ${safePhone ? `
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                  <a href="tel:${phoneHref}" style="margin:0;font-size:12px;color:#4b5563;text-decoration:none;">${safePhone}</a>
                 </div>
               ` : ''}
               ${todayHoursStr ? `

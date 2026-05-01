@@ -175,6 +175,7 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
         logo: s.logo,
         hours: s.hours,
         address: s.address,
+        phone: s.phone,
       };
     });
 
@@ -270,6 +271,13 @@ export default function LocationList({ siblings, currentSlug, lang }: LocationLi
                       <p className="text-sm text-gray-600 leading-relaxed mb-1.5 flex items-start gap-1.5">
                         <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
                         <span className="truncate">{s.address}</span>
+                      </p>
+                    )}
+
+                    {s.phone && s.phone !== 'N/A' && (
+                      <p className="text-sm text-gray-600 mb-1.5 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                        <a href={`tel:${s.phone.replace(/[^0-9+]/g, '')}`} className="hover:text-primary transition-colors">{s.phone}</a>
                       </p>
                     )}
 
