@@ -73,9 +73,9 @@ export default function Footer() {
           </div>
 
           <div className="text-center sm:text-left">
-            <h4 className="font-bold text-gray-900 text-base sm:text-sm mb-4 sm:mb-3 uppercase tracking-wide">
+            <h3 className="font-bold text-gray-900 text-base sm:text-sm mb-4 sm:mb-3 uppercase tracking-wide">
               {lang === 'vi' ? 'Điều Hướng' : 'Navigation'}
-            </h4>
+            </h3>
             <ul className="space-y-3 sm:space-y-2">
               <li>
                 <Link href="/about" className="text-base sm:text-sm text-gray-500 hover:text-primary transition-colors inline-block py-1">
@@ -91,9 +91,9 @@ export default function Footer() {
           </div>
 
           <div className="text-center sm:text-left sm:col-span-2 lg:col-span-1">
-            <h4 className="font-bold text-gray-900 text-base sm:text-sm mb-4 sm:mb-3 uppercase tracking-wide">
+            <h3 className="font-bold text-gray-900 text-base sm:text-sm mb-4 sm:mb-3 uppercase tracking-wide">
               {lang === 'vi' ? 'Dành cho đối tác' : 'For Partners'}
-            </h4>
+            </h3>
             <ul className="space-y-3 sm:space-y-2">
               <li>
                 <a

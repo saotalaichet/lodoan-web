@@ -2,6 +2,7 @@ import { headers } from 'next/headers';
 import type { Metadata } from 'next';
 import MarketplaceClient from '@/components/marketplace/MarketplaceClient';
 import CompanyPage from './company/page';
+import { getMarketplaceRestaurants } from '@/lib/restaurantData';
 
 export async function generateMetadata(): Promise<Metadata> {
   const headersList = await headers();
@@ -63,6 +64,8 @@ export default async function HomePage() {
     return <CompanyPage />;
   }
 
+  const initialRestaurants = await getMarketplaceRestaurants();
+
   const localBusinessSchema = {
     '@context': 'https://schema.org',
     '@type': 'FoodEstablishment',
@@ -112,7 +115,7 @@ export default async function HomePage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }} />
-      <MarketplaceClient />
+      <MarketplaceClient initialRestaurants={initialRestaurants} />
     </>
   );
 }

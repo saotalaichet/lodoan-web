@@ -287,10 +287,10 @@ function RestaurantCard({ restaurant, lang, search }: { restaurant: any; lang: s
   );
 }
 
-export default function MarketplaceClient() {
+export default function MarketplaceClient({ initialRestaurants = [] }: { initialRestaurants?: any[] }) {
   const { lang, setLang } = useMarketplaceLang();
-  const [restaurants, setRestaurants] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [restaurants, setRestaurants] = useState<any[]>(initialRestaurants);
+  const [loading, setLoading] = useState(initialRestaurants.length === 0);
   const [search, setSearch] = useState('');
   const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
   const [selectedDietary, setSelectedDietary] = useState<string[]>([]);

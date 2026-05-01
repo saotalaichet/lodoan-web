@@ -27,3 +27,16 @@ export const getMenu = cache(async (restaurantId: string, slug?: string) => {
     return null;
   }
 });
+
+export const getMarketplaceRestaurants = cache(async () => {
+  try {
+    const res = await fetch(`${RAILWAY}/api/marketplace/restaurants`, {
+      next: { revalidate: 60, tags: ['marketplace:restaurants'] },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+});
