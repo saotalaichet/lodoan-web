@@ -328,7 +328,7 @@ export default function MarketplaceClient({ initialRestaurants = [] }: { initial
       setLoading(false);
     };
     fetchRestaurants();
-    const interval = setInterval(fetchRestaurants, 30000);
+    const interval = setInterval(fetchRestaurants, 10000);
     return () => clearInterval(interval);
   }, []);
 
