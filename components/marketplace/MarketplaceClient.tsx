@@ -31,6 +31,12 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 
 function getRestaurantStatus(restaurant: any): 'OPEN' | 'CLOSED' | 'PAUSED' {
   if (!restaurant) return 'CLOSED';
+  if (restaurant?.paused_until) {
+    const pausedUntil = new Date(restaurant.paused_until);
+    if (!isNaN(pausedUntil.getTime()) && pausedUntil.getTime() > Date.now()) {
+      return 'CLOSED';
+    }
+  }
   if (restaurant.is_accepting_orders === false) return 'PAUSED';
   const hours = restaurant.hours;
   if (!hours) return 'OPEN';

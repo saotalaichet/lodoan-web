@@ -21,6 +21,12 @@ const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
 function getRestaurantStatus(restaurant: any): 'OPEN' | 'CLOSED' | 'PAUSED' {
   if (!restaurant) return 'CLOSED';
+  if (restaurant?.paused_until) {
+    const pausedUntil = new Date(restaurant.paused_until);
+    if (!isNaN(pausedUntil.getTime()) && pausedUntil.getTime() > Date.now()) {
+      return 'CLOSED';
+    }
+  }
   if (restaurant.is_accepting_orders === false) return 'PAUSED';
   const hours = restaurant.hours;
   if (!hours) return 'OPEN';
