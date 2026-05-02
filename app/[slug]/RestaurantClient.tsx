@@ -16,6 +16,7 @@ import MenuItemCard from './MenuItemCard';
 import { CartProvider, useCart, CartItem } from './CartContext';
 import { ItemSelectionProvider, useItemSelection } from './ItemSelectionContext';
 import { LanguageProvider } from './LanguageContext';
+import { RestaurantStatusProvider, useRestaurantClosed } from './RestaurantStatusContext';
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const JSON_HEADERS = { 'Content-Type': 'application/json' };
 
@@ -102,6 +103,7 @@ function ItemModal({ item, groups, lang, edit, onClose, onAdd, onUpdate }: {
   const [notes, setNotes] = useState(edit?.notes || '');
   const [error, setError] = useState('');
   const basePrice = parseFloat(item.price) || 0;
+  const isClosed = useRestaurantClosed();
 
   const toggle = (gId: string, oId: string, max: number) => {
     setError('');
@@ -220,10 +222,13 @@ function ItemModal({ item, groups, lang, edit, onClose, onAdd, onUpdate }: {
             </div>
           </div>
           <button onClick={handleAdd}
-            className="w-full bg-primary text-white font-bold py-4 rounded-xl text-sm hover:opacity-90 shadow-lg shadow-primary/20">
-            {edit
-              ? (lang === 'vi' ? `Cập nhật — ${fmt(total)}` : `Update — ${fmt(total)}`)
-              : (lang === 'vi' ? `Thêm vào giỏ — ${fmt(total)}` : `Add to cart — ${fmt(total)}`)}
+            disabled={isClosed}
+            className="w-full bg-primary text-white font-bold py-4 rounded-xl text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20">
+            {isClosed
+              ? (lang === 'vi' ? 'Nhà hàng đang đóng cửa' : 'Restaurant is closed')
+              : edit
+                ? (lang === 'vi' ? `Cập nhật — ${fmt(total)}` : `Update — ${fmt(total)}`)
+                : (lang === 'vi' ? `Thêm vào giỏ — ${fmt(total)}` : `Add to cart — ${fmt(total)}`)}
           </button>
         </div>
       </div>
@@ -1407,6 +1412,7 @@ function RestaurantClientInner({
   const cuisineTypes = Array.isArray(restaurant.cuisine_type) ? restaurant.cuisine_type : restaurant.cuisine_type ? [restaurant.cuisine_type] : [];
 
   return (
+    <RestaurantStatusProvider isClosed={isClosed}>
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-40">
@@ -1812,5 +1818,6 @@ function RestaurantClientInner({
   </div>
 </footer>
     </div>
+    </RestaurantStatusProvider>
   );
 }

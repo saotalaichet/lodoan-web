@@ -6,6 +6,7 @@ import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import { useCart, useItemQty } from './CartContext';
 import { useItemSelection } from './ItemSelectionContext';
 import { useLang } from './LanguageContext';
+import { useRestaurantClosed } from './RestaurantStatusContext';
 
 interface MenuItemCardProps {
   item: any;
@@ -15,10 +16,12 @@ interface MenuItemCardProps {
 
 export default function MenuItemCard({
   item,
-  isClosed,
+  isClosed: isClosedProp,
   isOutOfStock,
 }: MenuItemCardProps) {
   const lang = useLang();
+  const isClosedFromContext = useRestaurantClosed();
+  const isClosed = isClosedProp || isClosedFromContext;
   const price = parseFloat(item.price) || 0;
   const { set: setQty } = useCart();
   const qty = useItemQty(item.id);
