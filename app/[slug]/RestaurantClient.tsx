@@ -225,7 +225,7 @@ function ItemModal({ item, groups, lang, edit, onClose, onAdd, onUpdate }: {
             disabled={isClosed}
             className="w-full bg-primary text-white font-bold py-4 rounded-xl text-sm hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-primary/20">
             {isClosed
-              ? (lang === 'vi' ? 'Nhà hàng đang đóng cửa' : 'Restaurant is closed')
+              ? (lang === 'vi' ? 'Hiện không nhận đơn' : 'Not accepting orders')
               : edit
                 ? (lang === 'vi' ? `Cập nhật — ${fmt(total)}` : `Update — ${fmt(total)}`)
                 : (lang === 'vi' ? `Thêm vào giỏ — ${fmt(total)}` : `Add to cart — ${fmt(total)}`)}
@@ -1495,7 +1495,7 @@ function RestaurantClientInner({
         <div className="bg-red-50 border-l-4 border-red-400 px-4 py-3 w-full">
           <div className="max-w-6xl mx-auto">
             <p className="text-red-600 font-semibold text-sm">
-              {lang === 'vi' ? '🔴 Nhà hàng hiện không nhận đơn trực tuyến. Vui lòng quay lại trong giờ mở cửa.' : '🔴 Online ordering is currently unavailable. Please come back during opening hours.'}
+              {lang === 'vi' ? '🔴 Nhà hàng hiện không nhận đơn.' : '🔴 This restaurant is currently not accepting orders.'}
             </p>
           </div>
         </div>
