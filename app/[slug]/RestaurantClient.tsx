@@ -57,7 +57,6 @@ function getTodayHours(restaurant: any): string | null {
 
 function getStatusBadgeClass(status: string) {
   if (status === 'OPEN') return 'bg-green-50 text-green-600 border-green-200';
-  if (status === 'PAUSED') return 'bg-orange-50 text-orange-600 border-orange-200';
   return 'bg-red-50 text-red-600 border-red-200';
 }
 
@@ -1523,8 +1522,8 @@ function RestaurantClientInner({
           )}
           <div className="flex items-center gap-3 flex-wrap">
             <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border ${getStatusBadgeClass(status)}`}>
-              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: status === 'OPEN' ? '#22C55E' : status === 'PAUSED' ? '#F97316' : '#9CA3AF' }} />
-              {status === 'OPEN' ? (lang === 'vi' ? 'Đang mở' : 'Open now') : status === 'PAUSED' ? (lang === 'vi' ? 'Tạm dừng' : 'Paused') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
+              <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: status === 'OPEN' ? '#22C55E' : '#9CA3AF' }} />
+              {status === 'OPEN' ? (lang === 'vi' ? 'Đang mở' : 'Open now') : (lang === 'vi' ? 'Đóng cửa' : 'Closed')}
             </span>
             {todayHours && <span className="text-xs text-gray-500 font-medium">{todayHours}</span>}
             {restaurant.total_ratings >= 3 && (

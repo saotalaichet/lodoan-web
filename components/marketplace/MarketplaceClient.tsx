@@ -59,14 +59,13 @@ function getStatusText(status: string, lang: string) {
   const m: Record<string, any> = {
     OPEN: { vi: '● Đang Mở', en: '● Open' },
     CLOSED: { vi: '● Đã Đóng Cửa', en: '● Closed' },
-    PAUSED: { vi: '● Tạm Dừng', en: '● Paused' },
   };
-  return m[status]?.[lang === 'vi' ? 'vi' : 'en'] || '';
+  const key = status === 'OPEN' ? 'OPEN' : 'CLOSED';
+  return m[key]?.[lang === 'vi' ? 'vi' : 'en'] || '';
 }
 
 function getStatusBadgeClass(status: string) {
   if (status === 'OPEN') return 'bg-green-50 text-green-600 border-green-200';
-  if (status === 'PAUSED') return 'bg-orange-50 text-orange-600 border-orange-200';
   return 'bg-red-50 text-red-600 border-red-200';
 }
 
