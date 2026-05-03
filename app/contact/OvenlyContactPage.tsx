@@ -21,7 +21,7 @@ export default function OvenlyContactPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await submitContactForm({ ...form, language: lang });
+      await submitContactForm({ ...form, source: 'ovenly_b2b', language: lang });
       setSuccess(true);
       setForm({ full_name: '', restaurant_name: '', phone_number: '', email: '', city: '', message: '' });
     } catch {

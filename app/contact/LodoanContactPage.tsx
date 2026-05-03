@@ -24,7 +24,7 @@ export default function LodoanContactPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await submitContactForm({ ...form, language: lang });
+      await submitContactForm({ ...form, source: 'lodoan_b2c', language: lang });
       setSuccess(true);
       setForm({ full_name: '', order_number: '', phone_number: '', email: '', issue_type: '', message: '' });
     } catch {
