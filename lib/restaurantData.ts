@@ -18,7 +18,7 @@ export const getMenu = cache(async (restaurantId: string, slug?: string) => {
   try {
     const tags = [`menu:${restaurantId}`];
     if (slug) tags.push(`restaurant:${slug}`);
-    const res = await fetch(`${RAILWAY}/api/admin/menu/${restaurantId}`, {
+    const res = await fetch(`${RAILWAY}/api/menu/${restaurantId}`, {
       next: { revalidate: 60, tags },
     });
     if (!res.ok) return null;

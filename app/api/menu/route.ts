@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     if (!restaurant?.id) return NextResponse.json({ categories: [], items: [] });
 
     // Step 2 — get menu by restaurant ID
-    const menuRes = await fetch(`${RAILWAY}/api/admin/menu/${restaurant.id}`, { cache: 'no-store' });
+    const menuRes = await fetch(`${RAILWAY}/api/menu/${restaurant.id}`, { cache: 'no-store' });
     if (!menuRes.ok) return NextResponse.json({ categories: [], items: [] });
     const data = await menuRes.json();
 
