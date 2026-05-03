@@ -156,7 +156,7 @@ export function ReservationForm({ restaurantId, restaurantName, maxPartySize, ad
     };
     return (
       <div className="text-center py-2">
-        <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-700 mx-auto mb-3 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center bg-slate-100 text-slate-900">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="20 6 9 17 4 12" />
           </svg>
@@ -167,7 +167,7 @@ export function ReservationForm({ restaurantId, restaurantName, maxPartySize, ad
           {language === 'vi' ? `${result.party_size} khách` : `Party of ${result.party_size}`}
         </p>
         <button type="button" onClick={onDownload}
-          className="inline-flex items-center gap-1.5 mt-4 bg-white text-blue-600 border border-blue-200 px-3.5 py-2 rounded-lg text-xs font-medium hover:bg-blue-50 transition-colors">
+          className="inline-flex items-center gap-1.5 mt-4 bg-white text-slate-900 border border-slate-300 hover:bg-slate-50 px-3.5 py-2 rounded-lg text-xs font-medium transition-colors">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
@@ -184,11 +184,15 @@ export function ReservationForm({ restaurantId, restaurantName, maxPartySize, ad
     : error === 'party_size_too_large' ? t.errorParty
     : error ? t.errorGeneric : null;
 
+  const showSlotsScroll = (slots?.length ?? 0) > 12;
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4" style={{ scrollMarginTop: 80 }}>
       <div className="flex justify-end gap-1">
-        <button type="button" onClick={() => setLanguage('vi')} className={`text-xs px-2 py-1 rounded ${language === 'vi' ? 'bg-blue-100 text-blue-800' : 'text-slate-500'}`}>VI</button>
-        <button type="button" onClick={() => setLanguage('en')} className={`text-xs px-2 py-1 rounded ${language === 'en' ? 'bg-blue-100 text-blue-800' : 'text-slate-500'}`}>EN</button>
+        <button type="button" onClick={() => setLanguage('vi')}
+          className={`text-xs px-2 py-1 rounded ${language === 'vi' ? 'bg-slate-100 text-slate-900 font-medium' : 'text-slate-500'}`}>VI</button>
+        <button type="button" onClick={() => setLanguage('en')}
+          className={`text-xs px-2 py-1 rounded ${language === 'en' ? 'bg-slate-100 text-slate-900 font-medium' : 'text-slate-500'}`}>EN</button>
       </div>
 
       <div>
@@ -199,9 +203,10 @@ export function ReservationForm({ restaurantId, restaurantName, maxPartySize, ad
             const label = idx === 0 ? t.today : idx === 1 ? t.tomorrow : t.weekdays[d.getDay()];
             return (
               <button key={ymd(d)} type="button" onClick={() => setSelectedDate(d)}
-                className={`py-2 rounded-lg border text-center transition-colors ${
-                  isActive ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300 hover:border-slate-400'}`}>
-                <div className={`text-xs ${isActive ? 'text-blue-100' : 'text-slate-500'}`}>{label}</div>
+                className={`py-3 rounded-lg border text-center transition-colors ${
+                  isActive ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-700 border-slate-300 hover:border-slate-400'}`}>
+                <div className={`text-xs ${isActive ? 'text-slate-300' : 'text-slate-500'}`}>{label}</div>
                 <div className="text-sm font-medium mt-0.5">{d.getDate()}/{d.getMonth() + 1}</div>
               </button>
             );
@@ -212,16 +217,24 @@ export function ReservationForm({ restaurantId, restaurantName, maxPartySize, ad
       <div>
         <p className="text-sm font-medium text-slate-900 mb-2">{t.party}</p>
         <div className="flex flex-wrap gap-1.5">
-          {[2, 4, 6, 8].filter(n => n <= maxPartySize).map(n => (
-            <button key={n} type="button" onClick={() => setPartySize(n)}
-              className={`px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                partySize === n ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>{n}</button>
-          ))}
-          {maxPartySize > 8 && (
-            <button type="button" onClick={() => setPartySize(10)}
-              className={`px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                partySize >= 10 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>10+</button>
-          )}
+          {[2, 4, 6, 8].filter(n => n <= maxPartySize).map(n => {
+            const active = partySize === n;
+            return (
+              <button key={n} type="button" onClick={() => setPartySize(n)}
+                className={`px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  active ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>{n}</button>
+            );
+          })}
+          {maxPartySize > 8 && (() => {
+            const active = partySize >= 10;
+            return (
+              <button type="button" onClick={() => setPartySize(10)}
+                className={`px-3.5 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  active ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>10+</button>
+            );
+          })()}
         </div>
       </div>
 
@@ -234,47 +247,61 @@ export function ReservationForm({ restaurantId, restaurantName, maxPartySize, ad
         ) : slots && slots.length === 0 ? (
           <p className="text-sm text-slate-500 text-center py-4">{t.noSlots}</p>
         ) : (
-          <div className="grid grid-cols-3 gap-1.5">
-            {slots?.map(slot => {
-              const isActive = selectedSlot?.iso === slot.iso;
-              const showSpotsLeft = slot.available && slot.remaining <= 5;
-              return (
-                <button key={slot.iso} type="button" disabled={!slot.available} onClick={() => setSelectedSlot(slot)}
-                  className={`py-2.5 rounded-lg border text-sm font-medium transition-colors ${
-                    isActive ? 'bg-blue-600 text-white border-blue-600'
-                      : slot.available ? 'bg-white text-slate-900 border-slate-300 hover:border-slate-400'
-                        : 'bg-slate-50 text-slate-300 border-slate-200 cursor-not-allowed'}`}>
-                  {slot.time}
-                  {showSpotsLeft && (
-                    <span className={`block text-[10px] font-normal mt-0.5 ${isActive ? 'text-blue-100' : 'text-amber-700'}`}>
-                      {t.spotsLeft(slot.remaining)}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          <div className={showSlotsScroll ? 'overflow-y-auto max-h-72' : ''}>
+            <div className="grid grid-cols-3 gap-1.5">
+              {slots?.map(slot => {
+                const isActive = selectedSlot?.iso === slot.iso;
+                const showSpotsLeft = slot.available && slot.remaining <= 5;
+                return (
+                  <button key={slot.iso} type="button" disabled={!slot.available} onClick={() => setSelectedSlot(slot)}
+                    className={`py-3 rounded-lg border text-sm font-medium transition-colors ${
+                      isActive ? 'bg-slate-900 text-white border-slate-900'
+                        : slot.available ? 'bg-white text-slate-900 border-slate-300 hover:border-slate-400'
+                          : 'bg-slate-50 text-slate-300 border-slate-200 cursor-not-allowed'}`}>
+                    {slot.time}
+                    {showSpotsLeft && (
+                      <span className={`block text-[10px] font-normal mt-0.5 ${isActive ? 'text-slate-300' : 'text-amber-700'}`}>
+                        {t.spotsLeft(slot.remaining)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
 
       <div className="space-y-2 pt-2">
         <input type="text" placeholder={t.name} value={name} onChange={e => setName(e.target.value)} required
-          className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-        <input type="tel" placeholder={t.phone} value={phone} onChange={e => setPhone(e.target.value)} required
-          className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-        <input type="email" placeholder={t.email} value={email} onChange={e => setEmail(e.target.value)} required
-          className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+          autoCapitalize="words"
+          className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900" />
+        <input type="tel" inputMode="tel" placeholder={t.phone} value={phone} onChange={e => setPhone(e.target.value)} required
+          className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900" />
+        <input type="email" inputMode="email" autoCapitalize="off" placeholder={t.email} value={email} onChange={e => setEmail(e.target.value)} required
+          className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900" />
         <textarea placeholder={t.notes} value={notes} onChange={e => setNotes(e.target.value)} rows={2}
-          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+          className="w-full border border-slate-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900" />
       </div>
 
       <button type="submit" disabled={submitting || !selectedSlot}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg text-base transition-colors">
+        className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-3 rounded-lg text-base transition-colors">
         {submitting ? t.submitting : !selectedSlot ? t.pickTime : t.submit}
       </button>
 
       {errorMessage && <p className="text-red-600 text-sm text-center">{errorMessage}</p>}
-      {loggedIn && <p className="text-xs text-slate-400 text-center">{t.autofilled}</p>}
+      {loggedIn && (
+        <p className="text-xs text-center text-slate-400">{t.autofilled}</p>
+      )}
+
+      <div className="text-center mt-4 pt-3 border-t border-slate-200">
+        <p className="text-xs text-slate-500">
+          Powered by{' '}
+          <span className="font-semibold" style={{ color: '#8B1A1A' }}>
+            Ovenly
+          </span>
+        </p>
+      </div>
     </form>
   );
 }

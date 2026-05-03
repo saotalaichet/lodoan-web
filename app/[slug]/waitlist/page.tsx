@@ -44,7 +44,7 @@ export default async function WaitlistPage({ params }: { params: Promise<{ slug:
                      className="rounded-full object-cover border-4 border-white -mt-7 shadow-sm"
                      style={{ width: 52, height: 52 }} />
               ) : (
-                <div className="rounded-full bg-blue-600 -mt-7 border-4 border-white"
+                <div className="rounded-full -mt-7 border-4 border-white bg-slate-900"
                      style={{ width: 52, height: 52 }} />
               )}
               <div className="flex-1 pt-1">
@@ -70,9 +70,6 @@ export default async function WaitlistPage({ params }: { params: Promise<{ slug:
             )}
           </div>
         </div>
-        <p className="text-center text-xs text-slate-400 py-4">
-          Powered by <span className="font-medium text-blue-600">Ovenly</span>
-        </p>
       </div>
     </div>
   );

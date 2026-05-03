@@ -42,7 +42,7 @@ const T = {
 
 export function WaitlistForm({
   restaurantId, maxPartySize, initialQueueCount,
-  initialEstimatedWait, estimatedMinutesPerParty,
+  estimatedMinutesPerParty,
 }: Props) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -92,7 +92,7 @@ export function WaitlistForm({
   if (result) {
     return (
       <div className="text-center py-2">
-        <div className="w-14 h-14 rounded-full bg-blue-100 text-blue-700 mx-auto mb-3 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-full mx-auto mb-3 flex items-center justify-center bg-slate-100 text-slate-900">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="20 6 9 17 4 12" />
           </svg>
@@ -116,7 +116,7 @@ export function WaitlistForm({
   const queueHasPeople = initialQueueCount > 0;
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
+    <form onSubmit={onSubmit} className="space-y-3" style={{ scrollMarginTop: 80 }}>
       <div className={queueHasPeople
           ? 'bg-amber-50 text-amber-800 text-center text-sm font-medium py-2.5 rounded-lg mb-3'
           : 'bg-emerald-50 text-emerald-800 text-center text-sm font-medium py-2.5 rounded-lg mb-3'}>
@@ -125,43 +125,63 @@ export function WaitlistForm({
 
       <div className="flex justify-end gap-1 mb-2">
         <button type="button" onClick={() => setLanguage('vi')}
-          className={`text-xs px-2 py-1 rounded ${language === 'vi' ? 'bg-blue-100 text-blue-800' : 'text-slate-500'}`}>VI</button>
+          className={`text-xs px-2 py-1 rounded ${language === 'vi' ? 'bg-slate-100 text-slate-900 font-medium' : 'text-slate-500'}`}>VI</button>
         <button type="button" onClick={() => setLanguage('en')}
-          className={`text-xs px-2 py-1 rounded ${language === 'en' ? 'bg-blue-100 text-blue-800' : 'text-slate-500'}`}>EN</button>
+          className={`text-xs px-2 py-1 rounded ${language === 'en' ? 'bg-slate-100 text-slate-900 font-medium' : 'text-slate-500'}`}>EN</button>
       </div>
 
       <input type="text" placeholder={t.name} value={name} onChange={e => setName(e.target.value)} required
-        className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-      <input type="tel" placeholder={t.phone} value={phone} onChange={e => setPhone(e.target.value)} required
-        className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
-      <input type="email" placeholder={t.email} value={email} onChange={e => setEmail(e.target.value)} required
-        className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" />
+        autoCapitalize="words"
+        className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900" />
+      <input type="tel" inputMode="tel" placeholder={t.phone} value={phone} onChange={e => setPhone(e.target.value)} required
+        className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900" />
+      <input type="email" inputMode="email" autoCapitalize="off" placeholder={t.email} value={email} onChange={e => setEmail(e.target.value)} required
+        className="w-full border border-slate-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900" />
 
       <div>
         <p className="text-xs text-slate-500 mb-2">{t.party}</p>
         <div className="flex flex-wrap gap-1.5">
-          {Array.from({ length: Math.min(maxPartySize, 6) }, (_, i) => i + 1).map(n => (
-            <button key={n} type="button" onClick={() => setPartySize(n)}
-              className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                partySize === n ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>{n}</button>
-          ))}
+          {Array.from({ length: Math.min(maxPartySize, 6) }, (_, i) => i + 1).map(n => {
+            const active = partySize === n;
+            return (
+              <button key={n} type="button" onClick={() => setPartySize(n)}
+                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                  active ? 'bg-slate-900 text-white border-slate-900'
+                    : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>{n}</button>
+            );
+          })}
           {maxPartySize > 6 && (
-            <button type="button" onClick={() => setPartySize(7)}
-              className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                partySize >= 7 ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>7+</button>
+            (() => {
+              const active = partySize >= 7;
+              return (
+                <button type="button" onClick={() => setPartySize(7)}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${
+                    active ? 'bg-slate-900 text-white border-slate-900'
+                      : 'bg-white text-slate-600 border-slate-300 hover:border-slate-400'}`}>7+</button>
+              );
+            })()
           )}
         </div>
       </div>
 
       <button type="submit" disabled={submitting}
-        className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-medium py-3 rounded-lg text-base transition-colors mt-2">
+        className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-50 text-white font-medium py-3 rounded-lg text-base transition-colors">
         {submitting ? t.submitting : t.submit}
       </button>
 
       {error && <p className="text-red-600 text-sm text-center">{t.error}</p>}
-      {loggedIn && <p className="text-xs text-slate-400 text-center">{t.autofilled}</p>}
+      {loggedIn && (
+        <p className="text-xs text-center text-slate-400">{t.autofilled}</p>
+      )}
+
+      <div className="text-center mt-4 pt-3 border-t border-slate-200">
+        <p className="text-xs text-slate-500">
+          Powered by{' '}
+          <span className="font-semibold" style={{ color: '#8B1A1A' }}>
+            Ovenly
+          </span>
+        </p>
+      </div>
     </form>
   );
 }
