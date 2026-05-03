@@ -95,6 +95,7 @@ export function middleware(request: NextRequest) {
       pathname === '/favicon.ico' ||
       pathname === '/robots.txt' ||
       pathname === '/sitemap.xml' ||
+      /^\/[^\/]+\/(waitlist|reservations)$/.test(pathname) ||
       /\.(ico|png|jpg|jpeg|svg|webp|css|js|json|txt|xml)$/.test(pathname);
 
     if (!isAllowedOvenly) {
@@ -119,6 +120,10 @@ export function middleware(request: NextRequest) {
         new URL('https://www.ovenly.io/register'),
         { status: 301 }
       );
+    }
+    // Booking pages live on ovenly.io now. 404 on lodoan.vn.
+    if (/^\/[^\/]+\/(waitlist|reservations)$/.test(pathname)) {
+      return new NextResponse(null, { status: 404 });
     }
     return NextResponse.next();
   }
