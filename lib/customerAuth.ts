@@ -114,4 +114,17 @@ export const customerAuth = {
       });
     } catch {}
   },
+
+  resetPassword: async (reset_token: string, new_password: string) => {
+    const res = await fetch(`${RAILWAY}/api/auth/customer/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reset_token, new_password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!data?.success) {
+      throw new Error(data?.error || 'reset_failed');
+    }
+    return data;
+  },
 };
