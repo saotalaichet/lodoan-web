@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import RestaurantClient from './RestaurantClient';
 import MenuList from './MenuList';
 import { getRestaurant, getMenu } from '@/lib/restaurantData';
+import { buildRestaurantTitle, buildRestaurantDescription } from '@/lib/restaurantTitle';
 
 async function fetchInitialData(slug: string) {
   const restaurant = await getRestaurant(slug);
@@ -28,20 +29,15 @@ export async function generateMetadata({
 
   if (!restaurant?.id) {
     return {
-      title: 'Không tìm thấy địa điểm | LÒ ĐỒ ĂN',
+      title: 'Không tìm thấy địa điểm',
       robots: { index: false, follow: false },
     };
   }
 
-  const cuisineList = Array.isArray(restaurant.cuisine_type)
-    ? restaurant.cuisine_type.join(', ')
-    : restaurant.cuisine_type || '';
-  const addressShort = restaurant.address || 'Việt Nam';
-
-  const title = `${restaurant.name} | Đặt món online${cuisineList ? ` | ${cuisineList}` : ''} | LÒ ĐỒ ĂN`;
-  const description = restaurant.description
-    ? `${restaurant.description.slice(0, 150)}${restaurant.description.length > 150 ? '...' : ''}`
-    : `Đặt món online từ ${restaurant.name} tại ${addressShort}. Giao hàng tận nơi hoặc mang về. Đặt nhanh qua LÒ ĐỒ ĂN.`;
+  // ChowNow-style white-label title: action + brand + venue + cuisine + city
+  // No marketplace branding in title — it's the restaurant's own ordering page.
+  const title = buildRestaurantTitle(restaurant);
+  const description = buildRestaurantDescription(restaurant);
 
   const ogImage = restaurant.banner || restaurant.logo || 'https://www.lodoan.vn/lodoan-og.jpg';
   const canonical = `https://www.lodoan.vn/${slug}`;
