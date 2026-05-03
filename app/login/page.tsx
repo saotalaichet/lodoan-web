@@ -13,18 +13,22 @@ const T = {
     rememberMe: 'Ghi nhớ đăng nhập', login: 'Đăng Nhập', loggingIn: 'Đang đăng nhập...',
     forgot: 'Quên Mật Khẩu?', noAccount: 'Chưa có tài khoản? Đăng ký ngay',
     wrongCreds: 'Email hoặc mật khẩu không đúng. Vui lòng thử lại.',
-    suspended: 'Tài khoản của bạn đã bị tạm khóa. Vui lòng liên hệ hello@ovenly.io.',
+    accountDisabled: 'Tài khoản của bạn đã bị vô hiệu hóa. Vui lòng liên hệ hello@ovenly.io.',
+    tooManyAttempts: 'Quá nhiều lần thử. Vui lòng thử lại sau 15 phút.',
     forgotSent: 'Nếu email tồn tại, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.',
     enterEmail: 'Vui lòng nhập email để đặt lại mật khẩu',
+    genericError: 'Có lỗi xảy ra. Vui lòng thử lại.',
   },
   en: {
     title: 'Login', email: 'Email', password: 'Password',
     rememberMe: 'Remember me', login: 'Login', loggingIn: 'Logging in...',
     forgot: 'Forgot Password?', noAccount: "Don't have an account? Sign up",
     wrongCreds: 'Incorrect email or password. Please try again.',
-    suspended: 'Your account has been suspended. Please contact hello@ovenly.io.',
+    accountDisabled: 'Your account has been disabled. Please contact hello@ovenly.io.',
+    tooManyAttempts: 'Too many attempts. Please try again in 15 minutes.',
     forgotSent: 'If the account exists, password reset instructions will be sent.',
     enterEmail: 'Please enter your email to reset password',
+    genericError: 'An error occurred. Please try again.',
   },
 };
 
@@ -54,8 +58,11 @@ export default function LoginPage() {
       if (redirect) { localStorage.removeItem('checkout_redirect'); router.push(redirect); }
       else router.push('/');
     } catch (err: any) {
-      if (err.message === 'account_suspended') setError(t.suspended);
-      else setError(t.wrongCreds);
+      const code = err?.message || '';
+      if (code === 'account_disabled') setError(t.accountDisabled);
+      else if (code === 'too_many_attempts') setError(t.tooManyAttempts);
+      else if (code === 'invalid_credentials') setError(t.wrongCreds);
+      else setError(t.genericError);
     } finally {
       setLoading(false);
     }

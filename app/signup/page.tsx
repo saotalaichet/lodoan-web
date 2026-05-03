@@ -17,6 +17,11 @@ const T = {
     passwordMin: 'Mật khẩu phải có ít nhất 8 ký tự',
     passwordMismatch: 'Mật khẩu xác nhận không khớp',
     emailExists: 'Email này đã được đăng ký. Vui lòng đăng nhập.',
+    invalidName: 'Vui lòng nhập họ và tên hợp lệ.',
+    invalidEmail: 'Email không hợp lệ. Vui lòng kiểm tra lại.',
+    passwordTooShort: 'Mật khẩu phải có ít nhất 8 ký tự.',
+    accountDisabled: 'Tài khoản này đã bị vô hiệu hóa.',
+    genericError: 'Có lỗi xảy ra. Vui lòng thử lại.',
     acceptTerms: 'Vui lòng đồng ý với Điều Khoản Sử Dụng',
     langVi: 'Tiếng Việt', langEn: 'English',
   },
@@ -29,6 +34,11 @@ const T = {
     passwordMin: 'Password must be at least 8 characters',
     passwordMismatch: 'Passwords do not match',
     emailExists: 'This email is already registered. Please login.',
+    invalidName: 'Please enter a valid name.',
+    invalidEmail: 'Invalid email. Please check again.',
+    passwordTooShort: 'Password must be at least 8 characters.',
+    accountDisabled: 'This account has been disabled.',
+    genericError: 'An error occurred. Please try again.',
     acceptTerms: 'Please accept the Terms of Service',
     langVi: 'Tiếng Việt', langEn: 'English',
   },
@@ -66,8 +76,13 @@ export default function SignupPage() {
       if (redirect) { localStorage.removeItem('checkout_redirect'); router.push(redirect); }
       else router.push('/profile');
     } catch (err: any) {
-      if (err.message === 'email_exists') setError(t.emailExists);
-      else setError(err.message || 'An error occurred');
+      const code = err?.message || '';
+      if (code === 'email_already_registered') setError(t.emailExists);
+      else if (code === 'invalid_name') setError(t.invalidName);
+      else if (code === 'invalid_email') setError(t.invalidEmail);
+      else if (code === 'password_too_short') setError(t.passwordTooShort);
+      else if (code === 'account_disabled') setError(t.accountDisabled);
+      else setError(t.genericError);
     } finally {
       setLoading(false);
     }
