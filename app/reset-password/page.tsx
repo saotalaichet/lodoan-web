@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock } from 'lucide-react';
 import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
-
-const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
+import { customerAuth } from '@/lib/customerAuth';
 
 function ResetPasswordInner() {
   const router = useRouter();
@@ -29,25 +28,39 @@ function ResetPasswordInner() {
       setMsg(lang === 'vi' ? 'Mật khẩu xác nhận không khớp' : 'Passwords do not match');
       return;
     }
+    if (!token) {
+      setMsg(lang === 'vi' ? 'Liên kết không hợp lệ.' : 'Invalid link.');
+      return;
+    }
     setLoading(true);
     setMsg('');
     try {
-      const res = await fetch(`${RAILWAY}/api/auth/customer/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, new_password: password }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setSuccess(true);
-        setTimeout(() => router.push('/login'), 3000);
-      } else if (data.error === 'invalid_or_expired_token') {
-        setMsg(lang === 'vi' ? 'Liên kết đã hết hạn. Vui lòng yêu cầu lại.' : 'Link expired. Please request a new one.');
+      await customerAuth.resetPassword(token, password);
+      setSuccess(true);
+      setTimeout(() => router.push('/login'), 3000);
+    } catch (err: any) {
+      const code = err?.message || '';
+      if (code === 'invalid_token') {
+        setMsg(lang === 'vi'
+          ? 'Liên kết không hợp lệ hoặc đã được sử dụng.'
+          : 'Invalid or already-used reset link.');
+      } else if (code === 'token_expired') {
+        setMsg(lang === 'vi'
+          ? 'Liên kết đã hết hạn. Vui lòng yêu cầu đặt lại mật khẩu mới.'
+          : 'Link expired. Please request a new password reset.');
+      } else if (code === 'password_too_short') {
+        setMsg(lang === 'vi'
+          ? 'Mật khẩu phải có ít nhất 8 ký tự.'
+          : 'Password must be at least 8 characters.');
+      } else if (code === 'account_disabled') {
+        setMsg(lang === 'vi'
+          ? 'Tài khoản đã bị vô hiệu hóa.'
+          : 'Account has been disabled.');
       } else {
-        setMsg(lang === 'vi' ? 'Có lỗi xảy ra. Thử lại.' : 'An error occurred. Please try again.');
+        setMsg(lang === 'vi'
+          ? 'Có lỗi xảy ra. Vui lòng thử lại.'
+          : 'An error occurred. Please try again.');
       }
-    } catch {
-      setMsg(lang === 'vi' ? 'Không thể kết nối máy chủ.' : 'Could not connect to server.');
     } finally {
       setLoading(false);
     }
