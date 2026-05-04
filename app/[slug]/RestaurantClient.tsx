@@ -1027,7 +1027,7 @@ function SuccessScreen({ successOrder, restaurant, lang, onBack }: {
       <div className="max-w-sm w-full"><Logo />
         <div className="relative w-28 h-28 mx-auto mb-8">
           <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-          <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><span className="text-3xl">🍜</span></div>
+          <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><Clock className="w-8 h-8 text-primary/40" strokeWidth={1.5} /></div>
         </div>
         <h2 className="font-bold text-xl text-gray-900 mb-2">{lang === 'vi' ? 'Đang chờ quán xác nhận...' : 'Waiting for merchant to confirm...'}</h2>
         <p className="text-xs text-gray-400 mb-6">{lang === 'vi' ? 'Vui lòng không đóng trang này' : 'Please do not close this page'}</p>
@@ -1083,7 +1083,7 @@ function WaitingForVendor({ orderId, restaurant, lang, onCancelled, onConfirmed 
         <div className="relative w-28 h-28 mx-auto mb-8">
           <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
           <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center">
-            <span className="text-3xl">🍜</span>
+            <Clock className="w-8 h-8 text-primary/40" strokeWidth={1.5} />
           </div>
         </div>
         <h2 className="font-bold text-xl text-gray-900 mb-2">
@@ -1368,7 +1368,7 @@ function RestaurantClientInner({
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-8 text-center">
       <div className="relative w-28 h-28 mx-auto mb-8">
         <div className="absolute inset-0 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-        <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><span className="text-3xl">🍜</span></div>
+        <div className="absolute inset-4 rounded-full bg-primary/5 flex items-center justify-center"><Clock className="w-8 h-8 text-primary/40" strokeWidth={1.5} /></div>
       </div>
       <h2 className="font-bold text-xl text-gray-900">{lang === 'vi' ? 'Đang xử lý...' : 'Processing...'}</h2>
     </div>

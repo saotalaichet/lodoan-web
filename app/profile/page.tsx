@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { User, ShoppingBag, Star, Lock } from 'lucide-react';
+import { User, ShoppingBag, Star, Lock, Receipt } from 'lucide-react';
 import { customerAuth } from '@/lib/customerAuth';
 import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
 
@@ -269,7 +269,7 @@ function ProfileInner() {
               </div>
             ) : orders.length === 0 ? (
               <div className="text-center py-12">
-                <p className="text-4xl mb-3">🍜</p>
+                <Receipt className="w-12 h-12 text-gray-300 mx-auto mb-3" strokeWidth={1.5} />
                 <p className="text-gray-400 font-medium">{t.noOrders}</p>
               </div>
             ) : (

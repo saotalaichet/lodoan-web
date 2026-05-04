@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Plus, Minus, Star, Flame, Leaf } from 'lucide-react';
+import { Plus, Minus, Star, Flame, Leaf, UtensilsCrossed } from 'lucide-react';
 import { cloudinaryThumb, fmt } from '@/lib/cloudinary';
 import { useCart, useItemQty } from './CartContext';
 import { useItemSelection } from './ItemSelectionContext';
@@ -93,7 +93,9 @@ export default function MenuItemCard({
         {item.image_url ? (
           <img src={cloudinaryThumb(item.image_url, 288, 288)} alt={item.name} loading="lazy" className="w-full h-full object-cover" />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-4xl">🍜</div>
+          <div className="w-full h-full flex items-center justify-center">
+            <UtensilsCrossed className="w-10 h-10 text-gray-400" strokeWidth={1.5} />
+          </div>
         )}
         {(item.is_chef_choice || item.is_spicy || item.is_vegetarian) && (
           <div className="absolute top-2 left-2 flex flex-col gap-1">

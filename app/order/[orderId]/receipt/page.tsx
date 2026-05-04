@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
+import { UtensilsCrossed } from 'lucide-react';
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
 const fmt = (v: number) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(v);
@@ -154,7 +155,11 @@ function ReceiptInner() {
           <div style={{ padding: '28px 24px 20px', textAlign: 'center', borderBottom: '1px dashed #E8E4DF' }}>
             {restaurant?.logo
               ? <img src={restaurant.logo} alt={restaurant.name || order.restaurant_name} style={{ height: 72, width: 'auto', maxWidth: 180, objectFit: 'contain', margin: '0 auto 14px', display: 'block' }} onError={e => (e.currentTarget.style.display = 'none')} />
-              : <div style={{ width: 64, height: 64, borderRadius: 16, background: '#F5F0EB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px', fontSize: 28 }}>🍜</div>
+              : (
+                  <div style={{ width: 64, height: 64, borderRadius: 16, background: '#F5F0EB', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                    <UtensilsCrossed size={28} strokeWidth={1.5} color="#9ca3af" />
+                  </div>
+                )
             }
             <p style={{ fontSize: 18, fontWeight: 800, margin: 0, color: '#111' }}>{order.restaurant_name}</p>
             {order.restaurant_address && <p style={{ fontSize: 13, color: '#999', margin: '4px 0 0' }}>{order.restaurant_address}</p>}

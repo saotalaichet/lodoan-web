@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Crown, Search } from 'lucide-react';
+import { Crown, Search, Store } from 'lucide-react';
 import FilterBar from './FilterBar';
 import AddressInput from './AddressInput';
 import { customerAuth } from '@/lib/customerAuth';
@@ -558,7 +558,7 @@ export default function MarketplaceClient({ initialRestaurants = [] }: { initial
           </div>
         ) : filteredRestaurants.length === 0 ? (
           <div className="text-center py-20">
-            <p className="text-5xl mb-4">🍜</p>
+            <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" strokeWidth={1.5} />
             <p className="text-gray-700 text-lg font-semibold mb-2">
               {deliveryCoords && !search.trim()
                 ? (lang === 'vi' ? 'Chưa có địa điểm giao đến địa chỉ này. Vui lòng thử địa chỉ khác.' : 'No places deliver to this address yet.')

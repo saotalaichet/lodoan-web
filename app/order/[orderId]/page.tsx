@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, Suspense } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useMarketplaceLang } from '@/lib/useMarketplaceLang';
+import { UtensilsCrossed } from 'lucide-react';
 
 
 const RAILWAY = 'https://ovenly-backend-production-ce50.up.railway.app';
@@ -442,7 +443,11 @@ function OrderTrackingPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#F9F7F5', borderRadius: 14, padding: '12px 14px', marginBottom: 12 }}>
               {restaurant?.logo
                 ? <img src={restaurant.logo} alt={restaurant.name} style={{ width: 46, height: 46, borderRadius: 10, objectFit: 'cover', flexShrink: 0, border: '1px solid #eee' }} onError={e => (e.currentTarget.style.display = 'none')} />
-                : <div style={{ width: 46, height: 46, borderRadius: 10, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 20 }}>🍜</div>
+                : (
+                  <div style={{ width: 46, height: 46, borderRadius: 10, background: '#eee', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <UtensilsCrossed size={20} strokeWidth={1.5} color="#9ca3af" />
+                  </div>
+                )
               }
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontWeight: 700, fontSize: 14, margin: 0, color: '#111', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{order.restaurant_name}</p>
